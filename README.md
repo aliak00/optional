@@ -5,7 +5,9 @@
 Full API docs available [here](https://aliak00.github.io/optional/)
 
 Represents an optional data type that may or may not contain a value. Matches behavior of haskell maybe and scala or swift
-optional type.
+optional type. With the added benefit (like scala) of behving like an single element or empty D range.
+
+In many cases it is equivalent to [std.range.only](https://dlang.org/phobos/std_range.html#only).
 
 E.g.
 ```d

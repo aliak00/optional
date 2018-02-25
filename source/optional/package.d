@@ -54,6 +54,21 @@ unittest {
     assert(e.dispatch.inner.g == some(7));
 }
 
+/// Phobos equvalent range.only test
+unittest {
+    import std.algorithm: filter, joiner, map;
+    import std.uni: isUpper;
+
+    assert(equal(some('♡'), "♡"));
+
+    string title = "The D Programming Language";
+    assert(title
+        .filter!isUpper // take the upper case letters
+        .map!some       // make each letter its own range
+        .joiner(".")    // join the ranges together lazily
+        .equal("T.D.P.L"));
+}
+
 import optional.internal;
 
 public {
