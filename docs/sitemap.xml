@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>http://127.0.0.1/index.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional/no.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional/none.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional/Optional.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional/Optional.dispatch.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional/Optional.opAssign.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional/Optional.opAssign.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional/Optional.opBinary.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional/Optional.opBinaryRight.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional/Optional.opEquals.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional/Optional.opEquals.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional/Optional.opEquals.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional/Optional.opUnary.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional/Optional.opUnary.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional/Optional.toString.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional/Optional.unwrap.html</loc></url>
+<url><loc>http://127.0.0.1/optional/optional/some.html</loc></url>
+<url><loc>http://127.0.0.1/optional/traits.html</loc></url>
+<url><loc>http://127.0.0.1/optional/traits/isOptional.html</loc></url>
+<url><loc>http://127.0.0.1/optional/traits/OptionalTarget.html</loc></url>
+<url><loc>http://127.0.0.1/optional.html</loc></url>
+</urlset>

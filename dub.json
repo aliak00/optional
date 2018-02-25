@@ -1,0 +1,13 @@
+{
+	"name": "optional-d",
+	"authors": [
+		"Ali Akhtarzada"
+	],
+	"description": "An optional/maybe type with range semantics",
+	"copyright": "Copyright © 2018, Ali Akhtarzada",
+	"license": "MIT",
+	"targetPath": "bin",
+	"dependencies": {
+        "bolts": "~>0.1.2"
+    }
+}
