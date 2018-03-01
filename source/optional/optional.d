@@ -186,15 +186,24 @@ struct Optional(T) {
         import optional.dispatcher;
         return OptionalDispatcher!(T, Yes.refOptional)(&this);
     }
+    static if (isPointer!T || is(T == class))
+    {
+        /**
+            Get pointer to value. If T is a pointer or reference type then T is returned
 
-    /**
-        Get pointer to value
-
-        Returns:
-            Pointer to value or null if empty
-    */
-    inout T* unwrap() const {
-        return this.empty ? null : cast(T*)&this.bag[0];
+            Returns:
+                Pointer to value or null if empty
+        */
+        inout T unwrap() const {
+            return this.empty || (front is null) ? null : cast(T)front;
+        }
+    }
+    else
+    {
+        /// Ditto
+        inout T* unwrap() const {
+            return this.empty ? null : cast(T*)&this.bag[0];
+        }
     }
 
     /// Converts value to string `"some(T)"` or `"no!T"`
@@ -446,4 +455,34 @@ unittest {
     a = null;
     assert(a == some!(int*)(null));
     assert(*a == no!int);
+}
+
+unittest {
+    struct S {
+        int i = 1;
+    }
+    class C {
+        int i = 1;
+    }
+    auto a = some!C(null);
+    auto b = some!(S*)(null);
+
+    assert(a.unwrap is null);
+    assert(b.unwrap == null);
+
+    a = new C();
+    bool aUnwrapped = false;
+    if (auto c = a.unwrap) {
+        aUnwrapped = true;
+        assert(c.i == 1);
+    }
+    assert(aUnwrapped);
+
+    b = new S();
+    bool bUnwrapped = false;
+    if (auto s = b.unwrap) {
+        bUnwrapped = true;
+        assert(s.i == 1);
+    }
+    assert(bUnwrapped);
 }
