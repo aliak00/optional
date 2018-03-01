@@ -93,6 +93,22 @@ $('#symbolSearchPane').show();</script>
 </span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">e<wbr/></span><span class="pun">.</span><span class="pln">dispatch<wbr/></span><span class="pun">.</span><span class="pln">inner<wbr/></span><span class="pun">.</span><span class="pln">g </span><span class="pun">== </span><span class="pln">some</span><span class="pun">(</span><span class="lit">7</span><span class="pun">));
 </span></code></pre>
 </section>
+<section><h2>Example</h2>
+<p>Phobos equvalent range.only test
+</p>
+<pre class="code"><code class="lang-d"><span class="kwd">import </span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">algorithm</span><span class="pun">: </span><span class="pln">filter</span><span class="pun">, </span><span class="pln">joiner</span><span class="pun">, </span><span class="pln">map</span><span class="pun">;
+</span><span class="kwd">import </span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">uni</span><span class="pun">: </span><span class="pln">isUpper</span><span class="pun">;
+
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">equal</span><span class="pun">(</span><span class="pln">some</span><span class="pun">(</span><span class="str">'♡'</span><span class="pun">), </span><span class="str">"♡"</span><span class="pun">));
+
+</span><span class="typ">string </span><span class="pln">title </span><span class="pun">= </span><span class="str">"The D Programming Language"</span><span class="pun">;
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">title
+    <wbr/></span><span class="pun">.</span><span class="pln">filter</span><span class="pun">!</span><span class="pln">isUpper </span><span class="com">// take the upper case letters
+    <wbr/></span><span class="pun">.</span><span class="pln">map</span><span class="pun">!</span><span class="pln">some       </span><span class="com">// make each letter its own range
+    <wbr/></span><span class="pun">.</span><span class="pln">joiner</span><span class="pun">(</span><span class="str">"."</span><span class="pun">)    </span><span class="com">// join the ranges together lazily
+    <wbr/></span><span class="pun">.</span><span class="pln">equal</span><span class="pun">(</span><span class="str">"T.D.P.L"</span><span class="pun">));
+</span></code></pre>
+</section>
 </section>
 			<footer>
 				<table class="license-info">
