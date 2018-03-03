@@ -191,10 +191,13 @@ struct Optional(T) {
     static if (is(T == class))
     {
         /**
-            Get pointer to value. If T is a pointer or reference type then T is returned
+            Get pointer to value. If T is a reference type then T is returned
+
+            Use this to safely access reference types, or to get at the raw value
+            of non reference types via a non-null pointer.
 
             Returns:
-                Pointer to value or null if empty
+                Pointer to value or null if empty. If T is reference type, returns reference
         */
         inout T unwrap() const {
             return this.empty || (front is null) ? null : cast(T)front;
