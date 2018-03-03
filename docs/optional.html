@@ -67,6 +67,25 @@ $('#symbolSearchPane').show();</script>
 </span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">b<wbr/></span><span class="pun">.</span><span class="pln">map</span><span class="pun">!(</span><span class="pln">to</span><span class="pun">!</span><span class="typ">double</span><span class="pun">)<wbr/>.</span><span class="pln">equal</span><span class="pun">([</span><span class="lit">10.0</span><span class="pun">]));
 </span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">c<wbr/></span><span class="pun">.</span><span class="pln">map</span><span class="pun">!(</span><span class="pln">to</span><span class="pun">!</span><span class="typ">double</span><span class="pun">)<wbr/>.</span><span class="pln">empty</span><span class="pun">);
 
+</span><span class="com">// Safely get at nullable types
+</span><span class="kwd">class </span><span class="pln">C </span><span class="pun">{
+    </span><span class="typ">int </span><span class="pln">i </span><span class="pun">= </span><span class="lit">3</span><span class="pun">;
+}
+
+</span><span class="kwd">auto </span><span class="pln">n </span><span class="pun">= </span><span class="pln">no</span><span class="pun">!</span><span class="pln">C</span><span class="pun">;
+</span><span class="kwd">if </span><span class="pun">(</span><span class="kwd">auto </span><span class="pln">u </span><span class="pun">= </span><span class="pln">n<wbr/></span><span class="pun">.</span><span class="pln">unwrap</span><span class="pun">) {
+    </span><span class="pln">writeln</span><span class="pun">(</span><span class="str">"nope: "</span><span class="pun">, </span><span class="pln">u<wbr/></span><span class="pun">.</span><span class="pln">i</span><span class="pun">);
+}
+</span><span class="pln">n </span><span class="pun">= </span><span class="pln">some</span><span class="pun">!</span><span class="pln">C</span><span class="pun">(</span><span class="kwd">null</span><span class="pun">);
+</span><span class="kwd">if </span><span class="pun">(</span><span class="kwd">auto </span><span class="pln">u </span><span class="pun">= </span><span class="pln">n<wbr/></span><span class="pun">.</span><span class="pln">unwrap</span><span class="pun">) {
+    </span><span class="pln">writeln</span><span class="pun">(</span><span class="str">"nope: "</span><span class="pun">, </span><span class="pln">u<wbr/></span><span class="pun">.</span><span class="pln">i</span><span class="pun">);
+}
+</span><span class="pln">n </span><span class="pun">= </span><span class="kwd">new </span><span class="pln">C</span><span class="pun">();
+</span><span class="kwd">if </span><span class="pun">(</span><span class="kwd">auto </span><span class="pln">u </span><span class="pun">= </span><span class="pln">n<wbr/></span><span class="pun">.</span><span class="pln">unwrap</span><span class="pun">) {
+    </span><span class="com">// yep!
+</span><span class="pun">}
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">n<wbr/></span><span class="pun">.</span><span class="pln">unwrap<wbr/></span><span class="pun">.</span><span class="pln">i </span><span class="pun">== </span><span class="lit">3</span><span class="pun">);
+
 </span><span class="com">// Can safely dispatch to whatever inner type is
 </span><span class="kwd">struct </span><span class="pln">A </span><span class="pun">{
     </span><span class="kwd">struct </span><span class="typ">Inner </span><span class="pun">{

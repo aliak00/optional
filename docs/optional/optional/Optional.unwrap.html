@@ -40,7 +40,7 @@ $('#symbolSearchPane').show();</script>
 			</ul>
 		</nav>
 		<div id="main-contents">
-			<h1>Function Optional.unwrap</h1><p>Get pointer to value. If T is a pointer or reference type then T is returned
+			<h1>Function Optional.unwrap</h1><p>Get pointer to value. If T is a reference type then T is returned
 </p>
 			<div class="prototype">
 				<code class="lang-d">
@@ -50,10 +50,13 @@ $('#symbolSearchPane').show();</script>
 					</div>
 				</code>
 			</div>
-			<section></section>
+			<section><p>Use this to safely access reference types, or to get at the raw value
+            of non reference types via a non-null pointer.
+</p>
+</section>
 
 			<section><h2>Returns</h2>
-<p>Pointer to value or null if empty
+<p>Pointer to value or null if empty. If T is reference type, returns reference
 </p>
 </section>
 
