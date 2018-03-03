@@ -28,6 +28,25 @@ unittest {
     assert(b.map!(to!double).equal([10.0]));
     assert(c.map!(to!double).empty);
 
+    // Safely get at nullable types
+    class C {
+        int i = 3;
+    }
+
+    auto n = no!C;
+    if (auto u = n.unwrap) {
+        writeln("nope: ", u.i);
+    }
+    n = some!C(null);
+    if (auto u = n.unwrap) {
+        writeln("nope: ", u.i);
+    }
+    n = new C();
+    if (auto u = n.unwrap) {
+        // yep!
+    }
+    assert(n.unwrap.i == 3);
+
     // Can safely dispatch to whatever inner type is
     struct A {
         struct Inner {
