@@ -165,6 +165,8 @@ struct Optional(T) {
             are dispatched to T if there is a T and operator support is carried out by aliasing
             to Optional!T.
 
+            To cast back to an Optional!T you can call `some(Optional!(T).dispatch)`
+
         ---
         struct A {
             struct Inner {
@@ -217,9 +219,22 @@ struct Optional(T) {
     }
 }
 
-/// Type constructor for an optional having some value of `T`
+/**
+    Type constructor for an optional having some value of `T`
+
+    Calling some on the result of a dispatch chain will result
+    in the original optional value.
+*/
 auto some(T)(T t) {
-    return Optional!T(t);
+    import optional.dispatcher: OptionalDispatcher;
+    static if (is(T U : OptionalDispatcher!(U)))
+    {
+        return t.self;
+    }
+    else
+    {
+        return Optional!T(t);
+    }
 }
 
 ///
@@ -232,6 +247,26 @@ unittest {
 
     import std.algorithm: map;
     assert([1, 2, 3].map!some.array == [some(1), some(2), some(3)]);
+}
+
+unittest {
+    class C {
+        int i = 0;
+        C mutate() {
+            this.i++;
+            return this;
+        }
+    }
+
+    auto a = some(new C());
+    auto b = a.dispatch.mutate.mutate.mutate;
+
+    // Unwrap original should have mutated the object
+    assert(a.unwrap.i == 3);
+
+    // some(Dispatcher result) should be original Optional type
+    static assert(is(typeof(b.some) == Optional!C));
+    assert(b.some.unwrap.i == 3);
 }
 
 /// Type constructor for an optional having no value of `T`
