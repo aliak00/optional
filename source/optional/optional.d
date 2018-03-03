@@ -186,7 +186,7 @@ struct Optional(T) {
         import optional.dispatcher;
         return OptionalDispatcher!(T, Yes.refOptional)(&this);
     }
-    static if (isPointer!T || is(T == class))
+    static if (is(T == class))
     {
         /**
             Get pointer to value. If T is a pointer or reference type then T is returned
@@ -468,7 +468,8 @@ unittest {
     auto b = some!(S*)(null);
 
     assert(a.unwrap is null);
-    assert(b.unwrap == null);
+    assert(b.unwrap != null);
+    assert(*b.unwrap == null);
 
     a = new C();
     bool aUnwrapped = false;
@@ -482,7 +483,17 @@ unittest {
     bool bUnwrapped = false;
     if (auto s = b.unwrap) {
         bUnwrapped = true;
-        assert(s.i == 1);
+        assert((*s).i == 1);
     }
     assert(bUnwrapped);
+
+    auto c = no!int;
+    assert(c.unwrap is null);
+    c = some(3);
+    bool cUnwrapped = false;
+    if (auto p = c.unwrap) {
+        cUnwrapped = true;
+        assert(*p == 3);
+    }
+    assert(cUnwrapped);
 }
