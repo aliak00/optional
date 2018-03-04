@@ -64,7 +64,7 @@ struct Optional(T) {
         } else {
             import std.range: hasAssignableElements;
             // If we are mutable then we don't need to allocate a new bag
-            static if (hasAssignableElements!(T))
+            static if (hasAssignableElements!(T[]))
             {
                 this.bag[0] = cast(T)t;
             }
