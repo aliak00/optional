@@ -64,7 +64,7 @@ struct Optional(T) {
             this.bag = [cast(T)t];
         } else {
             // If we are mutable then we don't need to allocate a new bag
-            static if (!is(T == immutable) && !is(T == const))
+            static if (hasAssignableElements!(T))
             {
                 this.bag[0] = cast(T)t;
             }
