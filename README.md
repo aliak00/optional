@@ -2,7 +2,7 @@
 
 [![Latest version](https://img.shields.io/dub/v/optional.svg)](http://code.dlang.org/packages/optional) [![Build Status](https://travis-ci.org/aliak00/optional.svg?branch=master)](https://travis-ci.org/aliak00/optional) [![codecov](https://codecov.io/gh/aliak00/optional/branch/master/graph/badge.svg)](https://codecov.io/gh/aliak00/optional) [![license](https://img.shields.io/github/license/aliak00/optional.svg)](https://github.com/aliak00/optional/blob/master/LICENSE)
 
-Full API docs available [here](https://aliak00.github.io/optional/)
+Full API docs available [here](https://aliak00.github.io/optional/optional.html)
 
 Represents an optional data type that may or may not contain a value. Matches behavior of haskell maybe and scala or swift
 optional type. With the added benefit (like scala) of behving like an single element or empty D range.
