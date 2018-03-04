@@ -59,7 +59,7 @@ struct Optional(T) {
     }
 
     /// Sets value to some `t` or `none`
-    void opAssign()(inout T t) {
+    void opAssign()(T t) {
         if (this.empty) {
             this.bag = [cast(T)t];
         } else {
