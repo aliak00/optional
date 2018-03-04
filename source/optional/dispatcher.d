@@ -25,19 +25,25 @@ struct OptionalDispatcher(T, from!"std.typecons".Flag!"refOptional" isRef = from
             else
                 return self.empty;
         }
+
+        static string returnDance(string call) {
+            return "alias C = () => " ~ call ~ ";" ~
+                q{
+                    alias R = typeof(C());
+                    static if (!is(R == void))
+                        return empty ? OptionalDispatcher!R(no!R) : OptionalDispatcher!R(some(C()));
+                    else
+                        if (!empty) {
+                            C();
+                        }
+            };
+        }
         
         static if (is(typeof(__traits(getMember, T, name)) == function))
         {
             // non template function
             auto ref opDispatch(Args...)(auto ref Args args) {
-                alias C = () => mixin("self.front." ~ name)(args);
-                alias R = typeof(C());
-                static if (!is(R == void))
-                    return empty ? OptionalDispatcher!R(no!R) : OptionalDispatcher!R(some(C()));
-                else
-                    if (!empty) {
-                        C();
-                    }
+                mixin(returnDance("self.front." ~ name ~ "(args)"));
             }
         }
         else static if (hasProperty!(T, name))
@@ -47,23 +53,14 @@ struct OptionalDispatcher(T, from!"std.typecons".Flag!"refOptional" isRef = from
             static if (property.canRead)
             {
                 @property auto ref opDispatch()() {
-                    alias C = () => mixin("self.front." ~ name);
-                    alias R = typeof(C());
-                    return empty ? OptionalDispatcher!R(no!R) : OptionalDispatcher!R(some(C()));
+                    mixin(returnDance("self.front." ~ name));
                 }
             }
 
             static if (property.canWrite)
             {
                 @property auto ref opDispatch(V)(auto ref V v) {
-                    alias C = () => mixin("self.front." ~ name ~ " = v");
-                    alias R = typeof(C());
-                    static if (!is(R == void))
-                        return empty ? OptionalDispatcher!R(no!R) : OptionalDispatcher!R(some(C()));
-                    else
-                        if (!empty) {
-                            C();
-                        }
+                    mixin(returnDance("self.front." ~ name ~ " = v"));
                 }
             }
         }
@@ -78,9 +75,7 @@ struct OptionalDispatcher(T, from!"std.typecons".Flag!"refOptional" isRef = from
         else static if (is(typeof(mixin("self.front." ~ name))))
         {
             auto opDispatch() {
-                alias C = () => mixin("self.front." ~ name);
-                alias R = typeof(C());
-                return empty ? OptionalDispatcher!R(no!R) : OptionalDispatcher!R(some(C()));
+                mixin(returnDance("self.front." ~ name));
             }
         }
         else
@@ -89,14 +84,7 @@ struct OptionalDispatcher(T, from!"std.typecons".Flag!"refOptional" isRef = from
             template opDispatch(Ts...) {
                 enum targs = Ts.length ? "!Ts" : "";
                 auto ref opDispatch(Args...)(auto ref Args args) {
-                    alias C = () => mixin("self.front." ~ name ~ targs ~ "(args)");
-                    alias R = typeof(C());
-                    static if (!is(R == void))
-                        return empty ? OptionalDispatcher!R(no!R) : OptionalDispatcher!R(some(C()));
-                    else
-                        if (!empty) {
-                            C();
-                        }
+                    mixin(returnDance("self.front." ~ name ~ targs ~ "(args)"));
                 }
             }
         }
