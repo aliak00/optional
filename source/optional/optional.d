@@ -42,8 +42,10 @@ struct Optional(T) {
     this(None) pure {
         this.bag = [];
     }
-    this(this) pure {
-        this.bag = this.bag.dup;
+
+    this(this) {
+        static if (!is(T == immutable) && !is(T == const))
+            this.bag = this.bag.dup;
     }
 
     @property bool empty() const {
@@ -56,14 +58,19 @@ struct Optional(T) {
         this.bag = [];
     }
 
-    static if (hasAssignableElements!(T[]))
-    {
-        /// Sets value to some `t` or `none`
-        void opAssign(T t) {
-            if (this.empty) {
-                this.bag = [t];
-            } else {
-                this.bag[0] = t;
+    /// Sets value to some `t` or `none`
+    void opAssign()(inout T t) {
+        if (this.empty) {
+            this.bag = [cast(T)t];
+        } else {
+            // If we are mutable then we don't need to allocate a new bag
+            static if (!is(T == immutable) && !is(T == const))
+            {
+                this.bag[0] = cast(T)t;
+            }
+            else
+            {
+                this.bag = [cast(T)t];
             }
         }
     }
@@ -217,8 +224,17 @@ struct Optional(T) {
         if (this.bag.length == 0) {
             return "no!" ~ T.stringof;
         }
-        // TODO: UFCS on front.to does not work here.
-        return "some!" ~ T.stringof ~ "(" ~ to!string(front) ~ ")";
+        // toString for class types that are immutable is not implemented by default
+        // toString for shared types is not implemeneted at all
+        static if (!__traits(compiles, to!string(front)))
+        {
+            return "some!" ~ T.stringof;
+        }
+        else
+        {
+            // TODO: UFCS on front.to does not work here.
+            return "some!" ~ T.stringof ~ "(" ~ to!string(front) ~ ")";
+        }
     }
 }
 
@@ -384,12 +400,12 @@ unittest {
     n = 4;
     assert(o == n);
 
-    static assert( is(typeof(n = 3)));
-    static assert(!is(typeof(ni = 3)));
-    static assert(!is(typeof(nc = 3)));
-    static assert( is(typeof(o = 3)));
-    static assert(!is(typeof(oi = 3)));
-    static assert(!is(typeof(oc = 3)));
+    static assert(is(typeof(n = 3)));
+    static assert(is(typeof(ni = 3)));
+    static assert(is(typeof(nc = 3)));
+    static assert(is(typeof(o = 3)));
+    static assert(is(typeof(oi = 3)));
+    static assert(is(typeof(oc = 3)));
 }
 
 unittest {
@@ -417,6 +433,7 @@ unittest {
     }
     Object a = new A;
     assert(some(cast(A)a).toString == "some!A(A)");
+    assert(some(cast(immutable A)a).toString == "some!immutable(A)");
 }
 
 unittest {
@@ -534,4 +551,53 @@ unittest {
         assert(*p == 3);
     }
     assert(cUnwrapped);
+}
+
+unittest {
+    class A {
+        void nonConstNonSharedMethod() {}
+        void constMethod() const {}
+        void sharedNonConstMethod() shared {}
+        void sharedConstMethod() shared const {}
+    }
+
+    alias IA = immutable A;
+    alias CA = const A;
+    alias SA = shared A;
+    alias SCA = shared const A;
+
+    Optional!IA ia;
+    Optional!CA ca;
+    Optional!SA sa;
+    Optional!SCA sca;
+
+    ia = none;
+    ca = none;
+    sa = none;
+    sca = none;
+
+    ia = new IA;
+    ca = new CA;
+    sa = new SA;
+    sca = new SA;
+
+    static assert(!__traits(compiles, () { ia.dispatch.nonConstNonSharedMethod; } ));
+    static assert(!__traits(compiles, () { ca.dispatch.nonConstNonSharedMethod; } ));
+    static assert(!__traits(compiles, () { sa.dispatch.nonConstNonSharedMethod; } ));
+    static assert(!__traits(compiles, () { sca.dispatch.nonConstNonSharedMethod; } ));
+
+    static assert( __traits(compiles, () { ia.dispatch.constMethod; } ));
+    static assert( __traits(compiles, () { ca.dispatch.constMethod; } ));
+    static assert(!__traits(compiles, () { sa.dispatch.constMethod; } ));
+    static assert(!__traits(compiles, () { sca.dispatch.constMethod; } ));
+
+    static assert(!__traits(compiles, () { ia.dispatch.sharedNonConstMethod; } ));
+    static assert(!__traits(compiles, () { ca.dispatch.sharedNonConstMethod; } ));
+    static assert( __traits(compiles, () { sa.dispatch.sharedNonConstMethod; } ));
+    static assert(!__traits(compiles, () { sca.dispatch.sharedNonConstMethod; } ));
+
+    static assert( __traits(compiles, () { ia.dispatch.sharedConstMethod; } ));
+    static assert(!__traits(compiles, () { ca.dispatch.sharedConstMethod; } ));
+    static assert( __traits(compiles, () { sa.dispatch.sharedConstMethod; } ));
+    static assert( __traits(compiles, () { sca.dispatch.sharedConstMethod; } ));
 }
