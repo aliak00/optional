@@ -32,7 +32,12 @@ struct OptionalDispatcher(T, from!"std.typecons".Flag!"refOptional" isRef = from
             auto ref opDispatch(Args...)(auto ref Args args) {
                 alias C = () => mixin("self.front." ~ name)(args);
                 alias R = typeof(C());
-                return empty ? OptionalDispatcher!R(no!R) : OptionalDispatcher!R(some(C()));
+                static if (!is(R == void))
+                    return empty ? OptionalDispatcher!R(no!R) : OptionalDispatcher!R(some(C()));
+                else
+                    if (!empty) {
+                        C();
+                    }
             }
         }
         else static if (hasProperty!(T, name))
@@ -86,7 +91,12 @@ struct OptionalDispatcher(T, from!"std.typecons".Flag!"refOptional" isRef = from
                 auto ref opDispatch(Args...)(auto ref Args args) {
                     alias C = () => mixin("self.front." ~ name ~ targs ~ "(args)");
                     alias R = typeof(C());
-                    return empty ? OptionalDispatcher!R(no!R) : OptionalDispatcher!R(some(C()));
+                    static if (!is(R == void))
+                        return empty ? OptionalDispatcher!R(no!R) : OptionalDispatcher!R(some(C()));
+                    else
+                        if (!empty) {
+                            C();
+                        }
                 }
             }
         }
@@ -188,4 +198,14 @@ unittest {
 
     assert(b.dispatch.b.f == no!int);
     assert(b.dispatch.b.m == no!int);
+}
+
+unittest {
+    class C {
+        void method() {}
+        void tmethod(T)() {}
+    }
+    auto c = some(new C());
+    static assert(__traits(compiles, c.dispatch.method()));
+    static assert(__traits(compiles, c.dispatch.tmethod!int()));
 }
