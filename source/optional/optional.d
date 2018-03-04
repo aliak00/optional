@@ -32,7 +32,6 @@ immutable none = None();
 */
 struct Optional(T) {
     import std.traits: isPointer, hasMember;
-    import std.range: hasAssignableElements;
 
     T[] bag;
 
@@ -63,6 +62,7 @@ struct Optional(T) {
         if (this.empty) {
             this.bag = [cast(T)t];
         } else {
+            import std.range: hasAssignableElements;
             // If we are mutable then we don't need to allocate a new bag
             static if (hasAssignableElements!(T))
             {
