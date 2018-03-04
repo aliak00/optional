@@ -38,17 +38,26 @@ struct Optional(T) {
     this(U)(U u) pure {
         this.bag = [u];
     }
-    this(None) pure {
-        this.bag = [];
+
+    this(None) pure {}
+
+    static if (is(T == class))
+    {
+        this(typeof(null)) pure {}
     }
 
-    this(this) {
-        static if (!is(T == immutable) && !is(T == const))
+    static if (!is(T == immutable) && !is(T == const))
+    {
+        this(this) {
             this.bag = this.bag.dup;
+        }
     }
 
     @property bool empty() const {
-        return this.bag.length == 0;
+        static if (is(T == class))
+            return this.bag.length == 0 || front is null;
+        else
+            return this.bag.length == 0;
     }
     @property auto ref front() inout {
         return this.bag[0];
@@ -100,7 +109,7 @@ struct Optional(T) {
 
     /// Ditto
     bool opEquals(None _) const {
-        return this.bag.length == 0;
+        return empty;
     }
 
     /// Ditto
@@ -600,4 +609,26 @@ unittest {
     static assert(!__traits(compiles, () { ca.dispatch.sharedConstMethod; } ));
     static assert( __traits(compiles, () { sa.dispatch.sharedConstMethod; } ));
     static assert( __traits(compiles, () { sca.dispatch.sharedConstMethod; } ));
+}
+
+unittest {
+    class C {}
+    auto a = no!C;
+    auto b = some(new C);
+    b = none;
+    Optional!C c = null;
+    auto d = some(new C);
+    d = null;
+    assert(a == none);
+    assert(a.unwrap is null);
+    assert(a.empty);
+    assert(b == none);
+    assert(b.unwrap is null);
+    assert(b.empty);
+    assert(c == none);
+    assert(c.unwrap is null);
+    assert(c.empty);
+    assert(d == none);
+    assert(d.unwrap is null);
+    assert(d.empty);
 }
