@@ -632,3 +632,9 @@ unittest {
     assert(d.unwrap is null);
     assert(d.empty);
 }
+
+unittest {
+    auto a = some!(immutable int)(1);
+    a = 2;
+    assert(a == some(2));
+}
