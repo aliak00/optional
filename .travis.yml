@@ -1,8 +1,30 @@
 language: d
-d:
- - dmd-2.078.0
 
-script:
- - dub test -b unittest-cov --compiler=${DC}
-after_success:
- - bash <(curl -s https://codecov.io/bash)
+matrix:
+  include:
+    - d: dmd
+      script:
+        - dub test -b unittest-cov
+        - dub build -b ddox
+      addons:
+        apt:
+          packages:
+          - libevent-dev
+          - libssl-dev
+          - pkg-config
+          - zlib1g-dev
+      after_success: bash <(curl -s https://codecov.io/bash)
+
+      deploy:
+        local_dir: docs
+        provider: pages
+        skip_cleanup: true
+        github_token: $GITHUB_TOKEN # Set in travis-ci.org dashboard
+        on:
+          branch: master
+      # cache ~/.dub so we don't have to rebuild ddox
+      # reset under https://travis-ci.org/MartinNowak/bloom/caches
+      cache: { directories: [$HOME/.dub] }
+    - d: dmd
+      os: osx
+    - d: ldc
