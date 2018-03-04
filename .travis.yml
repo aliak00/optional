@@ -5,6 +5,8 @@ matrix:
     - d: dmd
       script:
         - dub test -b unittest-cov
+        - git clone https://github.com/aliak00/ddox-dark-theme.git
+        - mv ddox-dark-theme/docs .
         - dub build -b ddox
       addons:
         apt:
@@ -19,12 +21,14 @@ matrix:
         local_dir: docs
         provider: pages
         skip_cleanup: true
-        github_token: $GITHUB_TOKEN # Set in travis-ci.org dashboard
+        github_token: $GITHUB_TOKEN
         on:
           branch: master
-      # cache ~/.dub so we don't have to rebuild ddox
-      # reset under https://travis-ci.org/MartinNowak/bloom/caches
-      cache: { directories: [$HOME/.dub] }
+
+      cache:
+        directories:
+          - $HOME/.dub
+
     - d: dmd
       os: osx
     - d: ldc
