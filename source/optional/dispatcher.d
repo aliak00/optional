@@ -17,6 +17,7 @@ struct OptionalDispatcher(T, from!"std.typecons".Flag!"refOptional" isRef = from
 
     template opDispatch(string name) if (hasMember!(T, name)) {
         import bolts.traits: hasProperty, isManifestAssignable;
+        import optional: no, some;
 
         bool empty() {
             import std.traits: isPointer;
