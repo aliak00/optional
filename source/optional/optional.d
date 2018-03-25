@@ -274,7 +274,7 @@ unittest {
     assert(a != none);
 
     import std.algorithm: map;
-    assert([1, 2, 3].map!some.array == [some(1), some(2), some(3)]);
+    assert([1, 2, 3].map!some.equal([some(1), some(2), some(3)]));
 }
 
 unittest {
