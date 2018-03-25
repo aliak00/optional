@@ -93,6 +93,8 @@ struct OptionalDispatcher(T, from!"std.typecons".Flag!"refOptional" isRef = from
 }
 
 unittest {
+    import optional: no, some;
+
     struct A {
         enum aManifestConstant = "aManifestConstant";
         static immutable aStaticImmutable = "aStaticImmutable";
@@ -153,6 +155,8 @@ unittest {
 }
 
 unittest {
+    import optional: no, some;
+
     struct Object {
         int f() {
             return 7;
@@ -166,6 +170,8 @@ unittest {
 }
 
 unittest {
+    import optional: no, some;
+
     struct B {
         int f() {
             return 8;
@@ -190,6 +196,9 @@ unittest {
 }
 
 unittest {
+
+    import optional: some;
+
     class C {
         void method() {}
         void tmethod(T)() {}
