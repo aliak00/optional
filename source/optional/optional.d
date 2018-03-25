@@ -245,6 +245,13 @@ struct Optional(T) {
             return "some!" ~ T.stringof ~ "(" ~ to!string(front) ~ ")";
         }
     }
+
+    /**
+        Returns the value contained within this optional _or_ another value if there no!T
+    */
+    T or(lazy T orValue) {
+        return empty ? orValue : front;
+    }
 }
 
 /**
@@ -637,4 +644,23 @@ unittest {
     auto a = some!(immutable int)(1);
     a = 2;
     assert(a == some(2));
+}
+
+unittest {
+    assert(some(3).or(9) == 3);
+    assert(no!int.or(9) == 9);
+
+    struct S {
+        int g() { return 3; }
+    }
+
+    assert(some(S()).dispatch.g.some.or(9) == 3);
+    assert(no!S.dispatch.g.some.or(9) == 9);
+
+    class C {
+        int g() { return 3; }
+    }
+
+    assert(some(new C()).dispatch.g.some.or(9) == 3);
+    assert(no!C.dispatch.g.some.or(9) == 9);
 }
