@@ -8,6 +8,6 @@
 	"license": "MIT",
 	"targetPath": "bin",
 	"dependencies": {
-        "bolts": "~>0.1.2"
+        "bolts": "~>0.3.0"
     }
 }
