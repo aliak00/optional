@@ -57,9 +57,8 @@ unittest {
 /**
     Checks if T is a type that was dispatched from an optional
 
-    When you start a `dispatch` chain on an optional type, a proxy
-    type used only for dispatching is returned that allows chaining
-    like:
+    When you start a `dispatch` chain on an optional type, a proxy type
+    used only for dispatching is returned that allows chaining like:
 
     ---
     struct S1 { int f() { return 3; } }
