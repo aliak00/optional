@@ -67,7 +67,7 @@ struct Optional(T) {
     }
 
     /// Sets value to some `t` or `none`
-    void opAssign()(T t) {
+    void opAssign()(auto ref T t) {
         if (this.empty) {
             this.bag = [cast(T)t];
         } else {
@@ -85,7 +85,7 @@ struct Optional(T) {
     }
 
     /// Ditto
-    void opAssign(None _) {
+    void opAssign(None) {
         this.bag = [];
     }
 
@@ -103,12 +103,12 @@ struct Optional(T) {
         a == none; // false
         ---
     */
-    bool opEquals(U : T)(auto ref Optional!U rhs) const {
+    bool opEquals(U : T)(const auto ref Optional!U rhs) const {
         return this.bag == rhs.bag;
     }
 
     /// Ditto
-    bool opEquals(None _) const {
+    bool opEquals(None) const {
         return empty;
     }
 
@@ -230,7 +230,7 @@ struct Optional(T) {
     /// Converts value to string `"some(T)"` or `"no!T"`
     string toString() {
         import std.conv: to;
-        if (this.bag.length == 0) {
+        if (empty) {
             return "no!" ~ T.stringof;
         }
         // toString for class types that are immutable is not implemented by default
