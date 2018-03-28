@@ -207,3 +207,54 @@ unittest {
     static assert(__traits(compiles, c.dispatch.method()));
     static assert(__traits(compiles, c.dispatch.tmethod!int()));
 }
+
+unittest {
+    import optional: Optional, none;
+
+    class A {
+        void nonConstNonSharedMethod() {}
+        void constMethod() const {}
+        void sharedNonConstMethod() shared {}
+        void sharedConstMethod() shared const {}
+    }
+
+    alias IA = immutable A;
+    alias CA = const A;
+    alias SA = shared A;
+    alias SCA = shared const A;
+
+    Optional!IA ia;
+    Optional!CA ca;
+    Optional!SA sa;
+    Optional!SCA sca;
+
+    ia = none;
+    ca = none;
+    sa = none;
+    sca = none;
+
+    ia = new IA;
+    ca = new CA;
+    sa = new SA;
+    sca = new SA;
+
+    static assert(!__traits(compiles, () { ia.dispatch.nonConstNonSharedMethod; } ));
+    static assert(!__traits(compiles, () { ca.dispatch.nonConstNonSharedMethod; } ));
+    static assert(!__traits(compiles, () { sa.dispatch.nonConstNonSharedMethod; } ));
+    static assert(!__traits(compiles, () { sca.dispatch.nonConstNonSharedMethod; } ));
+
+    static assert( __traits(compiles, () { ia.dispatch.constMethod; } ));
+    static assert( __traits(compiles, () { ca.dispatch.constMethod; } ));
+    static assert(!__traits(compiles, () { sa.dispatch.constMethod; } ));
+    static assert(!__traits(compiles, () { sca.dispatch.constMethod; } ));
+
+    static assert(!__traits(compiles, () { ia.dispatch.sharedNonConstMethod; } ));
+    static assert(!__traits(compiles, () { ca.dispatch.sharedNonConstMethod; } ));
+    static assert( __traits(compiles, () { sa.dispatch.sharedNonConstMethod; } ));
+    static assert(!__traits(compiles, () { sca.dispatch.sharedNonConstMethod; } ));
+
+    static assert( __traits(compiles, () { ia.dispatch.sharedConstMethod; } ));
+    static assert(!__traits(compiles, () { ca.dispatch.sharedConstMethod; } ));
+    static assert( __traits(compiles, () { sa.dispatch.sharedConstMethod; } ));
+    static assert( __traits(compiles, () { sca.dispatch.sharedConstMethod; } ));
+}
