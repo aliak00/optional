@@ -262,9 +262,16 @@ struct Optional(T) {
 */
 auto some(T)(T t) {
     import optional.dispatcher: OptionalDispatcher;
-    static if (is(T U : OptionalDispatcher!(U)))
+    static if (is(T : OptionalDispatcher!P, P...))
     {
-        return t.self;
+        static if (P[1]) // refOptional
+        {
+            return *t.self;
+        }
+        else
+        {
+            return t.self;
+        }
     }
     else
     {
@@ -282,6 +289,14 @@ unittest {
 
     import std.algorithm: map;
     assert([1, 2, 3].map!some.equal([some(1), some(2), some(3)]));
+}
+
+unittest {
+    struct S {
+        int f() { return 3; }
+    }
+
+    static assert(is(typeof(some(S()).dispatch.some) == Optional!S));
 }
 
 unittest {
