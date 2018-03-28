@@ -248,6 +248,42 @@ struct Optional(T) {
 }
 
 /**
+    Returns the value contained within the optional _or_ another value if there no!T
+
+    Can also be called at the end of a `dispatch` chain
+*/
+T or(T)(Optional!T opt, lazy T orValue) {
+    return opt.empty ? orValue : opt.front;
+}
+
+/// Ditto
+auto or(OD, T)(OD od, lazy T orValue)
+if (from!"optional.traits".isOptionalDispatcher!OD
+    && is(T == from!"optional.traits".OptionalDispatcherTarget!OD)) {
+    return some(od).or(orValue);
+}
+
+///
+unittest {
+    assert(some(3).or(9) == 3);
+    assert(no!int.or(9) == 9);
+
+    struct S {
+        int g() { return 3; }
+    }
+
+    assert(some(S()).dispatch.g.some.or(9) == 3);
+    assert(no!S.dispatch.g.some.or(9) == 9);
+
+    class C {
+        int g() { return 3; }
+    }
+
+    assert(some(new C()).dispatch.g.or(9) == 3);
+    assert(no!C.dispatch.g.or(9) == 9);
+}
+
+/**
     Type constructor for an optional having some value of `T`
 
     Calling some on the result of a dispatch chain will result
@@ -255,9 +291,16 @@ struct Optional(T) {
 */
 auto some(T)(T t) {
     import optional.dispatcher: OptionalDispatcher;
-    static if (is(T U : OptionalDispatcher!(U)))
+    static if (is(T : OptionalDispatcher!P, P...))
     {
-        return t.self;
+        static if (P[1]) // refOptional
+        {
+            return *t.self;
+        }
+        else
+        {
+            return t.self;
+        }
     }
     else
     {
@@ -275,6 +318,14 @@ unittest {
 
     import std.algorithm: map;
     assert([1, 2, 3].map!some.equal([some(1), some(2), some(3)]));
+}
+
+unittest {
+    struct S {
+        int f() { return 3; }
+    }
+
+    static assert(is(typeof(some(S()).dispatch.some) == Optional!S));
 }
 
 unittest {
