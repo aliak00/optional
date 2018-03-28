@@ -640,3 +640,12 @@ unittest {
     a = 2;
     assert(a == some(2));
 }
+
+unittest {
+    Optional!(immutable int) oii = some!(immutable int)(5);
+    immutable(int)* p = oii.unwrap;
+    assert(*p == 5);
+    oii = 4;
+    assert(*oii.unwrap == 4);
+    assert(*p == 5);
+}
