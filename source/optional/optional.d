@@ -245,13 +245,42 @@ struct Optional(T) {
             return "some!" ~ T.stringof ~ "(" ~ to!string(front) ~ ")";
         }
     }
+}
 
-    /**
-        Returns the value contained within this optional _or_ another value if there no!T
-    */
-    T or(lazy T orValue) {
-        return empty ? orValue : front;
+/**
+    Returns the value contained within the optional _or_ another value if there no!T
+
+    Can also be called at the end of a `dispatch` chain
+*/
+T or(T)(Optional!T opt, lazy T orValue) {
+    return opt.empty ? orValue : opt.front;
+}
+
+/// Ditto
+auto or(OD, T)(OD od, lazy T orValue)
+if (from!"optional.traits".isOptionalDispatcher!OD
+    && is(T == from!"optional.traits".OptionalDispatcherTarget!OD)) {
+    return some(od).or(orValue);
+}
+
+///
+unittest {
+    assert(some(3).or(9) == 3);
+    assert(no!int.or(9) == 9);
+
+    struct S {
+        int g() { return 3; }
     }
+
+    assert(some(S()).dispatch.g.some.or(9) == 3);
+    assert(no!S.dispatch.g.some.or(9) == 9);
+
+    class C {
+        int g() { return 3; }
+    }
+
+    assert(some(new C()).dispatch.g.or(9) == 3);
+    assert(no!C.dispatch.g.or(9) == 9);
 }
 
 /**
@@ -659,23 +688,4 @@ unittest {
     auto a = some!(immutable int)(1);
     a = 2;
     assert(a == some(2));
-}
-
-unittest {
-    assert(some(3).or(9) == 3);
-    assert(no!int.or(9) == 9);
-
-    struct S {
-        int g() { return 3; }
-    }
-
-    assert(some(S()).dispatch.g.some.or(9) == 3);
-    assert(no!S.dispatch.g.some.or(9) == 9);
-
-    class C {
-        int g() { return 3; }
-    }
-
-    assert(some(new C()).dispatch.g.some.or(9) == 3);
-    assert(no!C.dispatch.g.some.or(9) == 9);
 }
