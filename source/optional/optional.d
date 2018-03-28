@@ -31,62 +31,66 @@ immutable none = None();
     and safe.
 */
 struct Optional(T) {
-    import std.traits: isPointer, hasMember;
+    import std.traits: isPointer, hasMember, Unqual;
 
-    T[] bag;
+    private Unqual!T value = T.init;
+    private bool isDefined = false;
 
-    this(U)(U u) pure {
-        this.bag = [u];
+    private void unset() {
+        this.isDefined = false;
+        static if (is(T == class))
+            this.value = null;
+
+        // Do we set to T.init if T has indirections??
+        // Am I supposed to use Object.destroy here?
     }
 
-    this(None) pure {}
+    this(U)(U u) pure {
+        // Is this cast legal?
+        this.value = cast(Unqual!T)(u);
+
+        static if (is(T == class))
+            this.isDefined = u !is null;
+        else
+            this.isDefined = true;
+    }
+
+    this(None) pure {
+        this.value = T.init;
+    }
 
     static if (is(T == class))
     {
         this(typeof(null)) pure {}
     }
 
-    static if (!is(T == immutable) && !is(T == const))
-    {
-        this(this) {
-            this.bag = this.bag.dup;
-        }
-    }
-
     @property bool empty() const {
-        static if (is(T == class))
-            return this.bag.length == 0 || front is null;
-        else
-            return this.bag.length == 0;
+        return !this.isDefined;
     }
     @property auto ref front() inout {
-        return this.bag[0];
+        return this.value;
     }
     void popFront() {
-        this.bag = [];
+        this.unset;
     }
 
     /// Sets value to some `t` or `none`
     void opAssign()(T t) {
-        if (this.empty) {
-            this.bag = [cast(T)t];
-        } else {
-            import std.range: hasAssignableElements;
-            // If we are mutable then we don't need to allocate a new bag
-            static if (hasAssignableElements!(T[]))
-            {
-                this.bag[0] = cast(T)t;
-            }
-            else
-            {
-                this.bag = [cast(T)t];
-            }
+        // Again, is this case legal?
+        this.value = cast(Unqual!T)t;
+        static if (is(T == class))
+        {
+            this.isDefined = t !is null;
+        }
+        else
+        {
+            this.isDefined = true;
         }
     }
 
     /// Ditto
-    void opAssign(None _) {
-        this.bag = [];
+    void opAssign(None) {
+        this.unset;
     }
 
     /**
@@ -104,17 +108,17 @@ struct Optional(T) {
         ---
     */
     bool opEquals(U : T)(auto ref Optional!U rhs) const {
-        return this.bag == rhs.bag;
+        return this.isDefined == rhs.isDefined && this.value == rhs.value;
     }
 
     /// Ditto
-    bool opEquals(None _) const {
-        return empty;
+    bool opEquals(None) const {
+        return this.empty;
     }
 
     /// Ditto
     bool opEquals(U : T)(const auto ref U rhs) const {
-        return !empty && front == rhs;
+        return !this.empty && this.front == rhs;
     }
 
     /**
@@ -204,6 +208,7 @@ struct Optional(T) {
         import optional.dispatcher;
         return OptionalDispatcher!(T, Yes.refOptional)(&this);
     }
+
     static if (is(T == class))
     {
         /**
@@ -223,14 +228,14 @@ struct Optional(T) {
     {
         /// Ditto
         inout T* unwrap() const {
-            return this.empty ? null : cast(T*)&this.bag[0];
+            return this.empty ? null : cast(T*)&this.value;
         }
     }
 
     /// Converts value to string `"some(T)"` or `"no!T"`
     string toString() {
         import std.conv: to;
-        if (this.bag.length == 0) {
+        if (this.empty) {
             return "no!" ~ T.stringof;
         }
         // toString for class types that are immutable is not implemented by default
@@ -493,7 +498,7 @@ unittest {
     }
     Object a = new A;
     assert(some(cast(A)a).toString == "some!A(A)");
-    assert(some(cast(immutable A)a).toString == "some!immutable(A)");
+    assert(some(cast(immutable A)a).toString == "some!immutable(A)(A)");
 }
 
 unittest {
@@ -614,55 +619,6 @@ unittest {
 }
 
 unittest {
-    class A {
-        void nonConstNonSharedMethod() {}
-        void constMethod() const {}
-        void sharedNonConstMethod() shared {}
-        void sharedConstMethod() shared const {}
-    }
-
-    alias IA = immutable A;
-    alias CA = const A;
-    alias SA = shared A;
-    alias SCA = shared const A;
-
-    Optional!IA ia;
-    Optional!CA ca;
-    Optional!SA sa;
-    Optional!SCA sca;
-
-    ia = none;
-    ca = none;
-    sa = none;
-    sca = none;
-
-    ia = new IA;
-    ca = new CA;
-    sa = new SA;
-    sca = new SA;
-
-    static assert(!__traits(compiles, () { ia.dispatch.nonConstNonSharedMethod; } ));
-    static assert(!__traits(compiles, () { ca.dispatch.nonConstNonSharedMethod; } ));
-    static assert(!__traits(compiles, () { sa.dispatch.nonConstNonSharedMethod; } ));
-    static assert(!__traits(compiles, () { sca.dispatch.nonConstNonSharedMethod; } ));
-
-    static assert( __traits(compiles, () { ia.dispatch.constMethod; } ));
-    static assert( __traits(compiles, () { ca.dispatch.constMethod; } ));
-    static assert(!__traits(compiles, () { sa.dispatch.constMethod; } ));
-    static assert(!__traits(compiles, () { sca.dispatch.constMethod; } ));
-
-    static assert(!__traits(compiles, () { ia.dispatch.sharedNonConstMethod; } ));
-    static assert(!__traits(compiles, () { ca.dispatch.sharedNonConstMethod; } ));
-    static assert( __traits(compiles, () { sa.dispatch.sharedNonConstMethod; } ));
-    static assert(!__traits(compiles, () { sca.dispatch.sharedNonConstMethod; } ));
-
-    static assert( __traits(compiles, () { ia.dispatch.sharedConstMethod; } ));
-    static assert(!__traits(compiles, () { ca.dispatch.sharedConstMethod; } ));
-    static assert( __traits(compiles, () { sa.dispatch.sharedConstMethod; } ));
-    static assert( __traits(compiles, () { sca.dispatch.sharedConstMethod; } ));
-}
-
-unittest {
     class C {}
     auto a = no!C;
     auto b = some(new C);
@@ -688,4 +644,9 @@ unittest {
     auto a = some!(immutable int)(1);
     a = 2;
     assert(a == some(2));
+}
+
+unittest {
+    class A {}
+    static assert(__traits(compiles, () { auto a = Optional!(inout A)(new A); } () ));
 }

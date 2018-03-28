@@ -15,6 +15,12 @@ struct OptionalDispatcher(T, from!"std.typecons".Flag!"refOptional" isRef = from
 
     alias self this;
 
+    // This is required because Optional!T removes its qualifiers so that it can keep a stack
+    // value and still be tail mutable if T is immutable. This shuld be used for dispatching
+    private auto ref T qualifiedFront()() {
+        return cast(T)self.front;
+    }
+
     template opDispatch(string name) if (hasMember!(T, name)) {
         import bolts.traits: hasProperty, isManifestAssignable;
         import optional: no, some;
@@ -44,7 +50,7 @@ struct OptionalDispatcher(T, from!"std.typecons".Flag!"refOptional" isRef = from
         {
             // non template function
             auto ref opDispatch(Args...)(auto ref Args args) {
-                mixin(returnDance("self.front." ~ name ~ "(args)"));
+                mixin(returnDance("qualifiedFront." ~ name ~ "(args)"));
             }
         }
         else static if (hasProperty!(T, name))
@@ -54,14 +60,14 @@ struct OptionalDispatcher(T, from!"std.typecons".Flag!"refOptional" isRef = from
             static if (property.canRead)
             {
                 @property auto ref opDispatch()() {
-                    mixin(returnDance("self.front." ~ name));
+                    mixin(returnDance("qualifiedFront." ~ name));
                 }
             }
 
             static if (property.canWrite)
             {
                 @property auto ref opDispatch(V)(auto ref V v) {
-                    mixin(returnDance("self.front." ~ name ~ " = v"));
+                    mixin(returnDance("qualifiedFront." ~ name ~ " = v"));
                 }
             }
         }
@@ -73,10 +79,10 @@ struct OptionalDispatcher(T, from!"std.typecons".Flag!"refOptional" isRef = from
                 return empty ? OptionalDispatcher!U(no!U) : OptionalDispatcher!(U)(some!U(u));
             } 
         }
-        else static if (is(typeof(mixin("self.front." ~ name))))
+        else static if (is(typeof(mixin("qualifiedFront." ~ name))))
         {
             auto opDispatch() {
-                mixin(returnDance("self.front." ~ name));
+                mixin(returnDance("qualifiedFront." ~ name));
             }
         }
         else
@@ -85,7 +91,7 @@ struct OptionalDispatcher(T, from!"std.typecons".Flag!"refOptional" isRef = from
             template opDispatch(Ts...) {
                 enum targs = Ts.length ? "!Ts" : "";
                 auto ref opDispatch(Args...)(auto ref Args args) {
-                    mixin(returnDance("self.front." ~ name ~ targs ~ "(args)"));
+                    mixin(returnDance("qualifiedFront." ~ name ~ targs ~ "(args)"));
                 }
             }
         }
@@ -206,4 +212,53 @@ unittest {
     auto c = some(new C());
     static assert(__traits(compiles, c.dispatch.method()));
     static assert(__traits(compiles, c.dispatch.tmethod!int()));
+}
+
+unittest {
+    class A {
+        void nonConstNonSharedMethod() {}
+        void constMethod() const {}
+        void sharedNonConstMethod() shared {}
+        void sharedConstMethod() shared const {}
+    }
+
+    alias IA = immutable A;
+    alias CA = const A;
+    alias SA = shared A;
+    alias SCA = shared const A;
+
+    Optional!IA ia;
+    Optional!CA ca;
+    Optional!SA sa;
+    Optional!SCA sca;
+
+    ia = none;
+    ca = none;
+    sa = none;
+    sca = none;
+
+    ia = new IA;
+    ca = new CA;
+    sa = new SA;
+    sca = new SA;
+
+    static assert(!__traits(compiles, () { ia.dispatch.nonConstNonSharedMethod; } ));
+    static assert(!__traits(compiles, () { ca.dispatch.nonConstNonSharedMethod; } ));
+    static assert(!__traits(compiles, () { sa.dispatch.nonConstNonSharedMethod; } ));
+    static assert(!__traits(compiles, () { sca.dispatch.nonConstNonSharedMethod; } ));
+
+    static assert( __traits(compiles, () { ia.dispatch.constMethod; } ));
+    static assert( __traits(compiles, () { ca.dispatch.constMethod; } ));
+    static assert(!__traits(compiles, () { sa.dispatch.constMethod; } ));
+    static assert(!__traits(compiles, () { sca.dispatch.constMethod; } ));
+
+    static assert(!__traits(compiles, () { ia.dispatch.sharedNonConstMethod; } ));
+    static assert(!__traits(compiles, () { ca.dispatch.sharedNonConstMethod; } ));
+    static assert( __traits(compiles, () { sa.dispatch.sharedNonConstMethod; } ));
+    static assert(!__traits(compiles, () { sca.dispatch.sharedNonConstMethod; } ));
+
+    static assert( __traits(compiles, () { ia.dispatch.sharedConstMethod; } ));
+    static assert(!__traits(compiles, () { ca.dispatch.sharedConstMethod; } ));
+    static assert( __traits(compiles, () { sa.dispatch.sharedConstMethod; } ));
+    static assert( __traits(compiles, () { sca.dispatch.sharedConstMethod; } ));
 }
