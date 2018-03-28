@@ -31,11 +31,11 @@ immutable none = None();
     and safe.
 */
 struct Optional(T) {
-    import std.traits: isPointer, hasMember;
+    import std.traits: isPointer, hasMember, isMutable;
 
     T[] bag;
 
-    this(U)(U u) pure {
+    this(U)(auto ref U u) pure {
         this.bag = [u];
     }
 
@@ -46,7 +46,7 @@ struct Optional(T) {
         this(typeof(null)) pure {}
     }
 
-    static if (!is(T == immutable) && !is(T == const))
+    static if (isMutable!T)
     {
         this(this) {
             this.bag = this.bag.dup;
