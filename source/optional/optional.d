@@ -66,20 +66,25 @@ struct Optional(T) {
         this.bag = [];
     }
 
-    /// Sets value to some `t` or `none`
-    void opAssign()(auto ref T t) {
+    /**
+        Assigns a value to the optional or sets it to `none`.
+
+        If `T` is a class type and `rhs` is of type `Optional!(typeof(null))` then it will
+        remain none if rhs is none else it will become `some!T(null)`
+    */
+    void opAssign()(auto ref T rhs) {
         if (this.empty) {
-            this.bag = [cast(T)t];
+            this.bag = [cast(T)rhs];
         } else {
             import std.range: hasAssignableElements;
             // If we are mutable then we don't need to allocate a new bag
             static if (hasAssignableElements!(T[]))
             {
-                this.bag[0] = cast(T)t;
+                this.bag[0] = cast(T)rhs;
             }
             else
             {
-                this.bag = [cast(T)t];
+                this.bag = [cast(T)rhs];
             }
         }
     }
@@ -258,10 +263,10 @@ T or(T)(Optional!T opt, lazy T orValue) {
 }
 
 /// Ditto
-auto or(OD, T)(OD od, lazy T orValue)
+auto or(OD, T)(OD dispatchedOptional, lazy T orValue)
 if (from!"optional.traits".isOptionalDispatcher!OD
     && is(T == from!"optional.traits".OptionalDispatcherTarget!OD)) {
-    return some(od).or(orValue);
+    return some(dispatchedOptional).or(orValue);
 }
 
 ///
@@ -290,22 +295,22 @@ unittest {
     Calling some on the result of a dispatch chain will result
     in the original optional value.
 */
-auto some(T)(T t) {
+auto some(T)(T value) {
     import optional.dispatcher: OptionalDispatcher;
     static if (is(T : OptionalDispatcher!P, P...))
     {
         static if (P[1]) // refOptional
         {
-            return *t.self;
+            return *value.self;
         }
         else
         {
-            return t.self;
+            return value.self;
         }
     }
     else
     {
-        return Optional!T(t);
+        return Optional!T(value);
     }
 }
 
