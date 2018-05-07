@@ -237,6 +237,7 @@ struct Optional(T) {
         // toString for shared types is not implemeneted at all
         static if (!__traits(compiles, to!string(front)))
         {
+            // TODO: This seems to not be necessary as of dmd 2.80
             return "some!" ~ T.stringof;
         }
         else
@@ -489,11 +490,12 @@ unittest {
     assert(no!int.toString == "no!int");
     assert(some(3).toString == "some!int(3)");
     static class A {
-        override string toString() { return "A"; }
+        override string toString() { return "Yo"; }
     }
     Object a = new A;
-    assert(some(cast(A)a).toString == "some!A(A)");
-    assert(some(cast(immutable A)a).toString == "some!immutable(A)");
+    assert(some(cast(A)a).toString == "some!A(Yo)");
+    import std.algorithm: startsWith;
+    assert(some(cast(immutable A)a).toString.startsWith("some!immutable(A)"));
 }
 
 unittest {
