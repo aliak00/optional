@@ -8,13 +8,9 @@ import optional.internal;
 /// Checks if T is an optional type
 template isOptional(T) {
     import optional: Optional;
-
-    static if (is(T U == Optional!U))
-    {
+    static if (is(T U == Optional!U)) {
         enum isOptional = true;
-    }
-    else
-    {
+    } else {
         enum isOptional = false;
     }
 }
@@ -107,4 +103,23 @@ unittest {
     struct S { int f() { return 3; } }
     static assert(is(OptionalDispatcherTarget!(typeof(some(S()).dispatch())) == S));
     static assert(is(OptionalDispatcherTarget!(typeof(some(S()).dispatch.f())) == int));
+}
+
+/// Checks if T is type that is `NotNull`
+template isNotNull(T) {
+    import optional: NotNull;
+    static if (is(T U == NotNull!U)){
+        enum isNotNull = true;
+    } else {
+        enum isNotNull = false;
+    }
+}
+
+///
+unittest {
+    import optional: NotNull;
+
+    assert(isNotNull!(NotNull!int) == true);
+    assert(isNotNull!int == false);
+    assert(isNotNull!(int[]) == false);
 }
