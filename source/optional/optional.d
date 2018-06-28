@@ -559,7 +559,7 @@ unittest {
     assert(o == some(4));
 
     static assert(!__traits(compiles, *uoc = 4));
-    static assert(!__traits(compiles, *uic = 4));
+    static assert(!__traits(compiles, *uoi = 4));
 
     static assert(is(typeof(uoc) == const(int)*));
     static assert(is(typeof(uoi) == immutable(int)*));

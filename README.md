@@ -1,15 +1,13 @@
-## Optional type for D
+## Optional type for D featuring NotNull
 
 [![Latest version](https://img.shields.io/dub/v/optional.svg)](http://code.dlang.org/packages/optional) [![Build Status](https://travis-ci.org/aliak00/optional.svg?branch=master)](https://travis-ci.org/aliak00/optional) [![codecov](https://codecov.io/gh/aliak00/optional/branch/master/graph/badge.svg)](https://codecov.io/gh/aliak00/optional) [![license](https://img.shields.io/github/license/aliak00/optional.svg)](https://github.com/aliak00/optional/blob/master/LICENSE)
 
 Full API docs available [here](https://aliak00.github.io/optional/optional.html)
 
-Represents an optional data type that may or may not contain a value. Matches behavior of haskell maybe and scala or swift
-optional type. With the added benefit (like scala) of behving like an single element or empty D range.
+* `Optional!T`: Represents an optional data type that may or may not contain a value. Matches behavior of haskell maybe and scala or swift optional type. With the added benefit (like scala) of behving like an single element or empty D range.
+* `NotNull!T`: Represents a type that can never be null. Comes in handy for nullable types (e.g. classes and pointers)
 
-You may think it a cross between [std.range.only](https://dlang.org/phobos/std_range.html#only), [std.typecons.nullable](https://dlang.org/library/std/typecons/nullable.html) and a pointer type.
-
-## Motivation
+## Motivation for Optional
 
 Lets take a very contrived example, and say you have a function that may return a value (that should be some integer) or not (config file, server, find operation, whatever), and then you have functions add1, add2, and add3, what have the requirements that they may or may not produce a value. (maybe they do some crazy division, or they contact a server themselves to fetch a value, etc).
 
@@ -164,4 +162,29 @@ e = new A;
 assert(e.dispatch.f() == some(4));
 assert(e.dispatch.inner.g() == some(7));
 
+```
+
+## Example NotNull!T usage follows
+
+```d
+class C { void f() {} }
+struct S { void f() {} }
+
+void f(NotNull!C c) {
+    c.f();
+}
+
+void f(NotNull!(S*) sp) {
+    sp.f();
+}
+
+auto c = notNull!C;
+auto sp = notNull!(S*);
+
+f0(c);
+f1(sp);
+
+// c = null; // nope
+// sp = null; // nope
+// c = new C; // nope
 ```
