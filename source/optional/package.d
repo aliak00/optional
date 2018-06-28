@@ -95,10 +95,3 @@ public {
     import optional.traits;
     import optional.notnull;
 }
-
-unittest {
-    static class C { void f() {} }
-    auto a = notNull!C;
-    C b = a;
-    a.f;
-}
