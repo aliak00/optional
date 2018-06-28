@@ -1,19 +1,29 @@
-## Optional type for D
+# Optional type for D featuring NotNull
 
 [![Latest version](https://img.shields.io/dub/v/optional.svg)](http://code.dlang.org/packages/optional) [![Build Status](https://travis-ci.org/aliak00/optional.svg?branch=master)](https://travis-ci.org/aliak00/optional) [![codecov](https://codecov.io/gh/aliak00/optional/branch/master/graph/badge.svg)](https://codecov.io/gh/aliak00/optional) [![license](https://img.shields.io/github/license/aliak00/optional.svg)](https://github.com/aliak00/optional/blob/master/LICENSE)
 
 Full API docs available [here](https://aliak00.github.io/optional/optional.html)
 
-Represents an optional data type that may or may not contain a value. Matches behavior of haskell maybe and scala or swift
-optional type. With the added benefit (like scala) of behving like an single element or empty D range.
+* [Summary](#summary)
+* [Motivation for Optional](#motivation-for-optional)
+    * [Use pointers?](#use-pointers)
+    * [How about ranges?](#how-about-ranges)
+    * [Let's try an Optional!int](#lets-try-an-optionalint)
+* [Example Optional!T usage](#example-optionalt-usage)
+* [Example NotNull!T usage](#example-notnullt-usage)
 
-You may think it a cross between [std.range.only](https://dlang.org/phobos/std_range.html#only), [std.typecons.nullable](https://dlang.org/library/std/typecons/nullable.html) and a pointer type.
+## Summary
 
-## Motivation
+* `Optional!T`: Represents an optional data type that may or may not contain a value. Matches behavior of haskell maybe and scala or swift optional type. With the added benefit (like scala) of behving like an single element or empty D range.
+* `NotNull!T`: Represents a type that can never be null. Comes in handy for nullable types (e.g. classes and pointers)
+
+## Motivation for Optional
 
 Lets take a very contrived example, and say you have a function that may return a value (that should be some integer) or not (config file, server, find operation, whatever), and then you have functions add1, add2, and add3, what have the requirements that they may or may not produce a value. (maybe they do some crazy division, or they contact a server themselves to fetch a value, etc).
 
-How can you go about this? Can you use pointers?
+How can you go about this?
+
+### Use pointers?
 
 ```d
 int* add1(int *v) {
@@ -43,7 +53,9 @@ void f() {
 
 You can also replace int* with Nullable!int and then instead of `if (v)` you'd have to do `if (!v.isNull)` and instead of `*v` you'd do `v.get`.
 
-How about ranges? There's std.range.only:
+### How about ranges?
+
+There's std.range.only:
 
 ```d
 // How do I write it?
@@ -86,7 +98,7 @@ void f() {
 }
 ```
 
-Let's try this with an Optional!int
+### Let's try an Optional!int
 
 ```d
 auto add1(Optional!int v) {
@@ -103,7 +115,7 @@ void f() {
 }
 ```
 
-## Example Optional!T usage follows
+## Example Optional!T usage
 
 E.g.
 ```d
@@ -164,4 +176,29 @@ e = new A;
 assert(e.dispatch.f() == some(4));
 assert(e.dispatch.inner.g() == some(7));
 
+```
+
+## Example NotNull!T usage
+
+```d
+class C { void f() {} }
+struct S { void f() {} }
+
+void f(NotNull!C c) {
+    c.f();
+}
+
+void f(NotNull!(S*) sp) {
+    sp.f();
+}
+
+auto c = notNull!C;
+auto sp = notNull!(S*);
+
+f0(c);
+f1(sp);
+
+// c = null; // nope
+// sp = null; // nope
+// c = new C; // nope
 ```
