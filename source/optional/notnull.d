@@ -31,6 +31,7 @@ struct NotNull(T) {
     }
 
     @disable void opAssign(typeof(null));
+    @disable this();
 
     private this(T value) {
         this._value = value;
@@ -211,4 +212,12 @@ unittest {
     auto c = notNull!C(3, 4);
     assert(c.a == 3);
     assert(c.b == 4);
+}
+
+unittest {
+    static class C {}
+    static assert(!__traits(compiles, { auto a = NotNull!C(); }));
+    auto c = notNull!C;
+    static assert(!__traits(compiles, { c = null; }));
+    static assert(!__traits(compiles, { c = new C(); }));
 }
