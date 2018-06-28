@@ -1,5 +1,5 @@
 /**
-    Home of the Optional type
+    Home of the `Optional` type, faaturing the `NotNull` type
 */
 module optional;
 
@@ -93,4 +93,5 @@ import optional.internal;
 public {
     import optional.optional;
     import optional.traits;
+    import optional.notnull;
 }
