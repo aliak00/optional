@@ -1,6 +1,28 @@
+/**
+    Provides a wrapper type to ensure objects are never null
+*/
 module optional.notnull;
 
 import optional.internal;
+
+/**
+    Creates a `NotNull` type
+
+    Params:
+        args = any arguments that need to be passed to T's constructor
+*/
+auto notNull(T, Args...)(Args args) {
+    import std.traits: isPointer;
+    static if (isPointer!T) {
+        import std.traits: PointerTarget;
+        auto instance = new PointerTarget!T(args);
+    } else static if (is(T == class)) {
+        auto instance = new T(args);
+    } else {
+        auto instance = T(args);
+    }
+    return NotNull!T(instance);
+}
 
 /**
     A NotNull type ensure that the type you give it can never have a null value. So it is always
@@ -11,6 +33,8 @@ import optional.internal;
     and it ensures that a type T is always created, it has to allocate memory. But inner classes and
     structs need a context pointer to be `new`ed, so this only works with static inner classes and
     structs.
+
+    the constructor is disabled, so you have to use the function `notNull` to construct `NotNull` objects.
 */
 struct NotNull(T) {
     import std.traits: isPointer;
@@ -50,25 +74,6 @@ struct NotNull(T) {
     void opAssign(V)(NotNull!V other) {
         this._value = other._value;
     }
-}
-
-/**
-    Creates a `NotNull` type
-
-    Params:
-        args = any arguments that need to be passed to T's constructor
-*/
-auto notNull(T, Args...)(Args args) {
-    import std.traits: isPointer;
-    static if (isPointer!T) {
-        import std.traits: PointerTarget;
-        auto instance = new PointerTarget!T(args);
-    } else static if (is(T == class)) {
-        auto instance = new T(args);
-    } else {
-        auto instance = T(args);
-    }
-    return NotNull!T(instance);
 }
 
 ///
