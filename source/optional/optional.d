@@ -31,7 +31,7 @@ immutable none = None();
     and safe.
 */
 struct Optional(T) {
-    import std.traits: isPointer, hasMember, isMutable;
+    import std.traits: isPointer, hasMember, isMutable, isCallable;
 
     T[] bag;
 
@@ -169,6 +169,10 @@ struct Optional(T) {
     */
     auto ref opBinaryRight(string op, U : T)(auto ref U rhs) const {
         return empty ? no!T : some!T(mixin("rhs"  ~ op ~ "front"));
+    }
+
+    auto ref opCall(Args...)(Args args) if (isCallable!T) {
+        return empty ? no!(typeof(this.bag[0](args))) : some(this.bag[0](args));
     }
 
     /**
