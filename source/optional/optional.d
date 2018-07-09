@@ -54,7 +54,8 @@ struct Optional(T) {
     }
 
     @property bool empty() const {
-        static if (is(T == class))
+        import std.traits: isSomeFunction;
+        static if (is(T == class) || is(T == interface) || isSomeFunction!T)
             return this.bag.length == 0 || front is null;
         else
             return this.bag.length == 0;
