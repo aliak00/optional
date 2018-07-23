@@ -149,7 +149,18 @@ struct Optional(T) {
         return empty ? no!T : some(mixin(op ~ "_value"));
     }
 
-    //// Converts value to string `"some(T)"` or `"no!T"`
+    /**
+        If the optional is some value it returns an optional of some `value op rhs`
+    */
+    auto ref opBinary(string op, U : T)(auto ref U rhs) const {
+        return empty ? no!T : some!T(mixin("_value"  ~ op ~ "rhs"));
+    }
+    /// Ditto
+    auto ref opBinaryRight(string op, U : T)(auto ref U rhs) const {
+        return empty ? no!T : some!T(mixin("rhs"  ~ op ~ "front"));
+    }
+
+    /// Converts value to string `"some(T)"` or `"no!T"`
     string toString() const {
         import std.conv: to; import std.traits;
         if (empty) {
@@ -333,22 +344,22 @@ unittest {
         assert(-a == some(-10));
         assert(+b == none);
         assert(-b == none);
-        // assert(a + 10 == some(20));
-        // assert(b + 10 == none);
-        // assert(a - 5 == some(5));
-        // assert(b - 5 == none);
-        // assert(a * 20 == some(200));
-        // assert(b * 20 == none);
-        // assert(a / 2 == some(5));
-        // assert(b / 2 == none);
-        // assert(10 + a == some(20));
-        // assert(10 + b == none);
-        // assert(15 - a == some(5));
-        // assert(15 - b == none);
-        // assert(20 * a == some(200));
-        // assert(20 * b == none);
-        // assert(50 / a == some(5));
-        // assert(50 / b == none);
+        assert(a + 10 == some(20));
+        assert(b + 10 == none);
+        assert(a - 5 == some(5));
+        assert(b - 5 == none);
+        assert(a * 20 == some(200));
+        assert(b * 20 == none);
+        assert(a / 2 == some(5));
+        assert(b / 2 == none);
+        assert(10 + a == some(20));
+        assert(10 + b == none);
+        assert(15 - a == some(5));
+        assert(15 - b == none);
+        assert(20 * a == some(200));
+        assert(20 * b == none);
+        assert(50 / a == some(5));
+        assert(50 / b == none);
         static if (is(T == Optional!int))  // mutable
         {
             assert(++a == some(11));
@@ -374,12 +385,12 @@ unittest {
     assert(b.map!(to!double).empty);
 }
 
-// unittest {
-//     auto a = some(3);
-//     assert(a + 3 == some(6));
-//     auto b = no!int;
-//     assert(b + 3 == none);
-// }
+unittest {
+    auto a = some(3);
+    assert(a + 3 == some(6));
+    auto b = no!int;
+    assert(b + 3 == none);
+}
 
 unittest {
     auto n = no!(int);
