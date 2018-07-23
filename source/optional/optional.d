@@ -134,7 +134,7 @@ struct Optional(T) {
         static if (op == "*" && isPointer!T) {
             import std.traits: PointerTarget;
             alias P = PointerTarget!T;
-            return empty || front is null ? no!P : some(cast(P)*_value);
+            return empty || front is null ? no!P : some(cast(P)*this._value);
         } else {
             if (empty) {
                 return no!T;
@@ -157,7 +157,25 @@ struct Optional(T) {
     }
     /// Ditto
     auto ref opBinaryRight(string op, U : T)(auto ref U rhs) const {
-        return empty ? no!T : some!T(mixin("rhs"  ~ op ~ "front"));
+        return empty ? no!T : some!T(mixin("rhs"  ~ op ~ "_value"));
+    }
+
+    /**
+        If there's a value that's callable it will be called else it's a noop
+
+        Returns:
+            Optional value of whatever `T(args)` returns
+    */
+    auto ref opCall(Args...)(Args args) if (from!"std.traits".isCallable!T) {
+        alias C = () => this._value(args);
+        alias R = typeof(C());
+        static if (is(R == void)) {
+            if (!empty) {
+                C();
+            }
+        } else {
+            return empty ? no!R : some(C());
+        }
     }
 
     /// Converts value to string `"some(T)"` or `"no!T"`
@@ -599,4 +617,20 @@ unittest {
 unittest {
     auto a = some!(immutable int)(1);
     static assert(!__traits(compiles, { a = 2; }));
+}
+
+unittest {
+    static int f0(int) { return 4; }
+    alias A = typeof(&f0);
+    auto a0 = some(&f0);
+    auto a1 = no!A;
+    assert(a0(3) == some(4));
+    assert(a1(3) == no!int);
+
+    static void f1() {}
+    alias B = typeof(&f1);
+    auto b0 = some(&f1);
+    auto b1 = no!B;
+    static assert(is(typeof(b0()) == void));
+    static assert(is(typeof(b1()) == void));
 }
