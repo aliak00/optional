@@ -60,6 +60,10 @@ struct Optional(T) {
         this._value = value;
         mixin(setEmpty);
     }
+    this(U : T)(auto ref U value) {
+        this._value = value;
+        mixin(setEmpty);
+    }
     /// Ditto
     this(const None) pure {}
 
@@ -145,13 +149,13 @@ struct Optional(T) {
         return empty ? no!T : some(mixin(op ~ "_value"));
     }
 
-    // Converts value to string `"some(T)"` or `"no!T"`
+    //// Converts value to string `"some(T)"` or `"no!T"`
     string toString() const {
         import std.conv: to; import std.traits;
         if (empty) {
             return "[]";
         }
-        return "[" ~ to!string(cast(T)this._value) ~ "]";
+        return "[" ~ to!string(cast(Unqual!T)this._value) ~ "]";
     }
 }
 
@@ -178,12 +182,8 @@ unittest {
     Calling some on the result of a dispatch chain will result
     in the original optional value.
 */
-auto some(T)(auto ref inout(T) value) {
-    return inout(Optional!T)(value);
-}
-/// Ditto
-auto some(T)(auto ref const(T) value) {
-    return Optional!T(cast(T)value);
+auto some(T)(auto ref T value) {
+    return Optional!T(value);
 }
 
 // auto some(T)(T value) {
@@ -570,8 +570,7 @@ unittest {
 
 unittest {
     auto a = some!(immutable int)(1);
-    a = 2;
-    assert(a == some(2));
+    static assert(!__traits(compiles, { a = 2; }));
 }
 
 // unittest {
