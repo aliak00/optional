@@ -234,6 +234,23 @@ unittest {
     assert(a != none);
 }
 
+/**
+    Get pointer to value. If T is a reference type then T is returned
+
+    Use this to safely access reference types, or to get at the raw value
+    of non reference types via a non-null pointer.
+
+    Returns:
+        Pointer to value or null if empty. If T is reference type, returns reference
+*/
+auto unwrap(T)(ref Optional!T opt) {
+    static if (is(T == class) || is(T == interface)) {
+        return opt.empty ? cast(T)null : opt._value;
+    } else {
+        return opt.empty ? cast(T*)null : &(opt._value);
+    }
+}
+
 // /**
 //     Returns the value contained within the optional _or_ another value if there no!T
 
@@ -457,41 +474,41 @@ unittest {
     static assert(!__traits(compiles, opt = none));
 }
 
-// unittest {
-//     auto n = no!(int);
-//     auto nc = no!(const int);
-//     auto ni = no!(immutable int);
-//     auto o = some!(int)(3);
-//     auto oc = some!(const int)(3);
-//     auto oi = some!(immutable int)(3);
+unittest {
+    auto n = no!(int);
+    auto nc = no!(const int);
+    auto ni = no!(immutable int);
+    auto o = some!(int)(3);
+    auto oc = some!(const int)(3);
+    auto oi = some!(immutable int)(3);
 
-//     assert(n.unwrap == null);
-//     assert(nc.unwrap == null);
-//     assert(ni.unwrap == null);
+    assert(n.unwrap == null);
+    assert(nc.unwrap == null);
+    assert(ni.unwrap == null);
 
-//     auto uo = o.unwrap;
-//     auto uoc = oc.unwrap;
-//     auto uoi = oi.unwrap;
+    auto uo = o.unwrap;
+    auto uoc = oc.unwrap;
+    auto uoi = oi.unwrap;
 
-//     assert(uo != null);
-//     assert(uoc != null);
-//     assert(uoi != null);
+    assert(uo != null);
+    assert(uoc != null);
+    assert(uoi != null);
 
-//     assert(*uo == 3);
-//     assert(*uoc == 3);
-//     assert(*uoi == 3);
+    assert(*uo == 3);
+    assert(*uoc == 3);
+    assert(*uoi == 3);
 
-//     *uo = 4;
-//     assert(o == some(4));
+    *uo = 4;
+    assert(o == some(4));
 
-//     static assert(!__traits(compiles, *uoc = 4));
-//     static assert(!__traits(compiles, *uoi = 4));
+    static assert(!__traits(compiles, *uoc = 4));
+    static assert(!__traits(compiles, *uoi = 4));
 
-//     static assert(is(typeof(uoc) == const(int)*));
-//     static assert(is(typeof(uoi) == immutable(int)*));
+    static assert(is(typeof(uoc) == const(int)*));
+    static assert(is(typeof(uoi) == immutable(int)*));
 
-//     assert(o == some(4));
-// }
+    assert(o == some(4));
+}
 
 unittest {
     auto a = no!(int*);
@@ -505,79 +522,70 @@ unittest {
     assert(*a == no!int);
 }
 
-// unittest {
-//     struct S {
-//         int i = 1;
-//     }
-//     class C {
-//         int i = 1;
-//     }
-//     auto a = some!C(null);
-//     auto b = some!(S*)(null);
+unittest {
+    struct S {
+        int i = 1;
+    }
+    class C {
+        int i = 1;
+    }
+    auto a = some!C(null);
+    auto b = some!(S*)(null);
 
-//     assert(a.unwrap is null);
-//     assert(b.unwrap != null);
-//     assert(*b.unwrap == null);
+    assert(a.unwrap is null);
+    assert(b.unwrap != null);
+    assert(*b.unwrap == null);
 
-//     a = new C();
-//     bool aUnwrapped = false;
-//     if (auto c = a.unwrap) {
-//         aUnwrapped = true;
-//         assert(c.i == 1);
-//     }
-//     assert(aUnwrapped);
+    a = new C();
+    bool aUnwrapped = false;
+    if (auto c = a.unwrap) {
+        aUnwrapped = true;
+        assert(c.i == 1);
+    }
+    assert(aUnwrapped);
 
-//     b = new S();
-//     bool bUnwrapped = false;
-//     if (auto s = b.unwrap) {
-//         bUnwrapped = true;
-//         assert((*s).i == 1);
-//     }
-//     assert(bUnwrapped);
+    b = new S();
+    bool bUnwrapped = false;
+    if (auto s = b.unwrap) {
+        bUnwrapped = true;
+        assert((*s).i == 1);
+    }
+    assert(bUnwrapped);
 
-//     auto c = no!int;
-//     assert(c.unwrap is null);
-//     c = some(3);
-//     bool cUnwrapped = false;
-//     if (auto p = c.unwrap) {
-//         cUnwrapped = true;
-//         assert(*p == 3);
-//     }
-//     assert(cUnwrapped);
-// }
+    auto c = no!int;
+    assert(c.unwrap is null);
+    c = some(3);
+    bool cUnwrapped = false;
+    if (auto p = c.unwrap) {
+        cUnwrapped = true;
+        assert(*p == 3);
+    }
+    assert(cUnwrapped);
+}
 
-// unittest {
-//     class C {}
-//     auto a = no!C;
-//     auto b = some(new C);
-//     b = none;
-//     Optional!C c = null;
-//     auto d = some(new C);
-//     d = null;
-//     assert(a == none);
-//     assert(a.unwrap is null);
-//     assert(a.empty);
-//     assert(b == none);
-//     assert(b.unwrap is null);
-//     assert(b.empty);
-//     assert(c == none);
-//     assert(c.unwrap is null);
-//     assert(c.empty);
-//     assert(d == none);
-//     assert(d.unwrap is null);
-//     assert(d.empty);
-// }
+unittest {
+    class C {}
+    auto a = no!C;
+    auto b = some(new C);
+    b = none;
+    Optional!C c = null;
+    auto d = some(new C);
+    d = null;
+    assert(a == none);
+    assert(a.unwrap is null);
+    assert(a.empty);
+    assert(b == none);
+    assert(b.unwrap is null);
+    assert(b.empty);
+    assert(c == none);
+    assert(c.unwrap is null);
+    assert(c.empty);
+    assert(d == none);
+    assert(d.unwrap is null);
+    assert(d.empty);
+}
 
 unittest {
     auto a = some!(immutable int)(1);
     static assert(!__traits(compiles, { a = 2; }));
 }
-
-// unittest {
-//     Optional!(immutable int) oii = some!(immutable int)(5);
-//     immutable(int)* p = oii.unwrap;
-//     assert(*p == 5);
-//     oii = 4;
-//     assert(*oii.unwrap == 4);
-//     assert(*p == 5);
-// }
