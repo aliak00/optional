@@ -47,6 +47,23 @@ struct Optional(T) {
             this._empty = false;
         }
     };
+    private void setEmptyState() {
+        mixin(setEmpty);
+    }
+
+    /**
+        Allows you to create an Optional type in place.
+
+        This is useful if type T has a @disable this(this) for e.g.
+    */
+    static Optional!T construct(Args...)(auto ref Args args) {
+        import std.algorithm: move;
+        auto value = T(args);
+        Optional!T opt;
+        opt._value = move(value);
+        opt.setEmptyState;
+        return move(opt);
+    }
 
     /**
         Constructs an Optional!T value either by assigning T or forwarding to T's constructor
@@ -670,14 +687,14 @@ unittest {
 }
 
 unittest {
-    struct S {
+    import std.conv: to;
+    static struct S {
+        int i;
         @disable this(this);
-        this(int i) {}
+        this(int i) { this.i = i; }
     }
 
-    Optional!S a = none;
-    static assert(__traits(compiles, { Optional!S a; }));
-    // S s;
-    // auto b = Optional!S(s);
-    // auto c = b;
+    auto a = Optional!S.construct(3);
+    assert(a != none);
+    assert(a.unwrap.i == 3);
 }
