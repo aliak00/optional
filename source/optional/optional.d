@@ -60,12 +60,28 @@ struct Optional(T) {
         this._value = value;
         mixin(setEmpty);
     }
+    /// Ditto
     this(U : T)(auto ref U value) {
+        // This constrcutor is here else immutable reference construction fails:
+        //
+        // immutable int* a;
+        // auto b = some(a); // none of the overloads of this are callable using argument types (immutable(int*))
+        //
+        // class C {}
+        // auto c = some(new immutable C); // none of the overloads of this are callable using argument types (immutable(C))
+        //
+        // Candidates are:
+        //  optional.optional.Optional!(immutable(int*)).Optional.this(const(None))
+        //  optional.optional.Optional!(immutable(int*)).Optional.__ctor(U : immutable(int*))(auto ref inout(U) value)
+        //
         this._value = value;
         mixin(setEmpty);
     }
     /// Ditto
-    this(const None) pure {}
+    this(const None) pure {
+        // For Error: field _value must be initialized in constructor, because it is nested struct
+        this._value = T.init;
+    }
 
     @property bool empty() const { 
         static if (isNullInvalid) {
@@ -74,7 +90,7 @@ struct Optional(T) {
             return this._empty;
         }
     }
-    @property inout(T) front() inout { return this._value; }
+    @property ref inout(T) front() inout { return this._value; }
     void popFront() { this._empty = true; }
 
     /**
@@ -184,7 +200,13 @@ struct Optional(T) {
         if (empty) {
             return "[]";
         }
-        return "[" ~ to!string(cast(Unqual!T)this._value) ~ "]";
+        // Cast to unqual if we can copy so writing it out does the right thing.
+        static if (isCopyable!T) {
+            immutable str = to!string(cast(Unqual!T)this._value);
+        } else {
+            immutable str = to!string(this._value);
+        }
+        return "[" ~ str ~ "]";
     }
 }
 
@@ -633,4 +655,29 @@ unittest {
     auto b1 = no!B;
     static assert(is(typeof(b0()) == void));
     static assert(is(typeof(b1()) == void));
+}
+
+unittest {
+    struct S {
+        @disable this();
+        this(int) {}
+    }
+
+    Optional!S a = none;
+    static assert(!__traits(compiles, { Optional!S a; }));
+    auto b = some(S(1));
+    auto c = b;
+}
+
+unittest {
+    struct S {
+        @disable this(this);
+        this(int i) {}
+    }
+
+    Optional!S a = none;
+    static assert(__traits(compiles, { Optional!S a; }));
+    // S s;
+    // auto b = Optional!S(s);
+    // auto c = b;
 }
