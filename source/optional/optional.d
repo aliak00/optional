@@ -225,12 +225,14 @@ struct Optional(T) {
 }
 
 version (unittest) {
-    alias QualifiedAlisesOf(T) = from!"std.meta".AliasSeq!(T, const T, immutable T);
+    import std.meta: AliasSeq;
+    alias QualifiedAlisesOf(T) = AliasSeq!(T, const T, immutable T);
+    alias OptionalsOfQualified(T) = AliasSeq!(Optional!T, Optional!(const T), Optional!(immutable T));
     import std.stdio: writeln;
 }
 
 unittest {
-    foreach (T; QualifiedAlisesOf!(Optional!int)) {
+    foreach (T; AliasSeq!(QualifiedAlisesOf!(Optional!int), OptionalsOfQualified!int)) {
         auto a = T();
         auto b = T(3);
         auto c = T(4);
@@ -385,9 +387,8 @@ unittest {
 unittest {
     import std.meta: AliasSeq;
     import std.traits: isMutable;
-    import std.conv: to;
-    import std.algorithm: map;
-    foreach (T; QualifiedAlisesOf!(Optional!int)) {
+    import std.range: ElementType;
+    foreach (T; OptionalsOfQualified!int) {
         T a = 10;
         T b = none;
         static assert(!__traits(compiles, { int x = a; }));
@@ -417,8 +418,7 @@ unittest {
         assert(20 * b == none);
         assert(50 / a == some(5));
         assert(50 / b == none);
-        static if (isMutable!T)
-        {
+        static if (isMutable!(ElementType!T)) {
             assert(++a == some(11));
             assert(a++ == some(11));
             assert(a == some(12));
@@ -429,6 +429,13 @@ unittest {
             assert(a == some(10));
             a = 20;
             assert(a == some(20));
+        } else {
+            static assert(!__traits(compiles, { ++a; }));
+            static assert(!__traits(compiles, { a++; }));
+            static assert(!__traits(compiles, { --a; }));
+            static assert(!__traits(compiles, { a--; }));
+            static assert(!__traits(compiles, { a = a; }));
+            static assert(!__traits(compiles, { a = 20; }));
         }
     }
 }
@@ -748,19 +755,4 @@ unittest {
     auto a = Optional!S.construct(3);
     assert(a != none);
     assert(a.unwrap.i == 3);
-}
-
-unittest {
-    static struct S {
-        int i = 1;
-        S opUnary(string op)() if (op == "++") {
-            ++i;
-            return this;
-        }
-    }
-
-    const a = some(S());
-    auto b = a++;
-    b.writeln;
-    a.writeln;
 }
