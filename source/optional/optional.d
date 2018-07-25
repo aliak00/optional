@@ -40,6 +40,18 @@ struct Optional(T) {
     private T _value;
     private bool _empty = true;
 
+    private static string autoReturn(string call) {
+        return "alias C = () => " ~ call ~ ";" ~ q{
+            alias R = typeof(C());
+            static if (!is(R == void))
+                return empty ? no!R : some(C());
+            else
+                if (!empty) {
+                    C();
+                }
+        };
+    }
+
     private enum setEmpty = q{
         static if (isNullInvalid) {
             this._empty = this._value is null;
@@ -122,34 +134,32 @@ struct Optional(T) {
         a == none; // false
         ---
     */
-    bool opEquals(const None) const { return this.empty; }
+    bool opEquals(const None) inout { return this.empty; }
     /// Ditto
-    bool opEquals(U : T)(const auto ref Optional!U rhs) const {
+    bool opEquals(U : T)(const auto ref Optional!U rhs) inout {
         if (this.empty || rhs.empty) return this.empty == rhs.empty;
         return this._value == rhs._value;
     }
     /// Ditto
-    bool opEquals(U : T)(const auto ref U rhs) const {
+    bool opEquals(U : T)(const auto ref U rhs) inout {
         return !this.empty && this._value == rhs;
     }
 
-    static if (isMutable!T) {
-        /**
-            Assigns a value to the optional or sets it to `none`.
+    /**
+        Assigns a value to the optional or sets it to `none`.
 
-            If T is of class type, interface type, or some function pointer than passing in null
-            sets the optio optional to `none` internally
-        */
-        void opAssign(const None) {
-            if (!this.empty) {
-                destroy(this._value);
-                this._empty = true;
-            }
+        If T is of class type, interface type, or some function pointer than passing in null
+        sets the optio optional to `none` internally
+    */
+    void opAssign()(const None) if (isMutable!T) {
+        if (!this.empty) {
+            destroy(this._value);
+            this._empty = true;
         }
-        void opAssign(U)(auto ref U lhs) if (isAssignable!(T, U)) {
-            this._value = lhs;
-            mixin(setEmpty);
-        }
+    }
+    void opAssign(U)(auto ref U lhs) if (isMutable!T && isAssignable!(T, U)) {
+        this._value = lhs;
+        mixin(setEmpty);
     }
 
     /**
@@ -162,7 +172,7 @@ struct Optional(T) {
         b = 3; // b is an Optional!int because of the deref
         ---
     */
-    auto opUnary(string op)() const {
+    auto opUnary(string op)() inout {
         import std.traits: isPointer;
         static if (op == "*" && isPointer!T) {
             import std.traits: PointerTarget;
@@ -172,14 +182,9 @@ struct Optional(T) {
             if (empty) {
                 return no!T;
             } else {
-                T newValue = mixin(op ~ "_value");
-                return some(newValue);
+                return some(mixin(op ~ "cast(T)_value"));
             }
         }
-    }
-    /// Ditto
-    auto opUnary(string op)() if (isMutable!T && (op == "++" || op == "--")) {
-        return empty ? no!T : some(mixin(op ~ "_value"));
     }
 
     /**
@@ -200,15 +205,7 @@ struct Optional(T) {
             Optional value of whatever `T(args)` returns
     */
     auto ref opCall(Args...)(Args args) if (from!"std.traits".isCallable!T) {
-        alias C = () => this._value(args);
-        alias R = typeof(C());
-        static if (is(R == void)) {
-            if (!empty) {
-                C();
-            }
-        } else {
-            return empty ? no!R : some(C());
-        }
+        mixin(autoReturn(q{ this._value(args) }));
     }
 
     /// Converts value to string `"some(T)"` or `"no!T"`
@@ -387,6 +384,7 @@ unittest {
 
 unittest {
     import std.meta: AliasSeq;
+    import std.traits: isMutable;
     import std.conv: to;
     import std.algorithm: map;
     foreach (T; QualifiedAlisesOf!(Optional!int)) {
@@ -419,7 +417,7 @@ unittest {
         assert(20 * b == none);
         assert(50 / a == some(5));
         assert(50 / b == none);
-        static if (is(isMutable!T))
+        static if (isMutable!T)
         {
             assert(++a == some(11));
             assert(a++ == some(11));
@@ -750,4 +748,19 @@ unittest {
     auto a = Optional!S.construct(3);
     assert(a != none);
     assert(a.unwrap.i == 3);
+}
+
+unittest {
+    static struct S {
+        int i = 1;
+        S opUnary(string op)() if (op == "++") {
+            ++i;
+            return this;
+        }
+    }
+
+    const a = some(S());
+    auto b = a++;
+    b.writeln;
+    a.writeln;
 }
