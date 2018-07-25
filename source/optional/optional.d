@@ -311,11 +311,13 @@ unittest {
     Returns:
         Pointer to value or null if empty. If T is reference type, returns reference
 */
-auto unwrap(T)(ref Optional!T opt) {
+auto unwrap(T)(ref inout(Optional!T) opt) {
     static if (is(T == class) || is(T == interface)) {
-        return opt.empty ? cast(T)null : opt._value;
+        alias U = inout(T);
+        return opt.empty ? cast(U)null : cast(U)opt._value;
     } else {
-        return opt.empty ? cast(T*)null : &(opt._value);
+        alias U = inout(T)*;
+        return opt.empty ? cast(U)null : cast(U)(&opt._value);
     }
 }
 
@@ -450,41 +452,92 @@ unittest {
 }
 
 unittest {
-    auto n = no!(int);
-    auto nc = no!(const int);
-    auto ni = no!(immutable int);
-    auto s = some!(int)(3);
-    auto sc = some!(const int)(3);
-    auto si = some(cast(immutable int)3);
+    import std.meta: AliasSeq;
 
-    assert(s != n);
-    assert(s != nc);
-    assert(s != ni);
-    assert(sc != n);
-    assert(sc != nc);
-    assert(sc != ni);
-    assert(si != n);
-    assert(si != nc);
-    assert(si != ni);
+    alias U = int;
+    alias T = Optional!U;
+    immutable U other = 4;
 
-    assert(s == sc);
-    assert(s == si);
-    assert(sc == si);
+    alias Constructors = AliasSeq!(
+        AliasSeq!(
+            () => T(),
+            () => const T(),
+            () => immutable T(),
+            () => T(U.init),
+            () => const T(U.init),
+            () => immutable T(U.init),
+        ),
+        AliasSeq!(
+            () => no!U,
+            () => no!(const U),
+            () => no!(immutable U),
+            () => some!U(U.init),
+            () => some!(const U)(U.init),
+            () => some!(immutable U)(U.init),
+        )
+    );
 
-    assert(n == nc);
-    assert(n == ni);
-    assert(nc == ni);
+    static foreach (I; 0 .. 2) {{
+        auto nm = Constructors[I * 6 + 0]();
+        auto nc = Constructors[I * 6 + 1]();
+        auto ni = Constructors[I * 6 + 2]();
+        auto sm = Constructors[I * 6 + 3]();
+        auto sc = Constructors[I * 6 + 4]();
+        auto si = Constructors[I * 6 + 5]();
 
-    s = 4;
-    n = 4;
-    assert(s == n);
+        assert(sm != nm);
+        assert(sm != nc);
+        assert(sm != ni);
+        assert(sc != nm);
+        assert(sc != nc);
+        assert(sc != ni);
+        assert(si != nm);
+        assert(si != nc);
+        assert(si != ni);
 
-    static assert( __traits(compiles, { n = 3; }));
-    static assert(!__traits(compiles, { ni = 3; }));
-    static assert(!__traits(compiles, { nc = 3; }));
-    static assert( __traits(compiles, { s = 3; }));
-    static assert(!__traits(compiles, { si = 3; }));
-    static assert(!__traits(compiles, { sc = 3; }));
+        assert(sm == sc);
+        assert(sm == si);
+        assert(sc == si);
+
+        assert(nm == nc);
+        assert(nm == ni);
+        assert(nc == ni);
+
+        sm = other;
+        nm = other;
+        assert(sm == nm);
+
+        static assert( __traits(compiles, { nm = other; }));
+        static assert(!__traits(compiles, { ni = other; }));
+        static assert(!__traits(compiles, { nc = other; }));
+        static assert( __traits(compiles, { sm = other; }));
+        static assert(!__traits(compiles, { si = other; }));
+        static assert(!__traits(compiles, { sc = other; }));
+
+        static assert(is(typeof(nm.unwrap) == int*));
+        static assert(is(typeof(nc.unwrap) == const(int)*));
+        static assert(is(typeof(ni.unwrap) == immutable(int)*));
+        static assert(is(typeof(sm.unwrap) == int*));
+        static assert(is(typeof(sc.unwrap) == const(int)*));
+        static assert(is(typeof(si.unwrap) == immutable(int)*));
+    }}
+}
+
+unittest {
+    static class C {}
+    auto nm = no!(C);
+    auto nc = no!(const C);
+    auto ni = no!(immutable C);
+    auto sm = some(new C);
+    auto sc = some(new const C);
+    auto si = some(new immutable C);
+
+    static assert(is(typeof(nm.unwrap) == C));
+    static assert(is(typeof(nc.unwrap) == const(C)));
+    static assert(is(typeof(ni.unwrap) == immutable(C)));
+    static assert(is(typeof(sm.unwrap) == C));
+    static assert(is(typeof(sc.unwrap) == const(C)));
+    static assert(is(typeof(si.unwrap) == immutable(C)));
 }
 
 unittest {
