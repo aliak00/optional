@@ -417,7 +417,7 @@ unittest {
         assert(20 * b == none);
         assert(50 / a == some(5));
         assert(50 / b == none);
-        static if (is(T == Optional!int))  // mutable
+        static if (is(isMutable!T))
         {
             assert(++a == some(11));
             assert(a++ == some(11));
