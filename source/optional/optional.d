@@ -85,24 +85,7 @@ struct Optional(T) {
         sets the optional to `none` interally
 
     */
-    this(U : T)(auto ref inout(U) value) inout {
-        this._value = value;
-        mixin(setEmpty);
-    }
-    /// Ditto
-    this(U : T)(auto ref U value) {
-        // This constrcutor is here else immutable reference construction fails:
-        //
-        // immutable int* a;
-        // auto b = some(a); // none of the overloads of this are callable using argument types (immutable(int*))
-        //
-        // class C {}
-        // auto c = some(new immutable C); // none of the overloads of this are callable using argument types (immutable(C))
-        //
-        // Candidates are:
-        //  optional.optional.Optional!(immutable(int*)).Optional.this(const(None))
-        //  optional.optional.Optional!(immutable(int*)).Optional.__ctor(U : immutable(int*))(auto ref inout(U) value)
-        //
+    this(U : T, this This)(auto ref U value) {
         this._value = value;
         mixin(setEmpty);
     }
@@ -134,14 +117,14 @@ struct Optional(T) {
         a == none; // false
         ---
     */
-    bool opEquals(const None) inout { return this.empty; }
+    bool opEquals(const None) const { return this.empty; }
     /// Ditto
-    bool opEquals(U : T)(const auto ref Optional!U rhs) inout {
+    bool opEquals(U : T)(const auto ref Optional!U rhs) const {
         if (this.empty || rhs.empty) return this.empty == rhs.empty;
         return this._value == rhs._value;
     }
     /// Ditto
-    bool opEquals(U : T)(const auto ref U rhs) inout {
+    bool opEquals(U : T)(const auto ref U rhs) const {
         return !this.empty && this._value == rhs;
     }
 
@@ -172,29 +155,26 @@ struct Optional(T) {
         b = 3; // b is an Optional!int because of the deref
         ---
     */
-    auto opUnary(string op)() inout {
-        import std.traits: isPointer;
-        static if (op == "*" && isPointer!T) {
+    auto ref opUnary(string op, this This)() {
+        import std.traits: isPointer, CopyTypeQualifiers;
+        alias U = CopyTypeQualifiers!(This, T);
+        static if (op == "*" && isPointer!U) {
             import std.traits: PointerTarget;
-            alias P = PointerTarget!T;
-            return empty || front is null ? no!P : some(cast(P)*this._value);
+            alias P = PointerTarget!U;
+            return empty || front is null ? no!P : some(*this._value);
         } else {
-            if (empty) {
-                return no!T;
-            } else {
-                return some(mixin(op ~ "cast(T)_value"));
-            }
+            mixin(autoReturn(op ~ "_value"));
         }
     }
 
     /**
         If the optional is some value it returns an optional of some `value op rhs`
     */
-    auto ref opBinary(string op, U : T)(auto ref U rhs) const {
+    auto ref opBinary(string op, U : T)(auto ref U rhs) inout {
         return empty ? no!T : some!T(mixin("_value"  ~ op ~ "rhs"));
     }
     /// Ditto
-    auto ref opBinaryRight(string op, U : T)(auto ref U rhs) const {
+    auto ref opBinaryRight(string op, U : T)(auto ref U rhs) inout {
         return empty ? no!T : some!T(mixin("rhs"  ~ op ~ "_value"));
     }
 
@@ -228,11 +208,12 @@ version (unittest) {
     import std.meta: AliasSeq;
     alias QualifiedAlisesOf(T) = AliasSeq!(T, const T, immutable T);
     alias OptionalsOfQualified(T) = AliasSeq!(Optional!T, Optional!(const T), Optional!(immutable T));
+    alias QualifiedOptionalsOfQualified(T) = AliasSeq!(QualifiedAlisesOf!(Optional!T), OptionalsOfQualified!T);
     import std.stdio: writeln;
 }
 
 unittest {
-    foreach (T; AliasSeq!(QualifiedAlisesOf!(Optional!int), OptionalsOfQualified!int)) {
+    foreach (T; QualifiedOptionalsOfQualified!int) {
         auto a = T();
         auto b = T(3);
         auto c = T(4);
@@ -388,7 +369,7 @@ unittest {
     import std.meta: AliasSeq;
     import std.traits: isMutable;
     import std.range: ElementType;
-    foreach (T; OptionalsOfQualified!int) {
+    foreach (T; QualifiedOptionalsOfQualified!int) {
         T a = 10;
         T b = none;
         static assert(!__traits(compiles, { int x = a; }));
@@ -418,7 +399,7 @@ unittest {
         assert(20 * b == none);
         assert(50 / a == some(5));
         assert(50 / b == none);
-        static if (isMutable!(ElementType!T)) {
+        static if (isMutable!(ElementType!T) && isMutable!(T)) {
             assert(++a == some(11));
             assert(a++ == some(11));
             assert(a == some(12));
@@ -553,13 +534,15 @@ unittest {
 unittest {
     import std.algorithm: filter;
     import std.range: array;
-    const arr = [
-        no!int,
-        some(3),
-        no!int,
-        some(7),
-    ];
-    assert(arr.filter!(a => a != none).array == [some(3), some(7)]);
+    foreach (T; QualifiedOptionalsOfQualified!int) {
+        const arr = [
+            T(),
+            T(3),
+            T(),
+            T(7),
+        ];
+        assert(arr.filter!(a => a != none).array == [some(3), some(7)]);
+    }
 }
 
 unittest {
