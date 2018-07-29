@@ -281,7 +281,7 @@ unittest {
     Returns:
         Pointer to value or null if empty. If T is reference type, returns reference
 */
-auto unwrap(T)(auto ref inout(Optional!T) opt) {
+auto ref unwrap(T)(auto ref inout(Optional!T) opt) {
     static if (is(T == class) || is(T == interface)) {
         return opt.empty ? null : opt.front();
     } else {
