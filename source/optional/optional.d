@@ -283,11 +283,9 @@ unittest {
 */
 auto unwrap(T)(auto ref inout(Optional!T) opt) {
     static if (is(T == class) || is(T == interface)) {
-        alias U = inout(T);
-        return opt.empty ? cast(U)null : cast(U)opt._value;
+        return opt.empty ? null : opt.front();
     } else {
-        alias U = inout(T)*;
-        return opt.empty ? cast(U)null : cast(U)(&opt._value);
+        return opt.empty ? null : &opt.front();
     }
 }
 
