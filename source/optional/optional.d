@@ -41,15 +41,15 @@ struct Optional(T) {
     private bool _empty = true;
 
     private static string autoReturn(string call) {
-        return "alias C = () => " ~ call ~ ";" ~ q{
-            alias R = typeof(C());
-            static if (!is(R == void))
-                return empty ? no!R : some(C());
-            else
-                if (!empty) {
-                    C();
-                }
-        };
+        return
+            "alias R = typeof(" ~ call ~ ");" ~
+            "static if (!is(R == void))" ~
+                "return empty ? no!R : some(" ~ call ~ ");" ~
+            "else {" ~
+                "if (!empty) {" ~
+                    call ~ ";" ~
+                "}" ~
+            "}";
     }
 
     private enum setEmpty = q{
@@ -161,9 +161,9 @@ struct Optional(T) {
         static if (op == "*" && isPointer!U) {
             import std.traits: PointerTarget;
             alias P = PointerTarget!U;
-            return empty || front is null ? no!P : some(*this._value);
+            return empty || front is null ? no!P : some(*this.front);
         } else {
-            mixin(autoReturn(op ~ "_value"));
+            mixin(autoReturn(op ~ "front"));
         }
     }
 
@@ -171,11 +171,11 @@ struct Optional(T) {
         If the optional is some value it returns an optional of some `value op rhs`
     */
     auto ref opBinary(string op, U : T)(auto ref U rhs) inout {
-        mixin(autoReturn("_value"  ~ op ~ "rhs"));
+        mixin(autoReturn("front"  ~ op ~ "rhs"));
     }
     /// Ditto
     auto ref opBinaryRight(string op, U : T)(auto ref U lhs) inout {
-        mixin(autoReturn("lhs"  ~ op ~ "_value"));
+        mixin(autoReturn("lhs"  ~ op ~ "front"));
     }
 
     /**
@@ -231,27 +231,17 @@ unittest {
     in the original optional value.
 */
 auto some(T)(auto ref T value) {
-    return Optional!T(value);
+    // import optional.dispatcher: OptionalDispatcher;
+    // static if (is(T : OptionalDispatcher!P, P...)) {
+    //     static if (P[1]) {// refOptional
+    //         return *value.self;
+    //     } else {
+    //         return value.self;
+    //     }
+    // } else {
+        return Optional!T(value);
+    // }
 }
-
-// auto some(T)(T value) {
-//     import optional.dispatcher: OptionalDispatcher;
-//     static if (is(T : OptionalDispatcher!P, P...))
-//     {
-//         static if (P[1]) // refOptional
-//         {
-//             return *value.self;
-//         }
-//         else
-//         {
-//             return value.self;
-//         }
-//     }
-//     else
-//     {
-//         return Optional!T(value);
-//     }
-// }
 
 ///
 unittest {
@@ -291,7 +281,7 @@ unittest {
     Returns:
         Pointer to value or null if empty. If T is reference type, returns reference
 */
-auto unwrap(T)(ref inout(Optional!T) opt) {
+auto unwrap(T)(auto ref inout(Optional!T) opt) {
     static if (is(T == class) || is(T == interface)) {
         alias U = inout(T);
         return opt.empty ? cast(U)null : cast(U)opt._value;
@@ -300,6 +290,23 @@ auto unwrap(T)(ref inout(Optional!T) opt) {
         return opt.empty ? cast(U)null : cast(U)(&opt._value);
     }
 }
+
+// auto dispatch(T)(auto ref inout(Optional!T) opt) {
+//     import std.typecons: Yes, No;
+//     import optional.dispatcher;
+//     static if (__traits(isRef, opt)) {
+//         return inout(OptionalDispatcher!(T, Yes.isRef))(&opt);
+//     } else {
+//         return inout(OptionalDispatcher!(T, No.isRef))(opt);
+//     }
+// }
+
+// unittest {
+//     foreach (T; QualifiedOptionalsOfQualified!int) {
+//         auto a = T();
+//         // pragma(msg, typeof(a.dispatch));
+//     }
+// }
 
 // /**
 //     Returns the value contained within the optional _or_ another value if there no!T
@@ -343,6 +350,22 @@ auto unwrap(T)(ref inout(Optional!T) opt) {
 //     // some(Dispatcher result) should be original Optional type
 //     static assert(is(typeof(b.some) == Optional!C));
 //     assert(b.some.unwrap.i == 3);
+
+//     struct S {
+//         int i = 0;
+//         ref S mutate() {
+//             this.i++;
+//             return this;
+//         }
+//     }
+
+//     auto c = some(S());
+//     auto d = c.dispatch.mutate.mutate.mutate;
+//     assert(c.unwrap.i == 3);
+
+//     // some(Dispatcher result) should be original Optional type
+//     static assert(is(typeof(d.some) == Optional!S));
+//     assert(d.some.unwrap.i == 3);
 // }
 
 ///
