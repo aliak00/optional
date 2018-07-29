@@ -171,11 +171,11 @@ struct Optional(T) {
         If the optional is some value it returns an optional of some `value op rhs`
     */
     auto ref opBinary(string op, U : T)(auto ref U rhs) inout {
-        return empty ? no!T : some!T(mixin("_value"  ~ op ~ "rhs"));
+        mixin(autoReturn("_value"  ~ op ~ "rhs"));
     }
     /// Ditto
-    auto ref opBinaryRight(string op, U : T)(auto ref U rhs) inout {
-        return empty ? no!T : some!T(mixin("rhs"  ~ op ~ "_value"));
+    auto ref opBinaryRight(string op, U : T)(auto ref U lhs) inout {
+        mixin(autoReturn("lhs"  ~ op ~ "_value"));
     }
 
     /**
