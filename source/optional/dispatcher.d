@@ -2,13 +2,13 @@ module optional.dispatcher;
 
 import optional.internal;
 
-// struct OptionalDispatcher(T, from!"std.typecons".Flag!"refOptional" isRef = from!"std.typecons".No.refOptional) {
+// struct OptionalDispatcher(T, from!"std.typecons".Flag!"isRef" isRef = from!"std.typecons".No.isRef) {
 
 //     import std.traits: hasMember;
 //     import std.typecons: Yes;
 //     import optional: Optional;
 
-//     static if (isRef == Yes.refOptional)
+//     static if (isRef)
 //         Optional!T* self;
 //     else
 //         Optional!T self;
