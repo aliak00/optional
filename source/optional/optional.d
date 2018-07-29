@@ -156,11 +156,10 @@ struct Optional(T) {
         ---
     */
     auto ref opUnary(string op, this This)() {
-        import std.traits: isPointer, CopyTypeQualifiers;
-        alias U = CopyTypeQualifiers!(This, T);
-        static if (op == "*" && isPointer!U) {
+        import std.traits: isPointer;
+        static if (op == "*" && isPointer!T) {
             import std.traits: PointerTarget;
-            alias P = PointerTarget!U;
+            alias P = PointerTarget!T;
             return empty || front is null ? no!P : some(*this.front);
         } else {
             mixin(autoReturn(op ~ "front"));
@@ -171,7 +170,7 @@ struct Optional(T) {
         If the optional is some value it returns an optional of some `value op rhs`
     */
     auto ref opBinary(string op, U : T)(auto ref U rhs) inout {
-        mixin(autoReturn("front"  ~ op ~ "rhs"));
+        mixin(autoReturn("front" ~ op ~ "rhs"));
     }
     /// Ditto
     auto ref opBinaryRight(string op, U : T)(auto ref U lhs) inout {
@@ -283,7 +282,7 @@ unittest {
 */
 auto ref unwrap(T)(auto ref inout(Optional!T) opt) {
     static if (is(T == class) || is(T == interface)) {
-        return opt.empty ? null : opt.front();
+        return opt.empty ? null : opt.front;
     } else {
         return opt.empty ? null : &opt.front();
     }
