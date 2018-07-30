@@ -96,7 +96,7 @@ struct Optional(T) {
         this._value = T.init;
     }
 
-    @property bool empty() const { 
+    @property bool empty() const {
         static if (isNullInvalid) {
             return this._empty || this._value is null;
         } else {
@@ -109,7 +109,7 @@ struct Optional(T) {
     /**
         Compare two optionals or an optional with some value
         Returns:
-            - If the two are optionals then they are both unwrapped and compared. If either are empty 
+            - If the two are optionals then they are both unwrapped and compared. If either are empty
             this returns false. And if compared with `none` and there's a value, also returns false
         ---
         auto a = some(3);
@@ -562,7 +562,7 @@ unittest {
 unittest {
     assert(no!int.toString == "[]");
     assert(some(3).toString == "[3]");
-    
+
     static class A {
         override string toString() { return "Yo"; }
     }
