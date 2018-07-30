@@ -21,6 +21,12 @@ struct Dispatcher(T) {
         return isVal ? data.val : *data.ptr;
     }
 
+    @disable this(); // Do not allow user creation of a Dispatcher
+    @disable this(this) {} // Do not allow blitting either
+
+    // Differentiate between pointers to optionals and non pointers. When a dispatch
+    // chain is started, the optional that starts it creates a Dispatcher with its address
+    // so that we can start a chain if needed.
     package this(U)(auto ref inout(U*) opt) inout if (isOptional!U) {
         data.ptr = opt;
         isVal = false;
@@ -65,7 +71,8 @@ struct Dispatcher(T) {
                     }
                     R* ptr = &val();
                     if (ptr == &self.front()) { // is instance the same?
-                        return this;
+                        import std.algorithm: move;
+                        return move(this);
                     } else {
                         return some(*ptr).dispatch;
                     }
@@ -232,8 +239,8 @@ unittest {
     assert(a.dispatch.b.f == some(8));
     assert(a.dispatch.b.m == some(3));
 
-    assert(b.dispatch.b.f.self == no!int);
-    assert(b.dispatch.b.m.self == no!int);
+    assert(b.dispatch.b.f == no!int);
+    assert(b.dispatch.b.m == no!int);
 }
 
 unittest {
@@ -285,4 +292,13 @@ unittest {
     static assert(!__traits(compiles, () { ca.dispatch.sharedConstMethod; } ));
     static assert( __traits(compiles, () { sa.dispatch.sharedConstMethod; } ));
     static assert( __traits(compiles, () { sca.dispatch.sharedConstMethod; } ));
+}
+
+unittest {
+    struct S {
+        void f() {}
+    }
+    static assert(!__traits(compiles, { Dispatcher!S a; }));
+    Dispatcher!S b = Dispatcher!S.init;
+    static assert(!__traits(compiles, { auto c = b; }));
 }
