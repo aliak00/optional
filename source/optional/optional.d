@@ -5,6 +5,8 @@ module optional.optional;
 
 import optional.internal;
 
+import optional.dispatcher: Dispatcher; // for orElse that takes a Dispatcher, could not use 'from' template for some reason
+
 private struct None {}
 
 /**
@@ -17,17 +19,17 @@ private struct None {}
 immutable none = None();
 
 /**
-    Optional type. Also known as a Maybe type in some languages.
+    Optional type. Also known as a Maybe or Option type in some languages.
 
-    This can either contain a value or be empty. It works with any value, including
+    This can either contain a value or be `none`. It works with any value, including
     values that can be null. I.e. null is a valid value that can be contained inside
     an optional if T is a pointer type
 
     It also has range like behavior. So this acts as a range that contains 1 element or
-    is empty.
+    is empty. Similar to `std.algorithm.only`
 
-    All operations that can be performed on a T can also be performed on an Optional!T.
-    The behavior of applying an operation on a no value or a null pointer is well defined
+    And all operations that can be performed on a T can also be performed on an Optional!T.
+    The behavior of applying an operation on a no-value or null pointer is well defined
     and safe.
 */
 
@@ -78,8 +80,7 @@ struct Optional(T) {
     }
 
     /**
-        Constructs an Optional!T value either by assigning T or forwarding to T's constructor
-        if possible.
+        Constructs an Optional!T value by assigning T
 
         If T is of class type, interface type, or some function pointer than passing in null
         sets the optional to `none` interally
@@ -132,7 +133,7 @@ struct Optional(T) {
         Assigns a value to the optional or sets it to `none`.
 
         If T is of class type, interface type, or some function pointer than passing in null
-        sets the optio optional to `none` internally
+        sets the optional to `none` internally
     */
     void opAssign()(const None) if (isMutable!T) {
         if (!this.empty) {
@@ -172,7 +173,9 @@ struct Optional(T) {
     auto ref opBinary(string op, U : T)(auto ref U rhs) inout {
         mixin(autoReturn("front" ~ op ~ "rhs"));
     }
-    /// Ditto
+    /**
+        If the optional is some value it returns an optional of some `lhs op value`
+    */
     auto ref opBinaryRight(string op, U : T)(auto ref U lhs) inout {
         mixin(autoReturn("lhs"  ~ op ~ "front"));
     }
@@ -187,7 +190,7 @@ struct Optional(T) {
         mixin(autoReturn(q{ this._value(args) }));
     }
 
-    /// Converts value to string `"some(T)"` or `"no!T"`
+    /// Converts value to string
     string toString() const {
         import std.conv: to; import std.traits;
         if (empty) {
@@ -202,6 +205,37 @@ struct Optional(T) {
         return "[" ~ str ~ "]";
     }
 
+    /**
+        Allows you to call dot operator on the internal value if present
+        If there is no value inside, or it is null, dispatching will still work but will
+        produce a series of no-ops.
+
+        If you try and call a manifest constant or static data on T then whether the manifest
+        or static immutable data is called depends on if the instance it is called on is a
+        some or a none.
+
+        Returns:
+            A proxy `Dispatcher` to T that is aliased to an Optional!T. This means that all dot operations
+            are dispatched to T if there is a T and operator support is carried out by aliasing
+            to Optional!T.
+
+            To cast back to an Optional!T you can call `some(Optional!(T).dispatch)`
+        ---
+        struct A {
+            struct Inner {
+                int g() { return 7; }
+            }
+            Inner inner() { return Inner(); }
+            int f() { return 4; }
+        }
+        auto a = some(A());
+        auto b = no!A;
+        auto b = no!(A*);
+        a.dispatch.inner.g; // calls inner and calls g
+        b.dispatch.inner.g; // no op.
+        b.dispatch.inner.g; // no op.
+        ---
+    */
     auto dispatch() inout {
         import optional.dispatcher: Dispatcher;
         return inout Dispatcher!(T)(&this);
@@ -286,6 +320,8 @@ unittest {
     Use this to safely access reference types, or to get at the raw value
     of non reference types via a non-null pointer.
 
+    It is recommended that you access internal values by using `orElse` instead though
+
     Returns:
         Pointer to value or null if empty. If T is reference type, returns reference
 */
@@ -300,19 +336,16 @@ auto ref unwrap(T)(auto ref T opt) if (from!"optional.traits".isOptional!T) {
 }
 
 /**
-    Returns the value contained within the optional _or else_ another value if there's no!T
+    Returns the value contained within the optional _or else_ another value if there's `no!T`
 
     Can also be called at the end of a `dispatch` chain
 */
-T orElse(T)(Optional!T opt, T value) {
+T orElse(T)(Optional!T opt, auto ref T value) {
     return opt.empty ? value : opt.front;
 }
 
 /// Ditto
-auto orElse(T, V)(T dispatchedOptional, V value)
-if (from!"optional.traits".isDispatcher!T
-    &&  is(V == from!"optional.traits".DispatcherTarget!T))
-{
+T orElse(T)(Dispatcher!T dispatchedOptional, auto ref T value) {
     return some(dispatchedOptional).orElse(value);
 }
 
