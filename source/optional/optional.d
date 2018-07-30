@@ -235,8 +235,8 @@ unittest {
     in the original optional value.
 */
 auto ref some(T)(auto ref T value) {
-    import optional.traits: isOptionalDispatcher;
-    static if (isOptionalDispatcher!T) {
+    import optional.traits: isDispatcher;
+    static if (isDispatcher!T) {
         return value.self;
     } else {
         return Optional!T(value);
@@ -299,40 +299,41 @@ auto ref unwrap(T)(auto ref T opt) if (from!"optional.traits".isOptional!T) {
     }
 }
 
-// /**
-//     Returns the value contained within the optional _or_ another value if there no!T
+/**
+    Returns the value contained within the optional _or else_ another value if there's no!T
 
-//     Can also be called at the end of a `dispatch` chain
-// */
-// T or(T)(Optional!T opt, lazy T orValue) {
-//     return opt.empty ? orValue : opt.front;
-// }
+    Can also be called at the end of a `dispatch` chain
+*/
+T orElse(T)(Optional!T opt, T value) {
+    return opt.empty ? value : opt.front;
+}
 
-// /// Ditto
-// auto or(OD, T)(OD dispatchedOptional, lazy T orValue)
-// if (from!"optional.traits".isOptionalDispatcher!OD
-//     && is(T == from!"optional.traits".OptionalDispatcherTarget!OD)) {
-//     return some(dispatchedOptional).or(orValue);
-// }
+/// Ditto
+auto orElse(T, V)(T dispatchedOptional, V value)
+if (from!"optional.traits".isDispatcher!T
+    &&  is(V == from!"optional.traits".DispatcherTarget!T))
+{
+    return some(dispatchedOptional).orElse(value);
+}
 
 ///
 unittest {
-    // assert(some(3).or(9) == 3);
-    // assert(no!int.or(9) == 9);
+    assert(some(3).orElse(9) == 3);
+    assert(no!int.orElse(9) == 9);
 
-    // struct S {
-    //     int g() { return 3; }
-    // }
+    struct S {
+        int g() { return 3; }
+    }
 
-    // assert(some(S()).dispatch.g.some.or(9) == 3);
-    // assert(no!S.dispatch.g.some.or(9) == 9);
+    assert(some(S()).dispatch.g.some.orElse(9) == 3);
+    assert(no!S.dispatch.g.some.orElse(9) == 9);
 
-    // class C {
-    //     int g() { return 3; }
-    // }
+    class C {
+        int g() { return 3; }
+    }
 
-    // assert(some(new C()).dispatch.g.or(9) == 3);
-    // assert(no!C.dispatch.g.or(9) == 9);
+    assert(some(new C()).dispatch.g.orElse(9) == 3);
+    assert(no!C.dispatch.g.orElse(9) == 9);
 }
 
 unittest {

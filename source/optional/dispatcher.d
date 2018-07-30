@@ -2,48 +2,10 @@ module optional.dispatcher;
 
 import optional.internal;
 
-struct Dispatcher(
-    T,
-) {
+struct Dispatcher(T) {
     import std.traits: hasMember;
     import optional.traits: isOptional;
     import optional: Optional;
-
-    private static string autoReturn(string expression) {
-        return "auto ref val() { return " ~ expression ~ ";" ~ "}" ~ q{
-            import std.traits: Unqual;
-            import optional: no, some;
-            alias R = typeof(val());
-            // If the expression results in a ref value type and is the same as the target type of the Optional being dispatched
-            enum isMaybeSelfRefValueType = is(Unqual!R == Unqual!Target) && (is(Target == struct) || is(Target == union)) && is(typeof(&val()));
-
-            static if (is(R == void)) {
-                // no return value, just call
-                if (!empty()) {
-                    val();
-                }
-            } else static if (isMaybeSelfRefValueType) {
-                // In this case we want to see if the references that is returned from the dispatched expression is the same
-                // as the value that is held in the Optional that we are dispatching on.
-                // We return the same Dispatcher object if that's true.
-                if (empty()) {
-                    return Dispatcher!(R)(no!R);
-                }
-                R* ptr = &val();
-                if (ptr == &self.front()) { // is instance the same?
-                    return this;
-                } else {
-                    return some(*ptr).dispatch;
-                }
-            } else {
-                if (empty()) {
-                    return Dispatcher!(R)(no!R);
-                } else {
-                    return Dispatcher!(R)(some(val()));
-                }
-            }
-        };
-    }
 
     private alias Target = T;
 
@@ -79,6 +41,42 @@ struct Dispatcher(
                 return self.empty || self.front is null;
             else
                 return self.empty;
+        }
+
+        static string autoReturn(string expression) {
+            return "auto ref val() { return " ~ expression ~ ";" ~ "}" ~ q{
+                import std.traits: Unqual;
+                import optional: no, some;
+                alias R = typeof(val());
+                // If the expression results in a ref value type and is the same as the target type of the Optional being dispatched
+                enum isMaybeSelfRefValueType = is(Unqual!R == Unqual!Target) && (is(Target == struct) || is(Target == union)) && is(typeof(&val()));
+
+                static if (is(R == void)) {
+                    // no return value, just call
+                    if (!empty()) {
+                        val();
+                    }
+                } else static if (isMaybeSelfRefValueType) {
+                    // In this case we want to see if the references that is returned from the dispatched expression is the same
+                    // as the value that is held in the Optional that we are dispatching on.
+                    // We return the same Dispatcher object if that's true.
+                    if (empty()) {
+                        return Dispatcher!(R)(no!R);
+                    }
+                    R* ptr = &val();
+                    if (ptr == &self.front()) { // is instance the same?
+                        return this;
+                    } else {
+                        return some(*ptr).dispatch;
+                    }
+                } else {
+                    if (empty()) {
+                        return Dispatcher!(R)(no!R);
+                    } else {
+                        return Dispatcher!(R)(some(val()));
+                    }
+                }
+            };
         }
 
         import bolts.traits: hasProperty, isManifestAssignable;
@@ -238,66 +236,53 @@ unittest {
     assert(b.dispatch.b.m.self == no!int);
 }
 
-// unittest {
+unittest {
+    class C {
+        void method() {}
+        void tmethod(T)() {}
+    }
+    auto c = some(new C());
+    static assert(__traits(compiles, c.dispatch.method()));
+    static assert(__traits(compiles, c.dispatch.tmethod!int()));
+}
 
-//     import optional: some;
+unittest {
+    import optional: Optional, none;
 
-//     class C {
-//         void method() {}
-//         void tmethod(T)() {}
-//     }
-//     auto c = some(new C());
-//     static assert(__traits(compiles, c.dispatch.method()));
-//     static assert(__traits(compiles, c.dispatch.tmethod!int()));
-// }
+    class A {
+        void nonConstNonSharedMethod() {}
+        void constMethod() const {}
+        void sharedNonConstMethod() shared {}
+        void sharedConstMethod() shared const {}
+    }
 
-// unittest {
-//     import optional: Optional, none;
+    alias IA = immutable A;
+    alias CA = const A;
+    alias SA = shared A;
+    alias SCA = shared const A;
 
-//     class A {
-//         void nonConstNonSharedMethod() {}
-//         void constMethod() const {}
-//         void sharedNonConstMethod() shared {}
-//         void sharedConstMethod() shared const {}
-//     }
+    Optional!IA ia = new IA;
+    Optional!CA ca = new CA;
+    Optional!SA sa = new SA;
+    Optional!SCA sca = new SA;
 
-//     alias IA = immutable A;
-//     alias CA = const A;
-//     alias SA = shared A;
-//     alias SCA = shared const A;
+    static assert(!__traits(compiles, () { ia.dispatch.nonConstNonSharedMethod; } ));
+    static assert(!__traits(compiles, () { ca.dispatch.nonConstNonSharedMethod; } ));
+    static assert(!__traits(compiles, () { sa.dispatch.nonConstNonSharedMethod; } ));
+    static assert(!__traits(compiles, () { sca.dispatch.nonConstNonSharedMethod; } ));
 
-//     Optional!IA ia;
-//     Optional!CA ca;
-//     Optional!SA sa;
-//     Optional!SCA sca;
+    static assert( __traits(compiles, () { ia.dispatch.constMethod; } ));
+    static assert( __traits(compiles, () { ca.dispatch.constMethod; } ));
+    static assert(!__traits(compiles, () { sa.dispatch.constMethod; } ));
+    static assert(!__traits(compiles, () { sca.dispatch.constMethod; } ));
 
-//     ia = none;
-//     ca = none;
-//     sa = none;
-//     sca = none;
+    static assert(!__traits(compiles, () { ia.dispatch.sharedNonConstMethod; } ));
+    static assert(!__traits(compiles, () { ca.dispatch.sharedNonConstMethod; } ));
+    static assert( __traits(compiles, () { sa.dispatch.sharedNonConstMethod; } ));
+    static assert(!__traits(compiles, () { sca.dispatch.sharedNonConstMethod; } ));
 
-//     ia = new IA;
-//     ca = new CA;
-//     sa = new SA;
-//     sca = new SA;
-
-//     static assert(!__traits(compiles, () { ia.dispatch.nonConstNonSharedMethod; } ));
-//     static assert(!__traits(compiles, () { ca.dispatch.nonConstNonSharedMethod; } ));
-//     static assert(!__traits(compiles, () { sa.dispatch.nonConstNonSharedMethod; } ));
-//     static assert(!__traits(compiles, () { sca.dispatch.nonConstNonSharedMethod; } ));
-
-//     static assert( __traits(compiles, () { ia.dispatch.constMethod; } ));
-//     static assert( __traits(compiles, () { ca.dispatch.constMethod; } ));
-//     static assert(!__traits(compiles, () { sa.dispatch.constMethod; } ));
-//     static assert(!__traits(compiles, () { sca.dispatch.constMethod; } ));
-
-//     static assert(!__traits(compiles, () { ia.dispatch.sharedNonConstMethod; } ));
-//     static assert(!__traits(compiles, () { ca.dispatch.sharedNonConstMethod; } ));
-//     static assert( __traits(compiles, () { sa.dispatch.sharedNonConstMethod; } ));
-//     static assert(!__traits(compiles, () { sca.dispatch.sharedNonConstMethod; } ));
-
-//     static assert( __traits(compiles, () { ia.dispatch.sharedConstMethod; } ));
-//     static assert(!__traits(compiles, () { ca.dispatch.sharedConstMethod; } ));
-//     static assert( __traits(compiles, () { sa.dispatch.sharedConstMethod; } ));
-//     static assert( __traits(compiles, () { sca.dispatch.sharedConstMethod; } ));
-// }
+    static assert( __traits(compiles, () { ia.dispatch.sharedConstMethod; } ));
+    static assert(!__traits(compiles, () { ca.dispatch.sharedConstMethod; } ));
+    static assert( __traits(compiles, () { sa.dispatch.sharedConstMethod; } ));
+    static assert( __traits(compiles, () { sca.dispatch.sharedConstMethod; } ));
+}

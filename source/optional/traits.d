@@ -64,16 +64,12 @@ unittest {
     auto opt = some(result); // this turns it in to an optional
     ---
 */
-template isOptionalDispatcher(T) {
+template isDispatcher(T) {
     import optional.dispatcher: Dispatcher;
-
-    static if (is(T U == Dispatcher!U))
-    {
-        enum isOptionalDispatcher = true;
-    }
-    else
-    {
-        enum isOptionalDispatcher = false;
+    static if (is(T U == Dispatcher!U)) {
+        enum isDispatcher = true;
+    } else {
+        enum isDispatcher = false;
     }
 }
 
@@ -81,33 +77,33 @@ template isOptionalDispatcher(T) {
 unittest {
     import optional: some;
     struct S { int f() { return 3; } }
-    static assert(isOptionalDispatcher!(typeof(some(S()).dispatch())));
-    static assert(isOptionalDispatcher!(typeof(some(S()).dispatch.f())));
+    static assert(isDispatcher!(typeof(some(S()).dispatch())));
+    static assert(isDispatcher!(typeof(some(S()).dispatch.f())));
 }
 
-// /**
-//     Gives you the type of a dispatch chain
-// */
-// template OptionalDispatcherTarget(OD) if (isOptionalDispatcher!OD) {
-//     import optional.dispatcher: OptionalDispatcher;
-//     static if (is(OD : OptionalDispatcher!P, P...))
-//     {
-//         alias OptionalDispatcherTarget = P[0];
-//     }
-//     else
-//         alias OptionalDispatcherTarget = void;
-// }
+/**
+    Gives you the type of a dispatch chain
+*/
+template DispatcherTarget(T) if (isDispatcher!T) {
+    import optional.dispatcher: Dispatcher;
+    static if (is(T : Dispatcher!P, P...)) {
+        alias DispatcherTarget = P[0];
+    } else {
+        alias DispatcherTarget = void;
+    }
+}
 
-// unittest {
-//     import optional: some;
-//     struct S { int f() { return 3; } }
-//     static assert(is(OptionalDispatcherTarget!(typeof(some(S()).dispatch())) == S));
-//     static assert(is(OptionalDispatcherTarget!(typeof(some(S()).dispatch.f())) == int));
-// }
+unittest {
+    import optional: some;
+    struct S { int f() { return 3; } }
+    static assert(is(DispatcherTarget!(typeof(some(S()).dispatch())) == S));
+    static assert(is(DispatcherTarget!(typeof(some(S()).dispatch.f())) == int));
+}
 
 /// Checks if T is type that is `NotNull`
 template isNotNull(T) {
     import optional: NotNull;
+    
     static if (is(T U == NotNull!U)){
         enum isNotNull = true;
     } else {
