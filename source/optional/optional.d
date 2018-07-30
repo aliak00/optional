@@ -37,7 +37,7 @@ struct Optional(T) {
     private enum isNullInvalid = is(T == class) || is(T == interface) || isSomeFunction!T;
     private enum isNullable = is(typeof(T.init is null));
 
-    private T _value;
+    private T _value = T.init; // Set to init for when T has @disable this()
     private bool _empty = true;
 
     private static string autoReturn(string call) {
@@ -201,6 +201,11 @@ struct Optional(T) {
         }
         return "[" ~ str ~ "]";
     }
+
+    auto dispatch() inout {
+        import optional.dispatcher: Dispatcher;
+        return inout Dispatcher!(T)(&this);
+    }
 }
 
 version (unittest) {
@@ -229,17 +234,13 @@ unittest {
     Calling some on the result of a dispatch chain will result
     in the original optional value.
 */
-auto some(T)(auto ref T value) {
-    // import optional.dispatcher: OptionalDispatcher;
-    // static if (is(T : OptionalDispatcher!P, P...)) {
-    //     static if (P[1]) {// refOptional
-    //         return *value.self;
-    //     } else {
-    //         return value.self;
-    //     }
-    // } else {
+auto ref some(T)(auto ref T value) {
+    import optional.traits: isOptionalDispatcher;
+    static if (isOptionalDispatcher!T) {
+        return value.self;
+    } else {
         return Optional!T(value);
-    // }
+    }
 }
 
 ///
@@ -254,8 +255,16 @@ unittest {
     assert([1, 2, 3].map!some.equal([some(1), some(2), some(3)]));
 }
 
+unittest {
+    struct S {
+        int f() { return 3; }
+    }
+
+    static assert(is(typeof(some(S()).dispatch.some) == Optional!S));
+}
+
 /// Type constructor for an optional having no value of `T`
-Optional!T no(T)() {
+auto no(T)() {
     return Optional!T();
 }
 
@@ -280,30 +289,15 @@ unittest {
     Returns:
         Pointer to value or null if empty. If T is reference type, returns reference
 */
-auto ref unwrap(T)(auto ref inout(Optional!T) opt) {
-    static if (is(T == class) || is(T == interface)) {
+auto ref unwrap(T)(auto ref T opt) if (from!"optional.traits".isOptional!T) {
+    import optional.traits: OptionalTarget;
+    alias U = OptionalTarget!T;
+    static if (is(U == class) || is(U == interface)) {
         return opt.empty ? null : opt.front;
     } else {
         return opt.empty ? null : &opt.front();
     }
 }
-
-// auto dispatch(T)(auto ref inout(Optional!T) opt) {
-//     import std.typecons: Yes, No;
-//     import optional.dispatcher;
-//     static if (__traits(isRef, opt)) {
-//         return inout(OptionalDispatcher!(T, Yes.isRef))(&opt);
-//     } else {
-//         return inout(OptionalDispatcher!(T, No.isRef))(opt);
-//     }
-// }
-
-// unittest {
-//     foreach (T; QualifiedOptionalsOfQualified!int) {
-//         auto a = T();
-//         // pragma(msg, typeof(a.dispatch));
-//     }
-// }
 
 // /**
 //     Returns the value contained within the optional _or_ another value if there no!T
@@ -319,50 +313,6 @@ auto ref unwrap(T)(auto ref inout(Optional!T) opt) {
 // if (from!"optional.traits".isOptionalDispatcher!OD
 //     && is(T == from!"optional.traits".OptionalDispatcherTarget!OD)) {
 //     return some(dispatchedOptional).or(orValue);
-// }
-
-// unittest {
-//     struct S {
-//         int f() { return 3; }
-//     }
-
-//     static assert(is(typeof(some(S()).dispatch.some) == Optional!S));
-// }
-
-// unittest {
-//     class C {
-//         int i = 0;
-//         C mutate() {
-//             this.i++;
-//             return this;
-//         }
-//     }
-
-//     auto a = some(new C());
-//     auto b = a.dispatch.mutate.mutate.mutate;
-
-//     // Unwrap original should have mutated the object
-//     assert(a.unwrap.i == 3);
-
-//     // some(Dispatcher result) should be original Optional type
-//     static assert(is(typeof(b.some) == Optional!C));
-//     assert(b.some.unwrap.i == 3);
-
-//     struct S {
-//         int i = 0;
-//         ref S mutate() {
-//             this.i++;
-//             return this;
-//         }
-//     }
-
-//     auto c = some(S());
-//     auto d = c.dispatch.mutate.mutate.mutate;
-//     assert(c.unwrap.i == 3);
-
-//     // some(Dispatcher result) should be original Optional type
-//     static assert(is(typeof(d.some) == Optional!S));
-//     assert(d.some.unwrap.i == 3);
 // }
 
 ///
@@ -742,7 +692,7 @@ unittest {
     }
 
     Optional!S a = none;
-    static assert(!__traits(compiles, { Optional!S a; }));
+    static assert(__traits(compiles, { Optional!S a; }));
     auto b = some(S(1));
     auto c = b;
 }
