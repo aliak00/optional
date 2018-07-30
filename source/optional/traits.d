@@ -103,7 +103,7 @@ unittest {
 /// Checks if T is type that is `NotNull`
 template isNotNull(T) {
     import optional: NotNull;
-    
+
     static if (is(T U == NotNull!U)){
         enum isNotNull = true;
     } else {
