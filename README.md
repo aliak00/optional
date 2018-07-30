@@ -14,8 +14,12 @@ Full API docs available [here](https://aliak00.github.io/optional/optional.html)
 
 ## Summary
 
-* `Optional!T`: Represents an optional data type that may or may not contain a value. Matches behavior of haskell maybe and scala or swift optional type. With the added benefit (like scala) of behving like an single element or empty D range.
+* `Optional!T`: Represents an optional data type that may or may not contain a value. Acts like a range and allows safe dispatching
 * `NotNull!T`: Represents a type that can never be null. Comes in handy for nullable types (e.g. classes and pointers)
+
+An `Optional!T` signifies the intent of your code, works as a range and is therefor useable with Phobos, and allows you to call methods and operators on your types even if they are null references - i.e. safe dispatching.
+
+It is NOT like the `Nullable` type in Phobos. `Nullable` is basically a pointer and applies pointer semantics to value types. Whereas `Optional` signifies intent on both reference and value types, and is safe to use without need to check `isNull` before every usafe. It is also NOT like `std.range.only`. `Only` cannot be used to signify intent of a value being present or not, it's only (heh) usage is to create a range out of a value so that values can act as ranges and be used seamlessly with `std.algorithms`. `Optional!T` has a type constructor - `some` that can be used for this purpose as well.
 
 ## Motivation for Optional
 

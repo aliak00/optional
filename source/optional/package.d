@@ -8,46 +8,39 @@ unittest {
     // Create empty optional
     auto a = no!int;
 
-    // Try doing stuff, all results in none
+    // Operating on an empty optional is safe and results in none
     assert(a == none);
     assert(++a == none);
-    assert(a - 1 == none);
 
-    // Assign and try doing the same stuff
+    // Assigning a value and then operating yields results
     a = 9;
     assert(a == some(9));
     assert(++a == some(10));
-    assert(a - 1 == some(9));
 
-    // Acts like a range as well
-
+    // It is a range
     import std.algorithm: map;
-    import std.conv: to;
     auto b = some(10);
     auto c = no!int;
-    assert(b.map!(to!double).equal([10.0]));
-    assert(c.map!(to!double).empty);
+    assert(b.map!(a => a * 2).equal([20]));
+    assert(c.map!(a => a * 2).empty);
 
-    // Safely get at nullable types
+    // Safely get the inner value
+    assert(b.orElse(3) == 10);
+    assert(c.orElse(3) == 3);
+
+    // Unwrap to get to the raw data (returns a non-null pointer or reference if there's data)
     class C {
         int i = 3;
     }
 
     auto n = no!C;
-    if (auto u = n.unwrap) {
-        writeln("nope: ", u.i);
-    }
-    n = some!C(null);
-    if (auto u = n.unwrap) {
-        writeln("nope: ", u.i);
-    }
-    n = new C();
-    if (auto u = n.unwrap) {
-        // yep!
-    }
+    if (auto u = n.unwrap) {} else n = some!C(null);
+    assert(n == none);
+    if (auto u = n.unwrap) {} else n = new C();
+    assert(n.unwrap !is null);
     assert(n.unwrap.i == 3);
 
-    // Can safely dispatch to whatever inner type is
+    // Safely dispatch calls to the wrapped type
     struct A {
         struct Inner {
             int g() { return 7; }
@@ -55,22 +48,14 @@ unittest {
         Inner inner() { return Inner(); }
         int f() { return 4; }
     }
-
-    // Create Optional!A
     auto d = some(A());
-
-    // Dispatch to one of its methods
     assert(d.dispatch.f == some(4));
     assert(d.dispatch.inner.g == some(7));
 
-    auto e = no!(A*);
-
     // If there's no value in the optional dispatching still works, but produces none
+    auto e = no!(A*);
     assert(e.dispatch.f == none);
     assert(e.dispatch.inner.g == none);
-    e = new A;
-    assert(e.dispatch.f == some(4));
-    assert(e.dispatch.inner.g == some(7));
 }
 
 /// Phobos equvalent range.only test
