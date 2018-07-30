@@ -349,6 +349,16 @@ T orElse(T)(Dispatcher!T dispatchedOptional, auto ref T value) {
     return some(dispatchedOptional).orElse(value);
 }
 
+deprecated("This will go away, use 'orElse' instead")
+T or(T)(Optional!T opt, auto ref T value) {
+    return opt.empty ? value : opt.front;
+}
+
+deprecated("This will go away, use 'orElse' instead")
+T or(T)(Dispatcher!T dispatchedOptional, auto ref T value) {
+    return some(dispatchedOptional).orElse(value);
+}
+
 ///
 unittest {
     assert(some(3).orElse(9) == 3);
