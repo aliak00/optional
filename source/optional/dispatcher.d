@@ -19,14 +19,14 @@ struct Dispatcher(
 
             static if (is(R == void)) {
                 // no return value, just call
-                if (!self.empty) {
+                if (!empty()) {
                     val();
                 }
             } else static if (isMaybeSelfRefValueType) {
                 // In this case we want to see if the references that is returned from the dispatched expression is the same
                 // as the value that is held in the Optional that we are dispatching on.
                 // We return the same Dispatcher object if that's true.
-                if (self.empty) {
+                if (empty()) {
                     return Dispatcher!(R)(no!R);
                 }
                 R* ptr = &val();
@@ -36,7 +36,7 @@ struct Dispatcher(
                     return some(*ptr).dispatch;
                 }
             } else {
-                if (self.empty) {
+                if (empty()) {
                     return Dispatcher!(R)(no!R);
                 } else {
                     return Dispatcher!(R)(some(val()));
@@ -72,6 +72,15 @@ struct Dispatcher(
     alias self this;
 
     template opDispatch(string dispatchName) if (hasMember!(Target, dispatchName)) {
+
+        bool empty() {
+            import std.traits: isPointer;
+            static if (isPointer!T)
+                return self.empty || self.front is null;
+            else
+                return self.empty;
+        }
+
         import bolts.traits: hasProperty, isManifestAssignable;
         static if (is(typeof(__traits(getMember, Target, dispatchName)) == function)) {
             // non template function
@@ -205,32 +214,29 @@ unittest {
     assert(b.self.unwrap.i == 3);
 }
 
-// unittest {
-//     struct B {
-//         int f() {
-//             return 8;
-//         }
-//         int m = 3;
-//     }
-//     struct A {
-//         B *b_;
-//         B* b() {
-//             return b_;
-//         }
-//     }
+unittest {
+    struct B {
+        int f() {
+            return 8;
+        }
+        int m = 3;
+    }
+    struct A {
+        B* b_;
+        B* b() {
+            return b_;
+        }
+    }
 
-//     auto a = some(new A(new B));
-//     auto b = some(new A);
+    auto a = some(new A(new B));
+    auto b = some(new A);
 
-//     a.writeln;
-//     b.dispatch.b.f.writeln;
+    assert(a.dispatch.b.f == some(8));
+    assert(a.dispatch.b.m == some(3));
 
-//     assert(a.dispatch.b.f == some(8));
-//     assert(a.dispatch.b.m == some(3));
-
-//     assert(b.dispatch.b.f == no!int);
-//     assert(b.dispatch.b.m == no!int);
-// }
+    assert(b.dispatch.b.f.self == no!int);
+    assert(b.dispatch.b.m.self == no!int);
+}
 
 // unittest {
 
