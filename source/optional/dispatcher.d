@@ -25,12 +25,11 @@ struct Dispatcher(T) {
     @disable this(this) {} // Do not allow blitting either
     @disable void opAssign(Dispatcher!T); // Do not allow identity assignment
 
-    void opAssign()(const None) {
-        self = none;
-    }
-    void opAssign(U)(auto ref U lhs) {
-        self = lhs;
-    }
+    // Copy over the opAssigns fomr Optional!T. There are two reasons why the alias this opAssigns do not carry over:
+    //  1. Since we define an opAssign, all subtype overloads are hidden so we need to be explicitly redefine them
+    //  2. We define a posblit so an identity opAssign is generated (which has the same consequences as us defining one)
+    void opAssign()(const None) { self = none; }
+    void opAssign(U)(auto ref U lhs) { self = lhs; }
 
     // Differentiate between pointers to optionals and non pointers. When a dispatch
     // chain is started, the optional that starts it creates a Dispatcher with its address
