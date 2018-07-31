@@ -5,7 +5,7 @@ import optional.internal;
 struct Dispatcher(T) {
     import std.traits: hasMember;
     import optional.traits: isOptional;
-    import optional: Optional;
+    import optional: Optional, None, none;
 
     private alias Target = T;
 
@@ -23,6 +23,14 @@ struct Dispatcher(T) {
 
     @disable this(); // Do not allow user creation of a Dispatcher
     @disable this(this) {} // Do not allow blitting either
+    @disable void opAssign(Dispatcher!T); // Do not allow identity assignment
+
+    void opAssign()(const None) {
+        self = none;
+    }
+    void opAssign(U)(auto ref U lhs) {
+        self = lhs;
+    }
 
     // Differentiate between pointers to optionals and non pointers. When a dispatch
     // chain is started, the optional that starts it creates a Dispatcher with its address
@@ -301,4 +309,18 @@ unittest {
     static assert(!__traits(compiles, { Dispatcher!S a; }));
     Dispatcher!S b = Dispatcher!S.init;
     static assert(!__traits(compiles, { auto c = b; }));
+}
+
+unittest {
+    import optional: none;
+    struct S {
+        S other() { return S(); }
+    }
+    auto a = some(S());
+    auto d1 = a.dispatch.other;
+    auto d2 = a.dispatch.other;
+    static assert(!__traits(compiles, { d1 = d2; } ));
+    static assert(!__traits(compiles, { d1 = Dispatcher!S.init; } ));
+    static assert( __traits(compiles, { d1 = S(); } ));
+    static assert( __traits(compiles, { d1 = none; } ));
 }

@@ -7,7 +7,7 @@ import optional.internal;
 
 import optional.dispatcher: Dispatcher; // for orElse that takes a Dispatcher, could not use 'from' template for some reason
 
-private struct None {}
+package struct None {}
 
 /**
     Represents an empty optional value. This is used to set `Optional`s to have no value
