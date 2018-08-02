@@ -17,7 +17,7 @@ struct Dispatcher(T) {
     private Data data = Data.init;
     private bool isVal = false;
 
-    package @property ref Optional!T self() {
+    @property ref Optional!T self() {
         return isVal ? data.val : *data.ptr;
     }
 
