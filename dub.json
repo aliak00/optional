@@ -11,19 +11,25 @@
         "bolts": "~>0.6.0"
     },
     "excludedSourceFiles": [
-        "source/playground/*"
+        "playground/*"
     ],
     "configurations": [
         {
-            "name": "unittest"
+            "name": "unittest",
+            "importPaths": [
+                "./tests"
+            ],
+            "sourcePaths": [
+                "./tests"
+            ]
         },
         {
             "name": "playground",
             "targetType": "executable",
             "sourcePaths": [
-                "./source/playground/"
+                "./playground/"
             ],
-            "mainSourceFile": "./source/playground/playground.d"
+            "mainSourceFile": "./playground/main.d"
         }
     ]
 }
