@@ -1,7 +1,9 @@
 module tests.dispatcher;
 
 import optional;
+import unit_threaded;
 
+@("Should dispatch")
 unittest {
     struct A {
         enum aManifestConstant = "aManifestConstant";
@@ -38,30 +40,31 @@ unittest {
 
     auto a = some(A());
     auto b = no!A;
-    assert(a.dispatch.aField == some("aField"));
-    assert(b.dispatch.aField == no!string);
-    assert(a.dispatch.aNonTemplateFunctionArity0 == some("aNonTemplateFunctionArity0"));
-    assert(b.dispatch.aNonTemplateFunctionArity0 == no!string);
-    assert(a.dispatch.aNonTemplateFunctionArity1("") == some("aNonTemplateFunctionArity1"));
-    assert(b.dispatch.aNonTemplateFunctionArity1("") == no!string);
-    assert(a.dispatch.aProperty == some("aField"));
-    assert(b.dispatch.aProperty == no!string);
+    a.dispatch.aField.shouldEqual(some("aField"));
+    b.dispatch.aField.shouldEqual(no!string);
+    a.dispatch.aNonTemplateFunctionArity0.shouldEqual(some("aNonTemplateFunctionArity0"));
+    b.dispatch.aNonTemplateFunctionArity0.shouldEqual(no!string);
+    a.dispatch.aNonTemplateFunctionArity1("").shouldEqual(some("aNonTemplateFunctionArity1"));
+    b.dispatch.aNonTemplateFunctionArity1("").shouldEqual(no!string);
+    a.dispatch.aProperty.shouldEqual(some("aField"));
+    b.dispatch.aProperty.shouldEqual(no!string);
     a.dispatch.aProperty = "newField";
     b.dispatch.aProperty = "newField";
-    assert(a.dispatch.aProperty == some("newField"));
-    assert(b.dispatch.aProperty == no!string);
-    assert(a.dispatch.aTemplateFunctionArity0 == some("aTemplateFunctionArity0"));
-    assert(b.dispatch.aTemplateFunctionArity0 == no!string);
-    assert(a.dispatch.aTemplateFunctionArity1!("") == some("aTemplateFunctionArity1"));
-    assert(b.dispatch.aTemplateFunctionArity1!("") == no!string);
-    assert(a.dispatch.dispatch == some("dispatch"));
-    assert(b.dispatch.dispatch == no!string);
-    assert(a.dispatch.aManifestConstant == some("aManifestConstant"));
-    assert(b.dispatch.aManifestConstant == no!string);
-    assert(a.dispatch.aStaticImmutable == some("aStaticImmutable"));
-    assert(b.dispatch.aStaticImmutable == no!string);
+    a.dispatch.aProperty.shouldEqual(some("newField"));
+    b.dispatch.aProperty.shouldEqual(no!string);
+    a.dispatch.aTemplateFunctionArity0.shouldEqual(some("aTemplateFunctionArity0"));
+    b.dispatch.aTemplateFunctionArity0.shouldEqual(no!string);
+    a.dispatch.aTemplateFunctionArity1!("").shouldEqual(some("aTemplateFunctionArity1"));
+    b.dispatch.aTemplateFunctionArity1!("").shouldEqual(no!string);
+    a.dispatch.dispatch.shouldEqual(some("dispatch"));
+    b.dispatch.dispatch.shouldEqual(no!string);
+    a.dispatch.aManifestConstant.shouldEqual(some("aManifestConstant"));
+    b.dispatch.aManifestConstant.shouldEqual(no!string);
+    a.dispatch.aStaticImmutable.shouldEqual(some("aStaticImmutable"));
+    b.dispatch.aStaticImmutable.shouldEqual(no!string);
 }
 
+@("Should mutatue original optional with reference type")
 unittest {
     class C {
         int i = 0;
@@ -78,6 +81,7 @@ unittest {
     assert(b.self.unwrap.i == 3);
 }
 
+@("Should mutatue original optional with value type")
 unittest {
     struct S {
         int i = 0;
@@ -94,6 +98,7 @@ unittest {
     assert(b.self.unwrap.i == 3);
 }
 
+@("Should be safe with null pointer members")
 unittest {
     struct B {
         int f() {
@@ -118,6 +123,7 @@ unittest {
     assert(b.dispatch.b.m == no!int);
 }
 
+@("Should allow dispatching of template functions")
 unittest {
     class C {
         void method() {}
@@ -128,6 +134,7 @@ unittest {
     static assert(__traits(compiles, c.dispatch.tmethod!int()));
 }
 
+@("Should work for all qualifiers")
 unittest {
     import optional: Optional, none;
 
@@ -169,6 +176,7 @@ unittest {
     static assert( __traits(compiles, () { sca.dispatch.sharedConstMethod; } ));
 }
 
+@("Should not allow copy assign or copy construct")
 unittest {
     import optional: none;
     struct S {
