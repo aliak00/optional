@@ -11,6 +11,11 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "playground",
+            "type": "shell",
+            "command": "dub run --config=playground"
         }
     ]
 }
