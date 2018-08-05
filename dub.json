@@ -8,6 +8,22 @@
 	"license": "MIT",
 	"targetPath": "bin",
 	"dependencies": {
-        "bolts": "~>0.4.2"
-	}
+        "bolts": "~>0.6.0"
+    },
+    "excludedSourceFiles": [
+        "source/playground/*"
+    ],
+    "configurations": [
+        {
+            "name": "unittest"
+        },
+        {
+            "name": "playground",
+            "targetType": "executable",
+            "sourcePaths": [
+                "./source/playground/"
+            ],
+            "mainSourceFile": "./source/playground/playground.d"
+        }
+    ]
 }
