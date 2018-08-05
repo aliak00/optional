@@ -17,8 +17,8 @@ package struct Dispatcher(T) {
     private Data data = Data.init;
     private bool isVal = false;
 
-    @property ref Optional!T self() {
-        return isVal ? data.val : *data.ptr;
+    @property ref inout(Optional!T) self() inout {
+        return this.isVal ? this.data.val : *this.data.ptr;
     }
 
     @disable this(); // Do not allow user creation of a Dispatcher
@@ -45,6 +45,13 @@ package struct Dispatcher(T) {
     }
 
     public alias self this;
+
+    static if (!hasMember!(Target, "toString")) {
+        /// Converts value to string
+        string toString() const {
+            return self.toString;
+        }
+    }
 
     public template opDispatch(string dispatchName) if (hasMember!(Target, dispatchName)) {
 
@@ -130,6 +137,11 @@ package struct Dispatcher(T) {
     }
 }
 
+
+version(unittest) { import unit_threaded; }
+else              { enum ShouldFail; }
+
+@("Should not allow construction of Dispatcher")
 unittest {
     struct S {
         void f() {}
