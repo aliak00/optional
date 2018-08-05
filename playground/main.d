@@ -1,4 +1,4 @@
-module source.playground.playground;
+module playground.main;
 
 import std.stdio: writeln;
 
