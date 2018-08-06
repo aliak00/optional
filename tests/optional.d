@@ -10,6 +10,7 @@ alias QualifiedAlisesOf(T) = AliasSeq!(T, const T, immutable T);
 alias OptionalsOfQualified(T) = AliasSeq!(Optional!T, Optional!(const T), Optional!(immutable T));
 alias QualifiedOptionalsOfQualified(T) = AliasSeq!(QualifiedAlisesOf!(Optional!T), OptionalsOfQualified!T);
 
+@("Should allow equalify with all qualifiers")
 unittest {
     foreach (T; QualifiedOptionalsOfQualified!int) {
         auto a = T();
@@ -22,6 +23,7 @@ unittest {
     }
 }
 
+@("Should wotk with opUnary, opBinary, and opRightBinary")
 unittest {
     import std.meta: AliasSeq;
     import std.traits: isMutable;
@@ -78,6 +80,7 @@ unittest {
     }
 }
 
+@("Should be mappable")
 unittest {
     import std.algorithm: map;
     import std.conv: to;
@@ -87,6 +90,7 @@ unittest {
     assert(b.map!(to!double).empty);
 }
 
+@("Should have opBinary return an optional")
 unittest {
     auto a = some(3);
     assert(a + 3 == some(6));
@@ -94,6 +98,8 @@ unittest {
     assert(b + 3 == none);
 }
 
+
+@("Should allow equality and opAssign between all qualified combinations")
 unittest {
     import std.meta: AliasSeq;
 
@@ -166,6 +172,7 @@ unittest {
     }}
 }
 
+@("Should unwrap the the correct qualified type for reference type")
 unittest {
     static class C {}
     auto nm = no!(C);
@@ -183,11 +190,13 @@ unittest {
     static assert(is(typeof(si.unwrap) == immutable(C)));
 }
 
+@("Should not allow properties of type to be reachable")
 unittest {
     static assert(!__traits(compiles, some(3).max));
     static assert(!__traits(compiles, some(some(3)).max));
 }
 
+@("Should be filterable")
 unittest {
     import std.algorithm: filter;
     import std.range: array;
@@ -202,6 +211,7 @@ unittest {
     }
 }
 
+@("Should print like a range")
 unittest {
     assert(no!int.toString == "[]");
     assert(some(3).toString == "[3]");
@@ -215,31 +225,31 @@ unittest {
     assert(some(cast(immutable A)a).toString == "[Yo]");
 }
 
+@("Should be joinerable and eachable")
 unittest {
     import std.uni: toUpper;
     import std.range: only;
-    import std.algorithm: joiner, map;
+    import std.algorithm: joiner, map, each;
 
     static maybeValues = [no!string, some("hello"), some("world")];
     assert(maybeValues.joiner.map!toUpper.joiner(" ").equal("HELLO WORLD"));
-}
 
-unittest {
-    import std.algorithm.iteration : each, joiner;
-    static maybeValues = [some("hello"), some("world"), no!string];
+    static moreValues = [some("hello"), some("world"), no!string];
     uint count = 0;
-    foreach (value; maybeValues.joiner) ++count;
+    foreach (value; moreValues.joiner) ++count;
     assert(count == 2);
-    maybeValues.joiner.each!(value => ++count);
+    moreValues.joiner.each!(value => ++count);
     assert(count == 4);
 }
 
+@("Should not allow assignment to const")
 unittest {
     Optional!(const int) opt = Optional!(const int)(42);
     static assert(!__traits(compiles, opt = some(24)));
     static assert(!__traits(compiles, opt = none));
 }
 
+@("Should have correct unwrapped pointer type")
 unittest {
     auto n = no!(int);
     auto nc = no!(const int);
@@ -276,6 +286,7 @@ unittest {
     assert(o == some(4));
 }
 
+@("Should treat null as valid values for pointer types")
 unittest {
     auto a = no!(int*);
     auto b = *a;
@@ -288,6 +299,7 @@ unittest {
     assert(*a == no!int);
 }
 
+@("Should unwrap when there's a value")
 unittest {
     struct S {
         int i = 1;
@@ -329,6 +341,7 @@ unittest {
     assert(cUnwrapped);
 }
 
+@("Should allow 'is' on unwrap" )
 unittest {
     class C {}
     auto a = no!C;
@@ -351,11 +364,13 @@ unittest {
     assert(d.empty);
 }
 
+@("Should not allow assignment to immutable")
 unittest {
     auto a = some!(immutable int)(1);
     static assert(!__traits(compiles, { a = 2; }));
 }
 
+@("Should forward to opCall if callable")
 unittest {
     static int f0(int) { return 4; }
     alias A = typeof(&f0);
@@ -372,6 +387,7 @@ unittest {
     static assert(is(typeof(b1()) == void));
 }
 
+@("Should work with disabled this")
 unittest {
     struct S {
         @disable this();
@@ -384,6 +400,7 @@ unittest {
     auto c = b;
 }
 
+@("Should work with disabled post blit")
 unittest {
     import std.conv: to;
     static struct S {

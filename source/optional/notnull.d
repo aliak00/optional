@@ -77,6 +77,7 @@ struct NotNull(T) {
 }
 
 ///
+@("Example of NotNull")
 unittest {
     static class C { int i; void f() { i = 3; } }
     static struct S { int i; void f() { i = 3; } }

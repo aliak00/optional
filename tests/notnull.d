@@ -2,6 +2,7 @@ module tests.notnull;
 
 import optional.notnull;
 
+@("Should construct non null object by default")
 unittest {
     static class C {}
     auto a = notNull!C;
@@ -11,11 +12,13 @@ unittest {
     assert(a !is b);
 }
 
+@("Should allow copy of other NotNull")
 unittest {
     struct S {}
     static assert(__traits(compiles, { auto c = notNull!S; } ));
 }
 
+@("Should allow covariant assignment")
 unittest {
     static class A {
         int x;
@@ -50,6 +53,7 @@ unittest {
     assert(a.x == 3);
 }
 
+@("Should work with a struct")
 unittest {
     static class C { int i; }
     auto c = notNull!C;
@@ -62,6 +66,7 @@ unittest {
     assert(s.i == 3);
 }
 
+@("Should work with a struct pointer")
 unittest {
     static class C { int i; }
     struct S { int i; }
@@ -84,6 +89,7 @@ unittest {
     assert(s !is null);
 }
 
+@("Should not implicitly convert to type")
 unittest {
     static class C { int i; }
     struct S { int i; }
@@ -100,6 +106,7 @@ unittest {
     static assert(!__traits(compiles, { g(notNull!(S*)); }));
 }
 
+@("Should forward constructor args")
 unittest {
     static class C {
         int a;
@@ -115,6 +122,7 @@ unittest {
     assert(c.b == 4);
 }
 
+@("Should not be contructable or assignable to possible null")
 unittest {
     static class C {}
     static assert(!__traits(compiles, { auto a = NotNull!C(); }));

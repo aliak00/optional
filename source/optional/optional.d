@@ -260,6 +260,7 @@ auto ref some(T)(auto ref T value) {
 }
 
 ///
+@("Example of some()")
 unittest {
     auto a = no!int;
     assert(a == none);
@@ -271,20 +272,13 @@ unittest {
     assert([1, 2, 3].map!some.equal([some(1), some(2), some(3)]));
 }
 
-unittest {
-    struct S {
-        int f() { return 3; }
-    }
-
-    static assert(is(typeof(some(S()).dispatch.some) == Optional!S));
-}
-
 /// Type constructor for an optional having no value of `T`
 auto no(T)() {
     return Optional!T();
 }
 
 ///
+@("Example of no()")
 unittest {
     auto a = no!(int*);
     assert(a == none);
@@ -317,6 +311,21 @@ auto ref unwrap(T)(auto ref T opt) if (from!"optional.traits".isOptional!T) {
     }
 }
 
+///
+@("Example of unwrap()")
+unittest {
+    class C {
+        int i = 3;
+    }
+
+    auto n = no!C;
+    if (auto u = n.unwrap) {} else n = some!C(null);
+    assert(n == none);
+    if (auto u = n.unwrap) {} else n = new C();
+    assert(n.unwrap !is null);
+    assert(n.unwrap.i == 3);
+}
+
 /**
     Returns the value contained within the optional _or else_ another value if there's `no!T`
 
@@ -332,6 +341,7 @@ T orElse(T)(Dispatcher!T dispatchedOptional, auto ref T value) {
 }
 
 ///
+@("Example of orElse()")
 unittest {
     assert(some(3).orElse(9) == 3);
     assert(no!int.orElse(9) == 9);
