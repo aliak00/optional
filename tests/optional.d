@@ -1,6 +1,7 @@
 module tests.optional;
 
-import optional;
+import optional.optional;
+import unit_threaded;
 
 import std.meta: AliasSeq;
 import std.stdio: writeln;
@@ -10,16 +11,23 @@ alias QualifiedAlisesOf(T) = AliasSeq!(T, const T, immutable T);
 alias OptionalsOfQualified(T) = AliasSeq!(Optional!T, Optional!(const T), Optional!(immutable T));
 alias QualifiedOptionalsOfQualified(T) = AliasSeq!(QualifiedAlisesOf!(Optional!T), OptionalsOfQualified!T);
 
+
+private enum isObject(T) = is(T == class) || is(T == interface);
+
+import std.traits: Unqual;
+
+import std.range, std.traits;
+
 @("Should allow equalify with all qualifiers")
 unittest {
     foreach (T; QualifiedOptionalsOfQualified!int) {
         auto a = T();
         auto b = T(3);
         auto c = T(4);
-        assert(a == none);
-        assert(b == b);
-        assert(b != c);
-        assert(c == 4);
+        a.should == none;
+        b.should == b;
+        b.should.not == c;
+        c.should == 4;
     }
 }
 
@@ -33,42 +41,42 @@ unittest {
         T b = none;
         static assert(!__traits(compiles, { int x = a; }));
         static assert(!__traits(compiles, { void func(int n){} func(a); }));
-        assert(a == 10);
-        assert(b == none);
-        assert(a != 20);
-        assert(a != none);
-        assert(+a == some(10));
-        assert(-b == none);
-        assert(-a == some(-10));
-        assert(+b == none);
-        assert(-b == none);
-        assert(a + 10 == some(20));
-        assert(b + 10 == none);
-        assert(a - 5 == some(5));
-        assert(b - 5 == none);
-        assert(a * 20 == some(200));
-        assert(b * 20 == none);
-        assert(a / 2 == some(5));
-        assert(b / 2 == none);
-        assert(10 + a == some(20));
-        assert(10 + b == none);
-        assert(15 - a == some(5));
-        assert(15 - b == none);
-        assert(20 * a == some(200));
-        assert(20 * b == none);
-        assert(50 / a == some(5));
-        assert(50 / b == none);
+        a.should == 10;
+        b.should == none;
+        a.should.not == 20;
+        a.should.not == none;
+        (+a).should == some(10);
+        (-b).should == none;
+        (-a).should == some(-10);
+        (+b).should == none;
+        (-b).should == none;
+        (a + 10).should == some(20);
+        (b + 10).should == none;
+        (a - 5).should == some(5);
+        (b - 5).should == none;
+        (a * 20).should == some(200);
+        (b * 20).should == none;
+        (a / 2).should == some(5);
+        (b / 2).should == none;
+        (10 + a).should == some(20);
+        (10 + b).should == none;
+        (15 - a).should == some(5);
+        (15 - b).should == none;
+        (20 * a).should == some(200);
+        (20 * b).should == none;
+        (50 / a).should == some(5);
+        (50 / b).should == none;
         static if (isMutable!(ElementType!T) && isMutable!(T)) {
-            assert(++a == some(11));
-            assert(a++ == some(11));
-            assert(a == some(12));
-            assert(--a == some(11));
-            assert(a-- == some(11));
-            assert(a == some(10));
+            (++a).should == some(11);
+            (a++).should == some(11);
+            a.should == some(12);
+            (--a).should == some(11);
+            (a--).should == some(11);
+            a.should == some(10);
             a = a;
-            assert(a == some(10));
+            a.should == some(10);
             a = 20;
-            assert(a == some(20));
+            a.should == some(20);
         } else {
             static assert(!__traits(compiles, { ++a; }));
             static assert(!__traits(compiles, { a++; }));

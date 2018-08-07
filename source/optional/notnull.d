@@ -40,19 +40,9 @@ struct NotNull(T) {
     import std.traits: isPointer;
     import optional: isNotNull;
 
-    // We only allow a getter if it is a class or pointer type so that it can't be set
-    // to null form the outside. Otherwise just alias the whole thing.
-    static if (isPointer!T || is(T == class))
-    {
-        private T _value;
-        @property T value() { return this._value; }
-        alias value this;
-    }
-    else
-    {
-        T _value;
-        alias _value this;
-    }
+    private T _value;
+    @property ref inout(T) value() inout { return this._value; }
+    alias value this;
 
     @disable void opAssign(typeof(null));
     @disable this();
