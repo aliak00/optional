@@ -40,28 +40,28 @@ unittest {
 
     auto a = some(A());
     auto b = no!A;
-    a.dispatch.aField.shouldEqual(some("aField"));
-    b.dispatch.aField.shouldEqual(no!string);
-    a.dispatch.aNonTemplateFunctionArity0.shouldEqual(some("aNonTemplateFunctionArity0"));
-    b.dispatch.aNonTemplateFunctionArity0.shouldEqual(no!string);
-    a.dispatch.aNonTemplateFunctionArity1("").shouldEqual(some("aNonTemplateFunctionArity1"));
-    b.dispatch.aNonTemplateFunctionArity1("").shouldEqual(no!string);
-    a.dispatch.aProperty.shouldEqual(some("aField"));
-    b.dispatch.aProperty.shouldEqual(no!string);
+    a.dispatch.aField.should == some("aField");
+    b.dispatch.aField.should == no!string;
+    a.dispatch.aNonTemplateFunctionArity0.should == some("aNonTemplateFunctionArity0");
+    b.dispatch.aNonTemplateFunctionArity0.should == no!string;
+    a.dispatch.aNonTemplateFunctionArity1("").should == some("aNonTemplateFunctionArity1");
+    b.dispatch.aNonTemplateFunctionArity1("").should == no!string;
+    a.dispatch.aProperty.should == some("aField");
+    b.dispatch.aProperty.should == no!string;
     a.dispatch.aProperty = "newField";
     b.dispatch.aProperty = "newField";
-    a.dispatch.aProperty.shouldEqual(some("newField"));
-    b.dispatch.aProperty.shouldEqual(no!string);
-    a.dispatch.aTemplateFunctionArity0.shouldEqual(some("aTemplateFunctionArity0"));
-    b.dispatch.aTemplateFunctionArity0.shouldEqual(no!string);
-    a.dispatch.aTemplateFunctionArity1!("").shouldEqual(some("aTemplateFunctionArity1"));
-    b.dispatch.aTemplateFunctionArity1!("").shouldEqual(no!string);
-    a.dispatch.dispatch.shouldEqual(some("dispatch"));
-    b.dispatch.dispatch.shouldEqual(no!string);
-    a.dispatch.aManifestConstant.shouldEqual(some("aManifestConstant"));
-    b.dispatch.aManifestConstant.shouldEqual(no!string);
-    a.dispatch.aStaticImmutable.shouldEqual(some("aStaticImmutable"));
-    b.dispatch.aStaticImmutable.shouldEqual(no!string);
+    a.dispatch.aProperty.should == some("newField");
+    b.dispatch.aProperty.should == no!string;
+    a.dispatch.aTemplateFunctionArity0.should == some("aTemplateFunctionArity0");
+    b.dispatch.aTemplateFunctionArity0.should == no!string;
+    a.dispatch.aTemplateFunctionArity1!("").should == some("aTemplateFunctionArity1");
+    b.dispatch.aTemplateFunctionArity1!("").should == no!string;
+    a.dispatch.dispatch.should == some("dispatch");
+    b.dispatch.dispatch.should == no!string;
+    a.dispatch.aManifestConstant.should == some("aManifestConstant");
+    b.dispatch.aManifestConstant.should == no!string;
+    a.dispatch.aStaticImmutable.should == some("aStaticImmutable");
+    b.dispatch.aStaticImmutable.should == no!string;
 }
 
 @("Should mutatue original optional with reference type")
@@ -77,8 +77,8 @@ unittest {
     auto a = some(new C());
     auto b = a.dispatch.mutate.mutate.mutate;
 
-    assert(a.unwrap.i == 3);
-    assert(b.self.unwrap.i == 3);
+    a.unwrap.i.should == 3;
+    b.self.unwrap.i.should == 3;
 }
 
 @("Should mutatue original optional with value type")
@@ -94,8 +94,8 @@ unittest {
     auto a = some(S());
     auto b = a.dispatch.mutate.mutate.mutate;
 
-    assert(a.unwrap.i == 3);
-    assert(b.self.unwrap.i == 3);
+    a.unwrap.i.should == 3;
+    b.self.unwrap.i.should == 3;
 }
 
 @("Should be safe with null pointer members")
@@ -116,11 +116,11 @@ unittest {
     auto a = some(new A(new B));
     auto b = some(new A);
 
-    assert(a.dispatch.b.f == some(8));
-    assert(a.dispatch.b.m == some(3));
+    a.dispatch.b.f.should == some(8);
+    a.dispatch.b.m.should == some(3);
 
-    assert(b.dispatch.b.f == no!int);
-    assert(b.dispatch.b.m == no!int);
+    b.dispatch.b.f.should == no!int;
+    b.dispatch.b.m.should == no!int;
 }
 
 @("Should allow dispatching of template functions")
