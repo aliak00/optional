@@ -137,6 +137,21 @@ package struct Dispatcher(T) {
     }
 }
 
+package template isDispatcher(T) {
+    static if (is(T U == Dispatcher!U)) {
+        enum isDispatcher = true;
+    } else {
+        enum isDispatcher = false;
+    }
+}
+
+@("Should be valid for trait isDispatcher")
+unittest {
+    import optional: some;
+    struct S { int f() { return 3; } }
+    static assert(isDispatcher!(typeof(some(S()).dispatch())));
+    static assert(isDispatcher!(typeof(some(S()).dispatch.f())));
+}
 
 version(unittest) { import unit_threaded; }
 else              { enum ShouldFail; }

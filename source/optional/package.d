@@ -4,7 +4,7 @@
 module optional;
 
 ///
-@("Example of optional.package")
+@("Example 1")
 unittest {
     // Create empty optional
     auto a = no!int;
@@ -60,7 +60,7 @@ unittest {
 }
 
 /// Phobos equvalent range.only test
-@("Example of optional.package")
+@("Example 2")
 unittest {
     import std.algorithm: filter, joiner, map;
     import std.uni: isUpper;
