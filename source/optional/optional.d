@@ -251,7 +251,7 @@ struct Optional(T) {
     in the original optional value.
 */
 auto ref some(T)(auto ref T value) {
-    import optional.traits: isDispatcher;
+    import optional.dispatcher: isDispatcher;
     static if (isDispatcher!T) {
         return value.self;
     } else {

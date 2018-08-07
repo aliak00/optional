@@ -16,6 +16,7 @@ template isOptional(T) {
 }
 
 ///
+@("Example of isOptional")
 unittest {
     import optional: Optional;
 
@@ -31,6 +32,7 @@ template OptionalTarget(T) if (isOptional!T) {
 }
 
 ///
+@("Example of OptionalTarget")
 unittest {
     import optional: Optional;
 
@@ -50,56 +52,6 @@ unittest {
     }
 }
 
-/**
-    Checks if T is a type that was dispatched from an optional
-
-    When you start a `dispatch` chain on an optional type, a proxy type
-    used only for dispatching is returned that allows chaining like:
-
-    ---
-    struct S1 { int f() { return 3; } }
-    struct S2 { S1 f() { return S1(); } }
-    auto result = some(S2()).dispatch.f.f; // <-- dispatch chain
-    // result is a proxy type
-    auto opt = some(result); // this turns it in to an optional
-    ---
-*/
-template isDispatcher(T) {
-    import optional.dispatcher: Dispatcher;
-    static if (is(T U == Dispatcher!U)) {
-        enum isDispatcher = true;
-    } else {
-        enum isDispatcher = false;
-    }
-}
-
-///
-unittest {
-    import optional: some;
-    struct S { int f() { return 3; } }
-    static assert(isDispatcher!(typeof(some(S()).dispatch())));
-    static assert(isDispatcher!(typeof(some(S()).dispatch.f())));
-}
-
-/**
-    Gives you the type of a dispatch chain
-*/
-template DispatcherTarget(T) if (isDispatcher!T) {
-    import optional.dispatcher: Dispatcher;
-    static if (is(T : Dispatcher!P, P...)) {
-        alias DispatcherTarget = P[0];
-    } else {
-        alias DispatcherTarget = void;
-    }
-}
-
-unittest {
-    import optional: some;
-    struct S { int f() { return 3; } }
-    static assert(is(DispatcherTarget!(typeof(some(S()).dispatch())) == S));
-    static assert(is(DispatcherTarget!(typeof(some(S()).dispatch.f())) == int));
-}
-
 /// Checks if T is type that is `NotNull`
 template isNotNull(T) {
     import optional: NotNull;
@@ -112,6 +64,7 @@ template isNotNull(T) {
 }
 
 ///
+@("Example of isNotNull")
 unittest {
     import optional: NotNull;
 
