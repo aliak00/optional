@@ -165,7 +165,9 @@ c!.f(); // BOOM!
 ```d
 class C { void f() {} }
 Optional!C c = none;
-c.unwrap.f; // BOOM!
+c.front.f; // BOOM!
+
+// Since Optional!T is a range, we "force unwrap" with it's .front property.
 ```
 
 And you can chain functions safely so in case they are null, nothing will happen:
@@ -186,19 +188,26 @@ let n = john?.residence?.numberOfRooms;
 print(n) // prints "nil"
 ```
 
-**D**
+**D**: Unfortunately the lack of operator overloading makes this a bit sad.
 ```d
 class Residence {
     auto numberOfRooms = 1;
 }
 class Person {
-    Optional!Residence residence;
+    Optional!Residence residence = new Residence();
 }
 
 auto john = some(new Person());
-auto n = john.dispatch.residence.numberOfRooms;
 
-writeln(n.some); // prints "[]"
+auto residence = john.dispatch.residence;
+// residence is now a proxy type that contains an Optional!Residence
+// So we need to make it an optional,
+auto optionalResidence = residence.some;
+// which will turn it in to an Optional!(Optional!Residence),
+// and then we can force unwrap it
+auto n = optionalResidence.front.dispatch.numberOfRooms;
+
+writeln(n.some); // print [1]
 
 // Note: Because of a bug in phobos, you cannot print a structure with a disabled post blit.
 // So we have to cast the variable 'n' above back to a "some" type since a call to dispatch
