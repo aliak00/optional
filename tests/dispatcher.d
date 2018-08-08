@@ -130,6 +130,7 @@ unittest {
         void tmethod(T)() {}
     }
     auto c = some(new C());
+
     static assert(__traits(compiles, c.dispatch.method()));
     static assert(__traits(compiles, c.dispatch.tmethod!int()));
 }
@@ -189,4 +190,16 @@ unittest {
     static assert(!__traits(compiles, { d1 = Dispatcher!S.init; } ));
     static assert( __traits(compiles, { d1 = S(); } ));
     static assert( __traits(compiles, { d1 = none; } ));
+}
+
+@("Should dispatch implicitly dispatch if inner chain contains another optional")
+unittest {
+    class A {
+        int val = 7;
+    }
+    class B {
+        auto a = some(new A());
+    }
+    auto b = some(new B());
+    b.dispatch.a.val.should == some(7);
 }
