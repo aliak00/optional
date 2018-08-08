@@ -27,7 +27,7 @@
             "mainSourceFile": "bin/ut.d",
             "dependencies": {
                 "unit-threaded": {
-                    "path": "../contrib/unit-threaded"
+                    "path": "../unit-threaded"
                 }
             }
         },
