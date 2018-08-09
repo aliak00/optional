@@ -5,8 +5,6 @@ module optional.optional;
 
 import optional.internal;
 
-import optional.dispatcher: Dispatcher; // for orElse that takes a Dispatcher, could not use 'from' template for some reason
-
 package struct None {}
 
 /**
@@ -238,10 +236,10 @@ struct Optional(T) {
         b.dispatch.inner.g; // no op.
         ---
     */
-    auto dispatch() inout {
-        import optional.dispatcher: Dispatcher;
-        return inout Dispatcher!(T)(&this);
-    }
+    // auto dispatch() inout {
+    //     import optional.dispatcher: Dispatcher;
+    //     return inout Dispatcher!(T)(&this);
+    // }
 }
 
 /**
@@ -251,12 +249,12 @@ struct Optional(T) {
     in the original optional value.
 */
 auto ref some(T)(auto ref T value) {
-    import optional.dispatcher: isDispatcher;
-    static if (isDispatcher!T) {
-        return value.self;
-    } else {
+    // import optional.dispatcher: isDispatcher;
+    // static if (isDispatcher!T) {
+    //     return value.self;
+    // } else {
         return Optional!T(value);
-    }
+    // }
 }
 
 ///
@@ -336,9 +334,9 @@ T orElse(T)(Optional!T opt, auto ref T value) {
 }
 
 /// Ditto
-T orElse(T)(Dispatcher!T dispatchedOptional, auto ref T value) {
-    return some(dispatchedOptional).orElse(value);
-}
+// T orElse(T)(Dispatcher!T dispatchedOptional, auto ref T value) {
+//     return some(dispatchedOptional).orElse(value);
+// }
 
 ///
 @("Example of orElse()")
@@ -346,19 +344,19 @@ unittest {
     assert(some(3).orElse(9) == 3);
     assert(no!int.orElse(9) == 9);
 
-    struct S {
-        int g() { return 3; }
-    }
+    // struct S {
+    //     int g() { return 3; }
+    // }
 
-    assert(some(S()).dispatch.g.some.orElse(9) == 3);
-    assert(no!S.dispatch.g.some.orElse(9) == 9);
+    // assert(some(S()).dispatch.g.some.orElse(9) == 3);
+    // assert(no!S.dispatch.g.some.orElse(9) == 9);
 
-    class C {
-        int g() { return 3; }
-    }
+    // class C {
+    //     int g() { return 3; }
+    // }
 
-    assert(some(new C()).dispatch.g.orElse(9) == 3);
-    assert(no!C.dispatch.g.orElse(9) == 9);
+    // assert(some(new C()).dispatch.g.orElse(9) == 3);
+    // assert(no!C.dispatch.g.orElse(9) == 9);
 }
 
 deprecated("This will go away, use 'orElse' instead")
