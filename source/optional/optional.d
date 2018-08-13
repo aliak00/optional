@@ -248,7 +248,12 @@ struct Optional(T) {
     */
     auto dispatch() inout {
         import optional.dispatcher: Dispatcher;
-        return inout Dispatcher!(T)(&this);
+        import optional.traits: isOptional, OptionalTarget;
+        static if (isOptional!T) {
+            return inout Dispatcher!(OptionalTarget!T)(&this.front());
+        } else {
+            return inout Dispatcher!(T)(&this);
+        }
     }
 }
 
@@ -259,12 +264,7 @@ struct Optional(T) {
     in the original optional value.
 */
 auto ref some(T)(auto ref T value) {
-    import optional.dispatcher: isDispatcher;
-    static if (isDispatcher!T) {
-        return value.self;
-    } else {
-        return Optional!T(value);
-    }
+    return Optional!T(value);
 }
 
 ///
@@ -353,8 +353,8 @@ unittest {
         int g() { return 3; }
     }
 
-    assert(some(S()).dispatch.g.some.orElse(9) == 3);
-    assert(no!S.dispatch.g.some.orElse(9) == 9);
+    assert(some(S()).dispatch.g.orElse(9) == 3);
+    assert(no!S.dispatch.g.orElse(9) == 9);
 
     class C {
         int g() { return 3; }
@@ -367,9 +367,4 @@ unittest {
 deprecated("This will go away, use 'orElse' instead")
 T or(T)(Optional!T opt, auto ref T value) {
     return opt.empty ? value : opt.front;
-}
-
-deprecated("This will go away, use 'orElse' instead")
-T or(T)(Dispatcher!T dispatchedOptional, auto ref T value) {
-    return some(dispatchedOptional).orElse(value);
 }

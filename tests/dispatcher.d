@@ -75,10 +75,9 @@ unittest {
     }
 
     auto a = some(new C());
-    auto b = a.dispatch.mutate.mutate.mutate;
+    auto b = a.dispatch.mutate.dispatch.mutate.dispatch.mutate;
 
     a.unwrap.i.should == 3;
-    b.self.unwrap.i.should == 3;
 }
 
 @("Should mutatue original optional with value type")
@@ -92,10 +91,9 @@ unittest {
     }
 
     auto a = some(S());
-    auto b = a.dispatch.mutate.mutate.mutate;
+    auto b = a.dispatch.mutate.dispatch.mutate.dispatch.mutate;
 
     a.unwrap.i.should == 3;
-    b.self.unwrap.i.should == 3;
 }
 
 @("Should be safe with null pointer members")
@@ -116,11 +114,11 @@ unittest {
     auto a = some(new A(new B));
     auto b = some(new A);
 
-    a.dispatch.b.f.should == some(8);
-    a.dispatch.b.m.should == some(3);
+    a.dispatch.b.dispatch.f.should == some(8);
+    a.dispatch.b.dispatch.m.should == some(3);
 
-    b.dispatch.b.f.should == no!int;
-    b.dispatch.b.m.should == no!int;
+    b.dispatch.b.dispatch.f.should == no!int;
+    b.dispatch.b.dispatch.m.should == no!int;
 }
 
 @("Should allow dispatching of template functions")
@@ -184,10 +182,10 @@ unittest {
         S other() { return S(); }
     }
     auto a = some(S());
-    auto d1 = a.dispatch.other;
-    auto d2 = a.dispatch.other;
+    auto d1 = a.dispatch;
+    auto d2 = a.dispatch;
     static assert(!__traits(compiles, { d1 = d2; } ));
     static assert(!__traits(compiles, { d1 = Dispatcher!S.init; } ));
-    static assert( __traits(compiles, { d1 = S(); } ));
-    static assert( __traits(compiles, { d1 = none; } ));
+    static assert(!__traits(compiles, { d1 = S(); } ));
+    static assert(!__traits(compiles, { d1 = none; } ));
 }

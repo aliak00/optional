@@ -9,61 +9,47 @@ package struct Dispatcher(T) {
 
     private alias Target = T;
 
-    private union Data {
-        Optional!Target* ptr;
-        Optional!Target val;
-    }
-
-    private Data data = Data.init;
-    private bool isVal = false;
-
-    @property ref inout(Optional!Target) self() inout {
-        return this.isVal ? this.data.val : *this.data.ptr;
-    }
+    private Optional!Target* source;
 
     @disable this(); // Do not allow user creation of a Dispatcher
     @disable this(this) {} // Do not allow blitting either
     @disable void opAssign(Dispatcher!T); // Do not allow identity assignment
 
-    // Copy over the opAssigns from Optional!T. There are two reasons why the alias this opAssigns do not carry over:
-    //  1. Since we define an opAssign, all subtype overloads are hidden so we need to be explicitly redefine them
-    //  2. We define a posblit so an identity opAssign is generated (which has the same consequences as us defining one)
-    public void opAssign()(const None) { self = none; }
-    public void opAssign(U)(auto ref U lhs) { self = lhs; }
-
     // Differentiate between pointers to optionals and non pointers. When a dispatch
     // chain is started, the optional that starts it creates a Dispatcher with its address
     // so that we can start a chain if needed.
     package this(U)(auto ref inout(U*) opt) inout if (isOptional!U) {
-        data.ptr = opt;
-        isVal = false;
+        source = opt;
     }
 
-    private this(U)(auto ref inout(U) opt) inout if (isOptional!U) {
-        data.val = opt;
-        isVal = true;
+    private @property ref Optional!Target get() {
+        return *source;
     }
 
-    public alias self this;
+    public alias get this;
 
     static if (!hasMember!(Target, "toString")) {
         /// Converts value to string
         string toString() const {
-            return self.toString;
+            return source.toString;
         }
     }
     public template opDispatch(string dispatchName) if (hasMember!(Target, dispatchName)) {
 
+        import unit_threaded: writelnUt;
+
         bool empty() {
             import std.traits: isPointer;
             static if (isPointer!Target)
-                return self.empty || self.front is null;
+                return source.empty || source.front is null;
             else
-                return self.empty;
+                return source.empty;
         }
 
-        static string autoReturn(string expression) {
+        static string autoReturn(string expression)() {
+
             return "auto ref val() { return " ~ expression ~ ";" ~ "}" ~ q{
+
                 import std.traits: Unqual;
                 import optional: no, some;
                 alias R = typeof(val());
@@ -76,24 +62,24 @@ package struct Dispatcher(T) {
                         val();
                     }
                 } else static if (isMaybeSelfRefValueType) {
+                    import optional.optionalref;
                     // In this case we want to see if the references that is returned from the dispatched expression is the same
                     // as the value that is held in the Optional that we are dispatching on.
                     // We return the same Dispatcher object if that's true.
                     if (empty()) {
-                        return Dispatcher!(R)(no!R);
+                        return OptionalRef!R(no!R());
                     }
                     R* ptr = &val();
-                    if (ptr == &self.front()) { // is instance the same?
-                        import std.algorithm: move;
-                        return move(this);
+                    if (ptr == &source.front()) { // is instance the same?
+                        return OptionalRef!R(source);
                     } else {
-                        return some(*ptr).dispatch;
+                        return OptionalRef!R(some(*ptr));
                     }
                 } else {
                     if (empty()) {
-                        return Dispatcher!(R)(no!R);
+                        return no!R;
                     } else {
-                        return Dispatcher!(R)(some(val()));
+                        return some(val());
                     }
                 }
             };
@@ -103,7 +89,7 @@ package struct Dispatcher(T) {
         static if (is(typeof(__traits(getMember, Target, dispatchName)) == function)) {
             // non template function
             auto ref opDispatch(Args...)(auto ref Args args) {
-                mixin(autoReturn("self.front." ~ dispatchName ~ "(args)"));
+                mixin(autoReturn!("source.front." ~ dispatchName ~ "(args)"));
             }
         } else static if (hasProperty!(Target, dispatchName)) {
             // read and write properties
@@ -111,45 +97,29 @@ package struct Dispatcher(T) {
             enum property = propertySemantics!(Target, dispatchName);
             static if (property.canRead) {
                 @property auto ref opDispatch()() {
-                    mixin(autoReturn("self.front." ~ dispatchName));
+                    mixin(autoReturn!("source.front." ~ dispatchName));
                 }
             }
             static if (property.canWrite) {
                 @property auto ref opDispatch(V)(auto ref V v) {
-                    mixin(autoReturn("self.front." ~ dispatchName ~ " = v"));
+                    mixin(autoReturn!("source.front." ~ dispatchName ~ " = v"));
                 }
             }
-        } else static if (is(typeof(mixin("self.front." ~ dispatchName)))) {
+        } else static if (is(typeof(mixin("source.front." ~ dispatchName)))) {
             // non-function field
             auto ref opDispatch() {
-                mixin(autoReturn("self.front." ~ dispatchName));
+                mixin(autoReturn!("source.front." ~ dispatchName));
             }
         } else {
             // member template
             template opDispatch(Ts...) {
                 enum targs = Ts.length ? "!Ts" : "";
                 auto ref opDispatch(Args...)(auto ref Args args) {
-                    mixin(autoReturn("self.front." ~ dispatchName ~ targs ~ "(args)"));
+                    mixin(autoReturn!("source.front." ~ dispatchName ~ targs ~ "(args)"));
                 }
             }
         }
     }
-}
-
-package template isDispatcher(T) {
-    static if (is(T U == Dispatcher!U)) {
-        enum isDispatcher = true;
-    } else {
-        enum isDispatcher = false;
-    }
-}
-
-@("Should be valid for trait isDispatcher")
-unittest {
-    import optional: some;
-    struct S { int f() { return 3; } }
-    static assert(isDispatcher!(typeof(some(S()).dispatch())));
-    static assert(isDispatcher!(typeof(some(S()).dispatch.f())));
 }
 
 version(unittest) { import unit_threaded; }
