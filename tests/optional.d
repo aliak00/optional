@@ -14,8 +14,6 @@ alias QualifiedOptionalsOfQualified(T) = AliasSeq!(QualifiedAlisesOf!(Optional!T
 
 private enum isObject(T) = is(T == class) || is(T == interface);
 
-import std.traits: Unqual;
-
 import std.range, std.traits;
 
 @("Should allow equalify with all qualifiers")
