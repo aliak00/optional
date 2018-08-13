@@ -44,7 +44,7 @@ struct Optional(T) {
         return
             "alias R = typeof(" ~ call ~ ");" ~
             "static if (!is(R == void))" ~
-                "return empty ? no!R : some(" ~ call ~ ");" ~
+                "return empty ? no!R : some!R(" ~ call ~ ");" ~
             "else {" ~
                 "if (!empty) {" ~
                     call ~ ";" ~
@@ -89,7 +89,7 @@ struct Optional(T) {
         mixin(setEmpty);
     }
     /// Ditto
-    this(const None) pure {
+    this(const None) inout {
         // For Error: field _value must be initialized in constructor, because it is nested struct
         this._value = T.init;
     }
@@ -139,7 +139,7 @@ struct Optional(T) {
             this._empty = true;
         }
     }
-    void opAssign(U)(auto ref U lhs) if (isMutable!T && isAssignable!(T, U)) {
+    void opAssign(U : T)(auto ref U lhs) if (isMutable!T && isAssignable!(T, U)) {
         this._value = lhs;
         mixin(setEmpty);
     }
@@ -161,20 +161,30 @@ struct Optional(T) {
             alias P = PointerTarget!T;
             return empty || front is null ? no!P : some(*this.front);
         } else {
-            mixin(autoReturn(op ~ "front"));
+            alias R = typeof(mixin(op ~ "_value"));
+            static if (is(R == void)) {
+                if (!empty) mixin(op ~ "_value");
+            } else {
+                alias NoType = typeof(some(mixin(op ~ "_value")));
+                if (!empty) {
+                    return some(mixin(op ~ "_value"));
+                } else {
+                    return NoType();
+                }
+            }
         }
     }
 
     /**
         If the optional is some value it returns an optional of some `value op rhs`
     */
-    auto ref opBinary(string op, U : T)(auto ref U rhs) inout {
+    auto ref opBinary(string op, U : T, this This)(auto ref U rhs) {
         mixin(autoReturn("front" ~ op ~ "rhs"));
     }
     /**
         If the optional is some value it returns an optional of some `lhs op value`
     */
-    auto ref opBinaryRight(string op, U : T)(auto ref U lhs) inout {
+    auto ref opBinaryRight(string op, U : T, this This)(auto ref U lhs) {
         mixin(autoReturn("lhs"  ~ op ~ "front"));
     }
 
@@ -236,10 +246,10 @@ struct Optional(T) {
         b.dispatch.inner.g; // no op.
         ---
     */
-    // auto dispatch() inout {
-    //     import optional.dispatcher: Dispatcher;
-    //     return inout Dispatcher!(T)(&this);
-    // }
+    auto dispatch() inout {
+        import optional.dispatcher: Dispatcher;
+        return inout Dispatcher!(T)(&this);
+    }
 }
 
 /**
@@ -249,12 +259,12 @@ struct Optional(T) {
     in the original optional value.
 */
 auto ref some(T)(auto ref T value) {
-    // import optional.dispatcher: isDispatcher;
-    // static if (isDispatcher!T) {
-    //     return value.self;
-    // } else {
+    import optional.dispatcher: isDispatcher;
+    static if (isDispatcher!T) {
+        return value.self;
+    } else {
         return Optional!T(value);
-    // }
+    }
 }
 
 ///
@@ -333,30 +343,25 @@ T orElse(T)(Optional!T opt, auto ref T value) {
     return opt.empty ? value : opt.front;
 }
 
-/// Ditto
-// T orElse(T)(Dispatcher!T dispatchedOptional, auto ref T value) {
-//     return some(dispatchedOptional).orElse(value);
-// }
-
 ///
 @("Example of orElse()")
 unittest {
     assert(some(3).orElse(9) == 3);
     assert(no!int.orElse(9) == 9);
 
-    // struct S {
-    //     int g() { return 3; }
-    // }
+    struct S {
+        int g() { return 3; }
+    }
 
-    // assert(some(S()).dispatch.g.some.orElse(9) == 3);
-    // assert(no!S.dispatch.g.some.orElse(9) == 9);
+    assert(some(S()).dispatch.g.some.orElse(9) == 3);
+    assert(no!S.dispatch.g.some.orElse(9) == 9);
 
-    // class C {
-    //     int g() { return 3; }
-    // }
+    class C {
+        int g() { return 3; }
+    }
 
-    // assert(some(new C()).dispatch.g.orElse(9) == 3);
-    // assert(no!C.dispatch.g.orElse(9) == 9);
+    assert(some(new C()).dispatch.g.orElse(9) == 3);
+    assert(no!C.dispatch.g.orElse(9) == 9);
 }
 
 deprecated("This will go away, use 'orElse' instead")
