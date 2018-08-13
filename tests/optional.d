@@ -419,3 +419,23 @@ unittest {
     assert(a != none);
     assert(a.unwrap.i == 3);
 }
+
+@("Should dispatch one level deep")
+unittest {
+    class Residence {
+        auto numberOfRooms = 1;
+    }
+    class Person {
+        Optional!Residence residence;
+    }
+
+    auto john = some(new Person());
+    auto n = john.dispatch.residence.dispatch.numberOfRooms;
+
+    n.should == no!int;
+
+    // john.dispatch.residence = new Residence();
+
+    // n = john.dispatch.residence.dispatch.numberOfRooms;
+    // n.should == some(1);
+}

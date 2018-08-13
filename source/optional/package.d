@@ -51,12 +51,12 @@ unittest {
     }
     auto d = some(A());
     assert(d.dispatch.f == some(4));
-    assert(d.dispatch.inner.g == some(7));
+    assert(d.dispatch.inner.dispatch.g == some(7));
 
     // If there's no value in the optional dispatching still works, but produces none
     auto e = no!(A*);
     assert(e.dispatch.f == none);
-    assert(e.dispatch.inner.g == none);
+    assert(e.dispatch.inner.dispatch.g == none);
 }
 
 /// Phobos equvalent range.only test

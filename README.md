@@ -199,19 +199,9 @@ class Person {
 
 auto john = some(new Person());
 
-auto residence = john.dispatch.residence;
-// residence is now a proxy type that contains an Optional!Residence
-// So we need to make it an optional,
-auto optionalResidence = residence.some;
-// which will turn it in to an Optional!(Optional!Residence),
-// and then we can force unwrap it
-auto n = optionalResidence.front.dispatch.numberOfRooms;
+auto n = john.dispatch.residence.dispatch.numberOfRooms;
 
-writeln(n.some); // print [1]
-
-// Note: Because of a bug in phobos, you cannot print a structure with a disabled post blit.
-// So we have to cast the variable 'n' above back to a "some" type since a call to dispatch
-// starts a dispatch chain with a hidden proxy type that has disabled this(this).
+writeln(n); // prints [1]
 ```
 
 
@@ -271,13 +261,13 @@ auto e = no!(A*);
 
 // If there's no value in the optional or it's a pointer that is null, dispatching still works, but produces none
 assert(e.dispatch.f() == none);
-assert(e.dispatch.inner.g() == none);
+assert(e.dispatch.inner.dispatch.g() == none);
 
 // Set a value and now it will work
 e = new A;
 
 assert(e.dispatch.f() == some(4));
-assert(e.dispatch.inner.g() == some(7));
+assert(e.dispatch.inner.dispatch.g() == some(7));
 
 ```
 
