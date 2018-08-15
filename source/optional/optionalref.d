@@ -1,6 +1,6 @@
 module optional.optionalref;
 
-struct OptionalRef(T) {
+package struct OptionalRef(T) {
     import optional: Optional;
 
     private union Data {
@@ -23,7 +23,7 @@ struct OptionalRef(T) {
         isVal = true;
     }
 
-    @property ref get() { if (isVal) return data.val; else return *data.ptr; }
+    public @property ref get() { if (isVal) return data.val; else return *data.ptr; }
 
     alias get this;
 }
