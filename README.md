@@ -18,7 +18,7 @@ Full API docs available [here](https://aliak00.github.io/optional/optional.html)
 
 The purpose of this library is two fold, to provide types that:
 
-1. Eliminate null derefences - [Aka the Billion Dollar Mistake](https://en.wikipedia.org/wiki/Tony_Hoare#Apologies_and_retractions).
+1. Eliminate null dereferences - [Aka the Billion Dollar Mistake](https://en.wikipedia.org/wiki/Tony_Hoare#Apologies_and_retractions).
 2. Show an explicit intent of the absence of a value or the presensce of an invalid value
 
 This is done with the following types:
@@ -28,7 +28,7 @@ This is done with the following types:
 
 An `Optional!T` signifies the intent of your code, works as a range and is therefor useable with Phobos, and allows you to call methods and operators on your types even if they are null references - i.e. safe dispatching.
 
-It is NOT like the `Nullable` type in Phobos. `Nullable` is basically a pointer and applies pointer semantics to value types. It does not giv eyou any safety guarantees. Whereas `Optional` signifies intent on both reference and value types, and is safe to use without need to check `isNull` before every usage. It is also NOT like `std.range.only`. `Only` cannot be used to signify intent of a value being present or not, it's only (heh) usage is to create a range out of a value so that values can act as ranges and be used seamlessly with `std.algorithms`. `Optional!T` has a type constructor - `some` that can be used for this purpose as well.
+It is NOT like the `Nullable` type in Phobos. `Nullable` is basically a pointer and applies pointer semantics to value types. It does not give you any safety guarantees and says nothing about the intent of "I might return a valid value". Whereas `Optional` signifies intent on both reference and value types, and is safe to use without need to check `isNull` before every usage. It is also NOT like `std.range.only`. `Only` cannot be used to signify intent of a value being present or not, nor can be usef for safe dispatching. It's only (heh) usage is to create a range out of a value so that values can act as ranges and be used seamlessly with `std.algorithms`. `Optional!T` has a type constructor - `some` that can be used for this purpose as well.
 
 ## Motivation for Optional
 
@@ -121,19 +121,88 @@ void f() {
 
 In this section we'll see how this Optional is similar to [Scala's `Option[T]`](https://www.scala-lang.org/api/current/scala/Option.html) and [Swift's `Optional<T>`](https://developer.apple.com/documentation/swift/optional) type (similar to Kotlin's [nullable type handling](https://kotlinlang.org/docs/reference/null-safety.html))
 
-Idiomatic usage of optionals in Swift do not involve treating it like a range. They use optional unwrapping to ensure safety and dispatch chaining:
+Idiomatic usage of optionals in Swift do not involve treating it like a range. They use optional unwrapping to ensure safety and dispatch chaining. Scala on the other hand, treats optionals like a range and provides primitives to get at the values safely.
 
-You can unwrap an optional to get at it's value:
+Like in swift, you can chain functions safely so in case they are null, nothing will happen:
+
+**D**: Unfortunately the lack of operator overloading makes dispatching a bit verbose.
+```d
+class Residence {
+    auto numberOfRooms = 1;
+}
+class Person {
+    Optional!Residence residence = new Residence();
+}
+
+auto john = some(new Person());
+
+auto n = john.dispatch.residence.dispatch.numberOfRooms;
+
+writeln(n); // prints [1]
+```
 
 **Swift**
 ```swift
-let string = "123"
-if let number = Int(str) {
-    print(number) // was successfully converted
-} else {
-    print("could not convert string \(string)")
+class Person {
+    var residence: Residence?
+}
+
+class Residence {
+    var numberOfRooms = 1
+}
+
+let john: Person? = Person()
+let n = john?.residence?.numberOfRooms;
+
+print(n) // prints "nil"
+```
+
+Like in Scala, a number of range primitives are provided to help (not to mention we have Phobos as well)
+
+**D**
+```d
+auto x = convert("1").orElse(0);
+
+import std.algorithm: each; import std.stdio: writeln;
+convert("1").each!writeln;
+
+convert("1").match!(
+    (i) => writeln(i),
+    () => writeln("😱"),
+);
+
+// For completeness, the implementation of convert:
+Optional!int convert(string str) {
+    import std.conv: to;
+    scope(failure) return no!int;
+    return some(str.to!int);
 }
 ```
+
+**Scala**
+```scala
+val x = toInt("1").getOrElse(0)
+
+toInt("1").foreach{ i =>
+    println(s"Got an int: $i")
+}
+
+toInt("1") match {
+    case Some(i) => println(i)
+    case None => println("😱")
+}
+
+// Implementation of toInt
+def toInt(s: String): Option[Int] = {
+    try {
+        Some(Integer.parseInt(s.trim))
+    } catch {
+        case e: Exception => None
+    }
+}
+```
+
+Also like in Swift, you can unwrap an optional to get at it's value:
 
 **D**
 ```d
@@ -152,62 +221,20 @@ Optional!int convert(string str) {
 }
 ```
 
-You can force unwrap it (which will produce a crash if you're not sure it's there so this is better avoided):
-
 **Swift**
 ```swift
-class C { void f() {} }
-let c: C? = nil
-c!.f(); // BOOM!
-```
-
-**D**
-```d
-class C { void f() {} }
-Optional!C c = none;
-c.front.f; // BOOM!
-
-// Since Optional!T is a range, we "force unwrap" with it's .front property.
-```
-
-And you can chain functions safely so in case they are null, nothing will happen:
-
-**Swift**
-```swift
-class Person {
-    var residence: Residence?
+let string = "123"
+if let number = Int(str) {
+    print(number) // was successfully converted
+} else {
+    print("could not convert string \(string)")
 }
-
-class Residence {
-    var numberOfRooms = 1
-}
-
-let john: Person? = Person()
-let n = john?.residence?.numberOfRooms;
-
-print(n) // prints "nil"
-```
-
-**D**: Unfortunately the lack of operator overloading makes this a bit sad.
-```d
-class Residence {
-    auto numberOfRooms = 1;
-}
-class Person {
-    Optional!Residence residence = new Residence();
-}
-
-auto john = some(new Person());
-
-auto n = john.dispatch.residence.dispatch.numberOfRooms;
-
-writeln(n); // prints [1]
 ```
 
 
 ## Examples
 
-The following section has example usafe of the various types
+The following section has example usage of the various types
 
 ### Example Optional!T usage
 

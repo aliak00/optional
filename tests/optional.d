@@ -420,6 +420,21 @@ unittest {
     assert(a.unwrap.i == 3);
 }
 
+@("Dispatching on an inner optional should work")
+unittest {
+    struct A {
+        int i = 7;
+        int f() { return 3; }
+    }
+    struct B {
+        Optional!A a;
+    }
+
+    auto b = some(B());
+    b.dispatch.a.dispatch.i.should == some(7);
+    b.dispatch.a.dispatch.f.should == some(3);
+}
+
 @("Should dispatch one level deep")
 unittest {
     class Residence {
@@ -434,8 +449,8 @@ unittest {
 
     n.should == no!int;
 
-    // john.dispatch.residence = new Residence();
+    john.dispatch.residence = new Residence();
 
-    // n = john.dispatch.residence.dispatch.numberOfRooms;
-    // n.should == some(1);
+    n = john.dispatch.residence.dispatch.numberOfRooms;
+    n.should == some(1);
 }

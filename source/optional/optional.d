@@ -225,11 +225,8 @@ struct Optional(T) {
         some or a none.
 
         Returns:
-            A proxy `Dispatcher` to T that is aliased to an Optional!T. This means that all dot operations
-            are dispatched to T if there is a T and operator support is carried out by aliasing
-            to Optional!T.
-
-            To cast back to an Optional!T you can call `some(Optional!(T).dispatch)`
+            A proxy that dispatched all dot operations to T if there is a T and returns an Optional of
+            whatever T.blah would've returned.
         ---
         struct A {
             struct Inner {
@@ -241,19 +238,14 @@ struct Optional(T) {
         auto a = some(A());
         auto b = no!A;
         auto b = no!(A*);
-        a.dispatch.inner.g; // calls inner and calls g
-        b.dispatch.inner.g; // no op.
-        b.dispatch.inner.g; // no op.
+        a.dispatch.inner.dispatch.g; // calls inner and calls g
+        b.dispatch.inner.dispatch.g; // no op.
+        b.dispatch.inner.dispatch.g; // no op.
         ---
     */
     auto dispatch() inout {
         import optional.dispatcher: Dispatcher;
-        import optional.traits: isOptional, OptionalTarget;
-        static if (isOptional!T) {
-            return inout Dispatcher!(OptionalTarget!T)(&this.front());
-        } else {
-            return inout Dispatcher!(T)(&this);
-        }
+        return inout Dispatcher!(T)(&this);
     }
 }
 
@@ -337,10 +329,18 @@ unittest {
 /**
     Returns the value contained within the optional _or else_ another value if there's `no!T`
 
-    Can also be called at the end of a `dispatch` chain
+    Params:
+        opt = the optional to call orElse on
+        value = The value to return if the optional is empty
+        pred = The predicate to call if the optional is empty
 */
-T orElse(T)(Optional!T opt, auto ref T value) {
+auto ref U orElse(T, U)(auto ref Optional!T opt, auto ref U value) if (is(U : T)) {
     return opt.empty ? value : opt.front;
+}
+
+/// Ditto
+auto ref orElse(alias pred, T)(Optional!T opt) if (is(typeof(pred()) : T)) {
+    return opt.empty ? pred() : opt.front;
 }
 
 ///
@@ -360,11 +360,65 @@ unittest {
         int g() { return 3; }
     }
 
-    assert(some(new C()).dispatch.g.orElse(9) == 3);
-    assert(no!C.dispatch.g.orElse(9) == 9);
+    assert(some(new C()).dispatch.g.orElse!(() => 9) == 3);
+    assert(no!C.dispatch.g.orElse!(() => 9) == 9);
 }
 
-deprecated("This will go away, use 'orElse' instead")
-T or(T)(Optional!T opt, auto ref T value) {
-    return opt.empty ? value : opt.front;
+/**
+    Calls an appropriate handler depending on if the optional has a value or not
+
+    Params:
+        opt = The optional to call match on
+        handlers = 2 predicates, one that takes the underlying optional type and another that names nothing
+*/
+template match(handlers...) if (handlers.length == 2) {
+	auto ref match(T)(auto ref Optional!T opt) {
+
+        static if (is(typeof(handlers[0](opt.front)))) {
+            alias someHandler = handlers[0];
+            alias noHandler = handlers[1];
+        } else {
+            alias someHandler = handlers[1];
+            alias noHandler = handlers[0];
+        }
+
+        import bolts: isFunctionOver;
+
+        static assert(
+            isFunctionOver!(someHandler, T) && isFunctionOver!(noHandler),
+            "One handler must have one paramete of type '" ~ T.stringof ~ "' and the other no parameter"
+        );
+
+        alias RS = typeof(someHandler(opt.front));
+        alias RN = typeof(noHandler());
+
+        static assert(
+            is(RS == RN),
+            "Expected two handlers to return same type, found type '" ~ RS.stringof ~ "' and type '" ~ RN.stringof ~ "'",
+        );
+
+        if (opt.empty) {
+            return noHandler();
+        } else {
+            return someHandler(opt.front);
+        }
+	}
+}
+
+unittest {
+    auto a = some(3);
+    auto b = no!int;
+
+    auto ra = a.match!(
+        (int a) => "yes",
+        () => "no",
+    );
+
+    auto rb = b.match!(
+        (a) => "yes",
+        () => "no",
+    );
+
+    assert(ra == "yes");
+    assert(rb == "no");
 }
