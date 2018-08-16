@@ -166,18 +166,18 @@ Like in Scala, a number of range primitives are provided to help (not to mention
 
 **D**
 ```d
-auto x = convert("1").orElse(0);
+auto x = toInt("1").orElse(0);
 
 import std.algorithm: each; import std.stdio: writeln;
-convert("1").each!writeln;
+toInt("1").each!writeln;
 
-convert("1").match!(
+toInt("1").match!(
     (i) => writeln(i),
     () => writeln("😱"),
 );
 
-// For completeness, the implementation of convert:
-Optional!int convert(string str) {
+// For completeness, the implementation of toInt:
+Optional!int toInt(string str) {
     import std.conv: to;
     scope(failure) return no!int;
     return some(str.to!int);
@@ -212,17 +212,10 @@ Also like in Swift, you can unwrap an optional to get at it's value:
 **D**
 ```d
 auto str = "123";
-if (auto number = convert(str).unwrap) {
+if (auto number = toInt(str).unwrap) {
     writeln(*number);
 } else {
     writeln("could not convert string ", str);
-}
-
-// For completeness, the implementation of convert:
-Optional!int convert(string str) {
-    import std.conv: to;
-    scope(failure) return no!int;
-    return some(str.to!int);
 }
 ```
 
