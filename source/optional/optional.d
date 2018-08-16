@@ -386,7 +386,7 @@ template match(handlers...) if (handlers.length == 2) {
 
         static assert(
             isFunctionOver!(someHandler, T) && isFunctionOver!(noHandler),
-            "One handler must have one paramete of type '" ~ T.stringof ~ "' and the other no parameter"
+            "One handler must have one parameter of type '" ~ T.stringof ~ "' and the other no parameter"
         );
 
         alias RS = typeof(someHandler(opt.front));
@@ -405,6 +405,8 @@ template match(handlers...) if (handlers.length == 2) {
 	}
 }
 
+///
+@("Example of match()")
 unittest {
     auto a = some(3);
     auto b = no!int;
