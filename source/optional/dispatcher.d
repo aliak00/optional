@@ -2,259 +2,144 @@ module optional.dispatcher;
 
 import optional.internal;
 
-struct OptionalDispatcher(T, from!"std.typecons".Flag!"refOptional" isRef = from!"std.typecons".No.refOptional) {
+private string autoReturn(string expression)() {
+    return `
+        auto ref expr() {
+            return ` ~ expression ~ `;
+        }
+        ` ~ q{
 
+        import std.traits: Unqual;
+        import optional: no, some;
+
+        auto ref val() {
+            // If the dispatched result is an Optional itself, we flatten it out so that client code
+            // does not have to do a.dispatch.member.front.otherMember - because we'd end up with an
+            // Optional!(Optional!ReturnValue).
+            static if (isOptional!(typeof(expr()))) {
+                return expr().front;
+            } else {
+                return expr();
+            }
+        }
+
+        alias R = typeof(val());
+
+        // This is used to check if the expression results in a reference to a value type and is the same type
+        enum isRefValueType = is(Unqual!R == Unqual!Target) && (is(Target == struct) || is(Target == union)) && is(typeof(&val()));
+
+        static if (is(R == void)) {
+            // no return value, just call
+            if (!empty()) {
+                val();
+            }
+        } else static if (isRefValueType) {
+            import optional.optionalref;
+            if (empty()) {
+                return OptionalRef!R(no!R());
+            }
+            R* ptr = &val();
+            if (ptr == &source.front()) { // is instance the same?
+                return OptionalRef!R(source);
+            } else {
+                return OptionalRef!R(some(*ptr));
+            }
+        } else {
+            if (empty()) {
+                return no!R;
+            } else {
+                return some(val());
+            }
+        }
+    };
+}
+
+package struct Dispatcher(T) {
     import std.traits: hasMember;
-    import std.typecons: Yes;
+    import optional.traits: isOptional;
     import optional: Optional;
 
-    static if (isRef == Yes.refOptional)
-        Optional!T* self;
-    else
-        Optional!T self;
+    private alias Target = T;
 
-    alias self this;
+    private Optional!Target* source;
 
-    template opDispatch(string name) if (hasMember!(T, name)) {
-        import bolts.traits: hasProperty, isManifestAssignable;
-        import optional: no, some;
+    @disable this(); // Do not allow user creation of a Dispatcher
+    @disable this(this) {} // Do not allow blitting either
+    @disable void opAssign(Dispatcher!T); // Do not allow identity assignment
+
+    // Differentiate between pointers to optionals and non pointers. When a dispatch
+    // chain is started, the optional that starts it creates a Dispatcher with its address
+    // so that we can start a chain if needed.
+    private this(U)(auto ref inout(U*) opt) inout if (isOptional!U) {
+        source = opt;
+    }
+
+    public template opDispatch(string dispatchName) if (hasMember!(Target, dispatchName)) {
+
+        ref Optional!Target get() {
+            return *source;
+        }
 
         bool empty() {
             import std.traits: isPointer;
-            static if (isPointer!T)
-                return self.empty || self.front is null;
+            static if (isPointer!Target)
+                return get.empty || get.front is null;
             else
-                return self.empty;
+                return get.empty;
         }
 
-        static string returnDance(string call) {
-            return "alias C = () => " ~ call ~ ";" ~
-                q{
-                    alias R = typeof(C());
-                    static if (!is(R == void))
-                        return empty ? OptionalDispatcher!R(no!R) : OptionalDispatcher!R(some(C()));
-                    else
-                        if (!empty) {
-                            C();
-                        }
-            };
-        }
-        
-        static if (is(typeof(__traits(getMember, T, name)) == function))
-        {
+        import bolts.traits: hasProperty, isManifestAssignable;
+        static if (is(typeof(__traits(getMember, Target, dispatchName)) == function)) {
             // non template function
             auto ref opDispatch(Args...)(auto ref Args args) {
-                mixin(returnDance("self.front." ~ name ~ "(args)"));
+                mixin(autoReturn!("get.front." ~ dispatchName ~ "(args)"));
             }
-        }
-        else static if (hasProperty!(T, name))
-        {
+        } else static if (hasProperty!(Target, dispatchName)) {
+            // read and write properties
             import bolts.traits: propertySemantics;
-            enum property = propertySemantics!(T, name);
-            static if (property.canRead)
-            {
+            enum property = propertySemantics!(Target, dispatchName);
+            static if (property.canRead) {
                 @property auto ref opDispatch()() {
-                    mixin(returnDance("self.front." ~ name));
+                    mixin(autoReturn!("get.front." ~ dispatchName));
                 }
             }
-
-            static if (property.canWrite)
-            {
+            static if (property.canWrite) {
                 @property auto ref opDispatch(V)(auto ref V v) {
-                    mixin(returnDance("self.front." ~ name ~ " = v"));
+                    mixin(autoReturn!("get.front." ~ dispatchName ~ " = v"));
                 }
             }
-        }
-        else static if (isManifestAssignable!(T, name))
-        {
-            enum u = mixin("T." ~ name);
-            alias U = typeof(u);
-            auto opDispatch() {
-                return empty ? OptionalDispatcher!U(no!U) : OptionalDispatcher!(U)(some!U(u));
-            } 
-        }
-        else static if (is(typeof(mixin("self.front." ~ name))))
-        {
-            auto opDispatch() {
-                mixin(returnDance("self.front." ~ name));
+        } else static if (is(typeof(mixin("get.front." ~ dispatchName)))) {
+            // non-function field
+            auto ref opDispatch(Args...)(auto ref Args args) {
+                static if (Args.length == 0) {
+                    mixin(autoReturn!("get.front." ~ dispatchName));
+                } else static if (Args.length == 1) {
+                    mixin(autoReturn!("get.front." ~ dispatchName ~ " = args[0]"));
+                } else {
+                    static assert(
+                        0,
+                        "Dispatched " ~ T.stringof ~ "." ~ dispatchName ~ " was resolved to non-function field that has more than one argument",
+                    );
+                }
             }
-        }
-        else
-        {
+        } else {
             // member template
             template opDispatch(Ts...) {
                 enum targs = Ts.length ? "!Ts" : "";
                 auto ref opDispatch(Args...)(auto ref Args args) {
-                    mixin(returnDance("self.front." ~ name ~ targs ~ "(args)"));
+                    mixin(autoReturn!("get.front." ~ dispatchName ~ targs ~ "(args)"));
                 }
             }
         }
     }
 }
 
+@("Should not allow construction of Dispatcher")
 unittest {
-    import optional: no, some;
-
-    struct A {
-        enum aManifestConstant = "aManifestConstant";
-        static immutable aStaticImmutable = "aStaticImmutable";
-        auto aField = "aField";
-        auto aNonTemplateFunctionArity0() {
-            return "aNonTemplateFunctionArity0";
-        }
-        auto aNonTemplateFunctionArity1(string value) {
-            return "aNonTemplateFunctionArity1";
-        }
-        @property string aProperty() {
-            return aField;
-        }
-        @property void aProperty(string value) {
-            aField = value;
-        }
-        string aTemplateFunctionArity0()() {
-            return "aTemplateFunctionArity0";
-        }
-        string aTemplateFunctionArity1(string T)() {
-            return "aTemplateFunctionArity1";
-        }
-        string dispatch() {
-            return "dispatch";
-        }
-
-        // static int * p = new int;
-        // static immutable int * nullPointer = null;
-        // static immutable int * nonNullPointer = new int(3);
+    struct S {
+        void f() {}
     }
-
-    import bolts.traits: isManifestAssignable;
-
-    auto a = some(A());
-    auto b = no!A;
-    assert(a.dispatch.aField == some("aField"));
-    assert(b.dispatch.aField == no!string);
-    assert(a.dispatch.aNonTemplateFunctionArity0 == some("aNonTemplateFunctionArity0"));
-    assert(b.dispatch.aNonTemplateFunctionArity0 == no!string);
-    assert(a.dispatch.aNonTemplateFunctionArity1("") == some("aNonTemplateFunctionArity1"));
-    assert(b.dispatch.aNonTemplateFunctionArity1("") == no!string);
-    assert(a.dispatch.aProperty == some("aField"));
-    assert(b.dispatch.aProperty == no!string);
-    a.dispatch.aProperty = "newField";
-    b.dispatch.aProperty = "newField";
-    assert(a.dispatch.aProperty == some("newField"));
-    assert(b.dispatch.aProperty == no!string);
-    assert(a.dispatch.aTemplateFunctionArity0 == some("aTemplateFunctionArity0"));
-    assert(b.dispatch.aTemplateFunctionArity0 == no!string);
-    assert(a.dispatch.aTemplateFunctionArity1!("") == some("aTemplateFunctionArity1"));
-    assert(b.dispatch.aTemplateFunctionArity1!("") == no!string);
-    assert(a.dispatch.dispatch == some("dispatch"));
-    assert(b.dispatch.dispatch == no!string);
-    assert(a.dispatch.aManifestConstant == some("aManifestConstant"));
-    assert(b.dispatch.aManifestConstant == no!string);
-    assert(a.dispatch.aStaticImmutable == some("aStaticImmutable"));
-    assert(b.dispatch.aStaticImmutable == no!string);
-}
-
-unittest {
-    import optional: no, some;
-
-    struct Object {
-        int f() {
-            return 7;
-        }
-    }
-    auto a = some(Object());
-    auto b = no!Object;
-
-    assert(a.dispatch.f() == some(7));
-    assert(b.dispatch.f() == no!int);
-}
-
-unittest {
-    import optional: no, some;
-
-    struct B {
-        int f() {
-            return 8;
-        }
-        int m = 3;
-    }
-    struct A {
-        B *b_;
-        B* b() {
-            return b_;
-        }
-    }
-
-    auto a = some(new A(new B));
-    auto b = some(new A);
-
-    assert(a.dispatch.b.f == some(8));
-    assert(a.dispatch.b.m == some(3));
-
-    assert(b.dispatch.b.f == no!int);
-    assert(b.dispatch.b.m == no!int);
-}
-
-unittest {
-
-    import optional: some;
-
-    class C {
-        void method() {}
-        void tmethod(T)() {}
-    }
-    auto c = some(new C());
-    static assert(__traits(compiles, c.dispatch.method()));
-    static assert(__traits(compiles, c.dispatch.tmethod!int()));
-}
-
-unittest {
-    import optional: Optional, none;
-
-    class A {
-        void nonConstNonSharedMethod() {}
-        void constMethod() const {}
-        void sharedNonConstMethod() shared {}
-        void sharedConstMethod() shared const {}
-    }
-
-    alias IA = immutable A;
-    alias CA = const A;
-    alias SA = shared A;
-    alias SCA = shared const A;
-
-    Optional!IA ia;
-    Optional!CA ca;
-    Optional!SA sa;
-    Optional!SCA sca;
-
-    ia = none;
-    ca = none;
-    sa = none;
-    sca = none;
-
-    ia = new IA;
-    ca = new CA;
-    sa = new SA;
-    sca = new SA;
-
-    static assert(!__traits(compiles, () { ia.dispatch.nonConstNonSharedMethod; } ));
-    static assert(!__traits(compiles, () { ca.dispatch.nonConstNonSharedMethod; } ));
-    static assert(!__traits(compiles, () { sa.dispatch.nonConstNonSharedMethod; } ));
-    static assert(!__traits(compiles, () { sca.dispatch.nonConstNonSharedMethod; } ));
-
-    static assert( __traits(compiles, () { ia.dispatch.constMethod; } ));
-    static assert( __traits(compiles, () { ca.dispatch.constMethod; } ));
-    static assert(!__traits(compiles, () { sa.dispatch.constMethod; } ));
-    static assert(!__traits(compiles, () { sca.dispatch.constMethod; } ));
-
-    static assert(!__traits(compiles, () { ia.dispatch.sharedNonConstMethod; } ));
-    static assert(!__traits(compiles, () { ca.dispatch.sharedNonConstMethod; } ));
-    static assert( __traits(compiles, () { sa.dispatch.sharedNonConstMethod; } ));
-    static assert(!__traits(compiles, () { sca.dispatch.sharedNonConstMethod; } ));
-
-    static assert( __traits(compiles, () { ia.dispatch.sharedConstMethod; } ));
-    static assert(!__traits(compiles, () { ca.dispatch.sharedConstMethod; } ));
-    static assert( __traits(compiles, () { sa.dispatch.sharedConstMethod; } ));
-    static assert( __traits(compiles, () { sca.dispatch.sharedConstMethod; } ));
+    static assert(!__traits(compiles, { Dispatcher!S a; }));
+    Dispatcher!S b = Dispatcher!S.init;
+    static assert(!__traits(compiles, { auto c = b; }));
 }

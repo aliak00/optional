@@ -9,7 +9,9 @@ coverage:
 
   status:
     project: true
-    patch: true
-    changes: true
+    patch: off
+    changes:
+      default:
+        threshold: 10%
 
 comment: false

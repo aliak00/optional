@@ -3,11 +3,23 @@
 	"authors": [
 		"Ali Akhtarzada"
 	],
-	"description": "An optional/maybe type with range semantics",
+	"description": "An optional/maybe type with safe dispatchingrange semantics",
 	"copyright": "Copyright © 2018, Ali Akhtarzada",
-	"license": "MIT",
+    "license": "MIT",
 	"targetPath": "bin",
 	"dependencies": {
-        "bolts": "~>0.3.0"
-    }
+        "bolts": "~>0.7.1"
+    },
+    "configurations": [
+        {
+            "name": "unittest",
+            "importPaths": [
+                "./tests"
+            ],
+            "sourcePaths": [
+                "./tests"
+            ],
+            "targetType": "executable"
+        }
+    ]
 }
