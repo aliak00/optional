@@ -1,7 +1,6 @@
 module tests.dispatcher;
 
 import optional;
-import unit_threaded;
 
 @("Should dispatch")
 unittest {
@@ -40,28 +39,28 @@ unittest {
 
     auto a = some(A());
     auto b = no!A;
-    a.dispatch.aField.should == some("aField");
-    b.dispatch.aField.should == no!string;
-    a.dispatch.aNonTemplateFunctionArity0.should == some("aNonTemplateFunctionArity0");
-    b.dispatch.aNonTemplateFunctionArity0.should == no!string;
-    a.dispatch.aNonTemplateFunctionArity1("").should == some("aNonTemplateFunctionArity1");
-    b.dispatch.aNonTemplateFunctionArity1("").should == no!string;
-    a.dispatch.aProperty.should == some("aField");
-    b.dispatch.aProperty.should == no!string;
+    assert(a.dispatch.aField == some("aField"));
+    assert(b.dispatch.aField == no!string);
+    assert(a.dispatch.aNonTemplateFunctionArity0 == some("aNonTemplateFunctionArity0"));
+    assert(b.dispatch.aNonTemplateFunctionArity0 == no!string);
+    assert(a.dispatch.aNonTemplateFunctionArity1("") == some("aNonTemplateFunctionArity1"));
+    assert(b.dispatch.aNonTemplateFunctionArity1("") == no!string);
+    assert(a.dispatch.aProperty == some("aField"));
+    assert(b.dispatch.aProperty == no!string);
     a.dispatch.aProperty = "newField";
     b.dispatch.aProperty = "newField";
-    a.dispatch.aProperty.should == some("newField");
-    b.dispatch.aProperty.should == no!string;
-    a.dispatch.aTemplateFunctionArity0.should == some("aTemplateFunctionArity0");
-    b.dispatch.aTemplateFunctionArity0.should == no!string;
-    a.dispatch.aTemplateFunctionArity1!("").should == some("aTemplateFunctionArity1");
-    b.dispatch.aTemplateFunctionArity1!("").should == no!string;
-    a.dispatch.dispatch.should == some("dispatch");
-    b.dispatch.dispatch.should == no!string;
-    a.dispatch.aManifestConstant.should == some("aManifestConstant");
-    b.dispatch.aManifestConstant.should == no!string;
-    a.dispatch.aStaticImmutable.should == some("aStaticImmutable");
-    b.dispatch.aStaticImmutable.should == no!string;
+    assert(a.dispatch.aProperty == some("newField"));
+    assert(b.dispatch.aProperty == no!string);
+    assert(a.dispatch.aTemplateFunctionArity0 == some("aTemplateFunctionArity0"));
+    assert(b.dispatch.aTemplateFunctionArity0 == no!string);
+    assert(a.dispatch.aTemplateFunctionArity1!("") == some("aTemplateFunctionArity1"));
+    assert(b.dispatch.aTemplateFunctionArity1!("") == no!string);
+    assert(a.dispatch.dispatch == some("dispatch"));
+    assert(b.dispatch.dispatch == no!string);
+    assert(a.dispatch.aManifestConstant == some("aManifestConstant"));
+    assert(b.dispatch.aManifestConstant == no!string);
+    assert(a.dispatch.aStaticImmutable == some("aStaticImmutable"));
+    assert(b.dispatch.aStaticImmutable == no!string);
 }
 
 @("Should mutatue original optional with reference type")
@@ -77,7 +76,7 @@ unittest {
     auto a = some(new C());
     auto b = a.dispatch.mutate.dispatch.mutate.dispatch.mutate;
 
-    a.unwrap.i.should == 3;
+    assert(a.unwrap.i == 3);
 }
 
 @("Should mutatue original optional with value type")
@@ -93,7 +92,7 @@ unittest {
     auto a = some(S());
     auto b = a.dispatch.mutate.dispatch.mutate.dispatch.mutate;
 
-    a.unwrap.i.should == 3;
+    assert(a.unwrap.i == 3);
 }
 
 @("Should be safe with null pointer members")
@@ -114,11 +113,11 @@ unittest {
     auto a = some(new A(new B));
     auto b = some(new A);
 
-    a.dispatch.b.dispatch.f.should == some(8);
-    a.dispatch.b.dispatch.m.should == some(3);
+    assert(a.dispatch.b.dispatch.f == some(8));
+    assert(a.dispatch.b.dispatch.m == some(3));
 
-    b.dispatch.b.dispatch.f.should == no!int;
-    b.dispatch.b.dispatch.m.should == no!int;
+    assert(b.dispatch.b.dispatch.f == no!int);
+    assert(b.dispatch.b.dispatch.m == no!int);
 }
 
 @("Should allow dispatching of template functions")

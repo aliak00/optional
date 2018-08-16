@@ -3,7 +3,7 @@
 	"authors": [
 		"Ali Akhtarzada"
 	],
-	"description": "An optional/maybe type with range semantics",
+	"description": "An optional/maybe type with safe dispatchingrange semantics",
 	"copyright": "Copyright © 2018, Ali Akhtarzada",
 	"license": "MIT",
 	"targetPath": "bin",
@@ -22,12 +22,7 @@
             "sourcePaths": [
                 "./tests"
             ],
-            "targetType": "executable",
-            "preBuildCommands": ["dub run unit-threaded -c gen_ut_main -- -f bin/ut.d"],
-            "mainSourceFile": "bin/ut.d",
-            "dependencies": {
-                "unit-threaded": "*"
-            }
+            "targetType": "executable"
         },
         {
             "name": "playground",
