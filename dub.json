@@ -5,14 +5,11 @@
 	],
 	"description": "An optional/maybe type with safe dispatchingrange semantics",
 	"copyright": "Copyright © 2018, Ali Akhtarzada",
-	"license": "MIT",
+    "license": "MIT",
 	"targetPath": "bin",
 	"dependencies": {
         "bolts": "~>0.7.1"
     },
-    "excludedSourceFiles": [
-        "playground/*"
-    ],
     "configurations": [
         {
             "name": "unittest",
@@ -23,14 +20,6 @@
                 "./tests"
             ],
             "targetType": "executable"
-        },
-        {
-            "name": "playground",
-            "targetType": "executable",
-            "sourcePaths": [
-                "./playground/"
-            ],
-            "mainSourceFile": "./playground/main.d"
         }
     ]
 }

@@ -11,15 +11,6 @@
                 "kind": "test",
                 "isDefault": true
             }
-        },
-        {
-            "label": "run",
-            "type": "shell",
-            "command": "dub run --config=playground",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
         }
     ]
 }
