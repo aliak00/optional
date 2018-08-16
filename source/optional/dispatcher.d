@@ -134,9 +134,6 @@ package struct Dispatcher(T) {
     }
 }
 
-version(unittest) { import unit_threaded; }
-else              { enum ShouldFail; }
-
 @("Should not allow construction of Dispatcher")
 unittest {
     struct S {

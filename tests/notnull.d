@@ -1,16 +1,15 @@
 module tests.notnull;
 
 import optional.notnull;
-import unit_threaded;
 
 @("Should construct non null object by default")
 unittest {
     static class C {}
     auto a = notNull!C;
     auto b = notNull!C;
-    a.shouldNotBeNull;
-    b.shouldNotBeNull;
-    a.should.not == b;
+    assert(a !is null);
+    assert(b !is null);
+    assert(a != b);
 }
 
 @("Should allow copy of other NotNull")
@@ -40,18 +39,18 @@ unittest {
     auto a = notNull!A(3);
     auto b = notNull!B(4);
 
-    a.x.should == 3;
-    b.y.should == 4;
+    assert(a.x == 3);
+    assert(b.y == 4);
 
     static assert(!__traits(compiles, { a = new A(3); }));
     static assert(!__traits(compiles, { a = null; }));
     static assert(!__traits(compiles, { a = b; }));
 
     a = notNull!A(7);
-    a.x.should == 7;
+    assert(a.x == 7);
 
     a = notNull!C;
-    a.x.should == 3;
+    assert(a.x == 3);
 }
 
 @("Should work with a struct")
@@ -59,12 +58,12 @@ unittest {
     static class C { int i; }
     auto c = notNull!C;
     c.i = 3;
-    c.i.should == 3;
+    assert(c.i == 3);
 
     struct S { int i; }
     auto s = notNull!S;
     s.i = 3;
-    s.i.should == 3;
+    assert(s.i == 3);
 }
 
 @("Should work with a struct pointer")
@@ -86,8 +85,8 @@ unittest {
     f(c);
     g(s);
 
-    c.shouldNotBeNull;
-    s.shouldNotBeNull;
+    assert(c !is null);
+    assert(s !is null);
 }
 
 @("Should not implicitly convert to type")
@@ -119,8 +118,8 @@ unittest {
     }
 
     auto c = notNull!C(3, 4);
-    c.a.should == 3;
-    c.b.should == 4;
+    assert(c.a == 3);
+    assert(c.b == 4);
 }
 
 @("Should not be contructable or assignable to possible null")
