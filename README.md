@@ -5,6 +5,7 @@
 Full API docs available [here](https://aliak00.github.io/optional/optional.html)
 
 * [Summary](#summary)
+* [What about std.typecons.Nullable std.range.only?](#what-about-std.typecons.nullable-and-std.range.only?)
 * [Motivation for Optional](#motivation-for-optional)
     * [Use pointers?](#use-pointers)
     * [How about ranges?](#how-about-ranges)
@@ -28,7 +29,11 @@ This is done with the following types:
 
 An `Optional!T` signifies the intent of your code, works as a range and is therefor useable with Phobos, and allows you to call methods and operators on your types even if they are null references - i.e. safe dispatching.
 
-It is NOT like the `Nullable` type in Phobos. `Nullable` is basically a pointer and applies pointer semantics to value types. It does not give you any safety guarantees and says nothing about the intent of "I might return a valid value". Whereas `Optional` signifies intent on both reference and value types, and is safe to use without need to check `isNull` before every usage. It is also NOT like `std.range.only`. `Only` cannot be used to signify intent of a value being present or not, nor can be usef for safe dispatching. It's only (heh) usage is to create a range out of a value so that values can act as ranges and be used seamlessly with `std.algorithms`. `Optional!T` has a type constructor - `some` that can be used for this purpose as well.
+## What about `std.typecons.Nullable` and `std.range.only`?
+
+It is NOT like the `Nullable` type in Phobos. `Nullable` is basically a pointer and applies pointer semantics to value types. It does not give you any safety guarantees and says nothing about the intent of "I might return a valid value". Whereas `Optional` signifies intent on both reference and value types, and is safe to use without need to check `isNull` before every usage.
+
+It is also NOT like `std.range.only`. D's `only` cannot be used to signify intent of a value being present or not, nor can be used for safe dispatching, nor the result of `only(value)` be passed around. It's only (heh) usage is to create a range out of a value so that values can act as ranges and be used seamlessly with `std.algorithms`. This `Optional` has a type constructor - `some` - that can be used for this purpose as well.
 
 ## Motivation for Optional
 
@@ -282,7 +287,7 @@ auto d = some(A());
 // Dispatch to one of its methods
 
 d.dispatch.f(); // calls a.f, returns some(4)
-d.dispatch.inner.g(); // calls a.inner.g, returns some(7)
+d.dispatch.inner.dispatch.g(); // calls a.inner.g, returns some(7)
 
 auto e = no!(A*); 
 
