@@ -5,7 +5,7 @@ module optional.optional;
 
 import optional.internal;
 
-private struct None {}
+package struct None {}
 
 /**
     Represents an empty optional value. This is used to set `Optional`s to have no value
@@ -17,91 +17,98 @@ private struct None {}
 immutable none = None();
 
 /**
-    Optional type. Also known as a Maybe type in some languages.
+    Optional type. Also known as a Maybe or Option type in some languages.
 
-    This can either contain a value or be empty. It works with any value, including
+    This can either contain a value or be `none`. It works with any value, including
     values that can be null. I.e. null is a valid value that can be contained inside
-    an optional if T is a pointer type (or nullable)
+    an optional if T is a pointer type
 
     It also has range like behavior. So this acts as a range that contains 1 element or
-    is empty.
+    is empty. Similar to `std.algorithm.only`
 
-    All operations that can be performed on a T can also be performed on an Optional!T.
-    The behavior of applying an operation on a no value or a null pointer is well defined
+    And all operations that can be performed on a T can also be performed on an Optional!T.
+    The behavior of applying an operation on a no-value or null pointer is well defined
     and safe.
 */
+
 struct Optional(T) {
-    import std.traits: isPointer, hasMember, isMutable, isCallable;
+    import std.traits: isMutable, isSomeFunction, isAssignable, Unqual;
 
-    T[] bag;
+    private enum isNullInvalid = is(T == class) || is(T == interface) || isSomeFunction!T;
+    private enum isNullable = is(typeof(T.init is null));
 
-    this(U)(auto ref U u) pure {
-        this.bag = [u];
+    private T _value = T.init; // Set to init for when T has @disable this()
+    private bool _empty = true;
+
+    private static string autoReturn(string call) {
+        return
+            "alias R = typeof(" ~ call ~ ");" ~
+            "static if (!is(R == void))" ~
+                "return empty ? no!R : some!R(" ~ call ~ ");" ~
+            "else {" ~
+                "if (!empty) {" ~
+                    call ~ ";" ~
+                "}" ~
+            "}";
     }
 
-    this(None) pure {}
-
-    static if (is(T == class))
-    {
-        this(typeof(null)) pure {}
-    }
-
-    static if (isMutable!T)
-    {
-        this(this) {
-            this.bag = this.bag.dup;
+    private enum setEmpty = q{
+        static if (isNullInvalid) {
+            this._empty = this._value is null;
+        } else {
+            this._empty = false;
         }
+    };
+    private void setEmptyState() {
+        mixin(setEmpty);
+    }
+
+    /**
+        Allows you to create an Optional type in place.
+
+        This is useful if type T has a @disable this(this) for e.g.
+    */
+    static Optional!T construct(Args...)(auto ref Args args) {
+        import std.algorithm: move;
+        auto value = T(args);
+        Optional!T opt;
+        opt._value = move(value);
+        opt.setEmptyState;
+        return move(opt);
+    }
+
+    /**
+        Constructs an Optional!T value by assigning T
+
+        If T is of class type, interface type, or some function pointer than passing in null
+        sets the optional to `none` interally
+
+    */
+    this(U : T, this This)(auto ref U value) {
+        this._value = value;
+        mixin(setEmpty);
+    }
+    /// Ditto
+    this(const None) inout {
+        // For Error: field _value must be initialized in constructor, because it is nested struct
+        this._value = T.init;
     }
 
     @property bool empty() const {
-        import std.traits: isSomeFunction;
-        static if (is(T == class) || is(T == interface) || isSomeFunction!T)
-            return this.bag.length == 0 || front is null;
-        else
-            return this.bag.length == 0;
-    }
-    @property auto ref front() inout {
-        return this.bag[0];
-    }
-    void popFront() {
-        this.bag = [];
-    }
-
-    /**
-        Assigns a value to the optional or sets it to `none`.
-
-        If `T` is a class type and `rhs` is of type `Optional!(typeof(null))` then it will
-        remain none if rhs is none else it will become `some!T(null)`
-    */
-    void opAssign()(auto ref T rhs) {
-        if (this.empty) {
-            this.bag = [cast(T)rhs];
+        static if (isNullInvalid) {
+            return this._empty || this._value is null;
         } else {
-            import std.range: hasAssignableElements;
-            // If we are mutable then we don't need to allocate a new bag
-            static if (hasAssignableElements!(T[]))
-            {
-                this.bag[0] = cast(T)rhs;
-            }
-            else
-            {
-                this.bag = [cast(T)rhs];
-            }
+            return this._empty;
         }
     }
-
-    /// Ditto
-    void opAssign(None) {
-        this.bag = [];
-    }
+    @property ref inout(T) front() inout { return this._value; }
+    void popFront() { this._empty = true; }
 
     /**
         Compare two optionals or an optional with some value
-
         Returns:
-            - If the two are optionals then they are both unwrapped and compared. If either are empty 
+            - If the two are optionals then they are both unwrapped and compared. If either are empty
             this returns false. And if compared with `none` and there's a value, also returns false
-
         ---
         auto a = some(3);
         a == some(2); // false
@@ -109,90 +116,117 @@ struct Optional(T) {
         a == none; // false
         ---
     */
-    bool opEquals(U : T)(const auto ref Optional!U rhs) const {
-        return this.bag == rhs.bag;
-    }
-
+    bool opEquals(const None) const { return this.empty; }
     /// Ditto
-    bool opEquals(None) const {
-        return empty;
+    bool opEquals(U : T)(const auto ref Optional!U rhs) const {
+        if (this.empty || rhs.empty) return this.empty == rhs.empty;
+        return this._value == rhs._value;
     }
-
     /// Ditto
     bool opEquals(U : T)(const auto ref U rhs) const {
-        return !empty && front == rhs;
+        return !this.empty && this._value == rhs;
+    }
+
+    /**
+        Assigns a value to the optional or sets it to `none`.
+
+        If T is of class type, interface type, or some function pointer than passing in null
+        sets the optional to `none` internally
+    */
+    void opAssign()(const None) if (isMutable!T) {
+        if (!this.empty) {
+            destroy(this._value);
+            this._empty = true;
+        }
+    }
+    void opAssign(U : T)(auto ref U lhs) if (isMutable!T && isAssignable!(T, U)) {
+        this._value = lhs;
+        mixin(setEmpty);
     }
 
     /**
         Applies unary operator to internal value of optional.
-
         Returns:
             - If the optional is some value it returns an optional of some `op value`.
-
         ---
         auto a = no!(int*);
         auto b = *a; // ok
         b = 3; // b is an Optional!int because of the deref
         ---
     */
-    auto opUnary(string op)() const if (op != "++" && op != "--") {
-        static if (op == "*" && isPointer!T)
-        {
+    auto ref opUnary(string op, this This)() {
+        import std.traits: isPointer;
+        static if (op == "*" && isPointer!T) {
             import std.traits: PointerTarget;
             alias P = PointerTarget!T;
-            return empty || front is null ? no!P : some!P(*front);
-        }
-        else
-        {
-            if (empty) {
-                return no!T;
+            return empty || front is null ? no!P : some(*this.front);
+        } else {
+            alias R = typeof(mixin(op ~ "_value"));
+            static if (is(R == void)) {
+                if (!empty) mixin(op ~ "_value");
             } else {
-                auto val = mixin(op ~ "front");
-                return some!T(val);
+                alias NoType = typeof(some(mixin(op ~ "_value")));
+                if (!empty) {
+                    return some(mixin(op ~ "_value"));
+                } else {
+                    return NoType();
+                }
             }
         }
-    }
-
-    /// Ditto
-    auto opUnary(string op)() if (op == "++" || op == "--") {
-        return empty ? no!T : some!T(mixin(op ~ "front"));
     }
 
     /**
         If the optional is some value it returns an optional of some `value op rhs`
     */
-    auto ref opBinary(string op, U : T)(auto ref U rhs) const {
-        return empty ? no!T : some!T(mixin("front"  ~ op ~ "rhs"));
+    auto ref opBinary(string op, U : T, this This)(auto ref U rhs) {
+        mixin(autoReturn("front" ~ op ~ "rhs"));
+    }
+    /**
+        If the optional is some value it returns an optional of some `lhs op value`
+    */
+    auto ref opBinaryRight(string op, U : T, this This)(auto ref U lhs) {
+        mixin(autoReturn("lhs"  ~ op ~ "front"));
     }
 
     /**
-        If the optional is some value it returns an optional of some `rhs op value`
+        If there's a value that's callable it will be called else it's a noop
+
+        Returns:
+            Optional value of whatever `T(args)` returns
     */
-    auto ref opBinaryRight(string op, U : T)(auto ref U rhs) const {
-        return empty ? no!T : some!T(mixin("rhs"  ~ op ~ "front"));
+    auto ref opCall(Args...)(Args args) if (from!"std.traits".isCallable!T) {
+        mixin(autoReturn(q{ this._value(args) }));
     }
 
-    auto ref opCall(Args...)(Args args) if (isCallable!T) {
-        return empty ? no!(typeof(this.bag[0](args))) : some(this.bag[0](args));
+    // auto ref opIndexAssign(U : T, Args...(auto ref U value, auto ref Args...);
+
+    /// Converts value to string
+    string toString() const {
+        import std.conv: to; import std.traits;
+        if (empty) {
+            return "[]";
+        }
+        // Cast to unqual if we can copy so writing it out does the right thing.
+        static if (isCopyable!T) {
+            immutable str = to!string(cast(Unqual!T)this._value);
+        } else {
+            immutable str = to!string(this._value);
+        }
+        return "[" ~ str ~ "]";
     }
 
     /**
         Allows you to call dot operator on the internal value if present
-
         If there is no value inside, or it is null, dispatching will still work but will
-        produce a series of noops.
+        produce a series of no-ops.
 
         If you try and call a manifest constant or static data on T then whether the manifest
         or static immutable data is called depends on if the instance it is called on is a
         some or a none.
 
         Returns:
-            A proxy to T that is aliased to an Optional!T. This means that all dot operations
-            are dispatched to T if there is a T and operator support is carried out by aliasing
-            to Optional!T.
-
-            To cast back to an Optional!T you can call `some(Optional!(T).dispatch)`
-
+            A proxy that dispatched all dot operations to T if there is a T and returns an Optional of
+            whatever T.blah would've returned.
         ---
         struct A {
             struct Inner {
@@ -204,94 +238,15 @@ struct Optional(T) {
         auto a = some(A());
         auto b = no!A;
         auto b = no!(A*);
-        a.dispatch.inner.g; // calls inner and calls g
-        b.dispatch.inner.g; // no op.
-        b.dispatch.inner.g; // no op.
+        a.dispatch.inner.dispatch.g; // calls inner and calls g
+        b.dispatch.inner.dispatch.g; // no op.
+        b.dispatch.inner.dispatch.g; // no op.
         ---
     */
-    auto dispatch() {
-        import std.typecons: Yes;
-        import optional.dispatcher;
-        return OptionalDispatcher!(T, Yes.refOptional)(&this);
+    auto dispatch() inout {
+        import optional.dispatcher: Dispatcher;
+        return inout Dispatcher!(T)(&this);
     }
-    static if (is(T == class))
-    {
-        /**
-            Get pointer to value. If T is a reference type then T is returned
-
-            Use this to safely access reference types, or to get at the raw value
-            of non reference types via a non-null pointer.
-
-            Returns:
-                Pointer to value or null if empty. If T is reference type, returns reference
-        */
-        inout T unwrap() const {
-            return this.empty || (front is null) ? null : cast(T)front;
-        }
-    }
-    else
-    {
-        /// Ditto
-        inout T* unwrap() const {
-            return this.empty ? null : cast(T*)&this.bag[0];
-        }
-    }
-
-    /// Converts value to string `"some(T)"` or `"no!T"`
-    string toString() {
-        import std.conv: to;
-        if (empty) {
-            return "no!" ~ T.stringof;
-        }
-        // toString for class types that are immutable is not implemented by default
-        // toString for shared types is not implemeneted at all
-        static if (!__traits(compiles, to!string(front)))
-        {
-            // TODO: This seems to not be necessary as of dmd 2.80
-            return "some!" ~ T.stringof;
-        }
-        else
-        {
-            // TODO: UFCS on front.to does not work here.
-            return "some!" ~ T.stringof ~ "(" ~ to!string(front) ~ ")";
-        }
-    }
-}
-
-/**
-    Returns the value contained within the optional _or_ another value if there no!T
-
-    Can also be called at the end of a `dispatch` chain
-*/
-T or(T)(Optional!T opt, lazy T orValue) {
-    return opt.empty ? orValue : opt.front;
-}
-
-/// Ditto
-auto or(OD, T)(OD dispatchedOptional, lazy T orValue)
-if (from!"optional.traits".isOptionalDispatcher!OD
-    && is(T == from!"optional.traits".OptionalDispatcherTarget!OD)) {
-    return some(dispatchedOptional).or(orValue);
-}
-
-///
-unittest {
-    assert(some(3).or(9) == 3);
-    assert(no!int.or(9) == 9);
-
-    struct S {
-        int g() { return 3; }
-    }
-
-    assert(some(S()).dispatch.g.some.or(9) == 3);
-    assert(no!S.dispatch.g.some.or(9) == 9);
-
-    class C {
-        int g() { return 3; }
-    }
-
-    assert(some(new C()).dispatch.g.or(9) == 3);
-    assert(no!C.dispatch.g.or(9) == 9);
 }
 
 /**
@@ -300,26 +255,12 @@ unittest {
     Calling some on the result of a dispatch chain will result
     in the original optional value.
 */
-auto some(T)(T value) {
-    import optional.dispatcher: OptionalDispatcher;
-    static if (is(T : OptionalDispatcher!P, P...))
-    {
-        static if (P[1]) // refOptional
-        {
-            return *value.self;
-        }
-        else
-        {
-            return value.self;
-        }
-    }
-    else
-    {
-        return Optional!T(value);
-    }
+auto ref some(T)(auto ref T value) {
+    return Optional!T(value);
 }
 
 ///
+@("Example of some()")
 unittest {
     auto a = no!int;
     assert(a == none);
@@ -331,42 +272,16 @@ unittest {
     assert([1, 2, 3].map!some.equal([some(1), some(2), some(3)]));
 }
 
-unittest {
-    struct S {
-        int f() { return 3; }
-    }
-
-    static assert(is(typeof(some(S()).dispatch.some) == Optional!S));
-}
-
-unittest {
-    class C {
-        int i = 0;
-        C mutate() {
-            this.i++;
-            return this;
-        }
-    }
-
-    auto a = some(new C());
-    auto b = a.dispatch.mutate.mutate.mutate;
-
-    // Unwrap original should have mutated the object
-    assert(a.unwrap.i == 3);
-
-    // some(Dispatcher result) should be original Optional type
-    static assert(is(typeof(b.some) == Optional!C));
-    assert(b.some.unwrap.i == 3);
-}
-
 /// Type constructor for an optional having no value of `T`
 auto no(T)() {
     return Optional!T();
 }
 
 ///
+@("Example of no()")
 unittest {
     auto a = no!(int*);
+    assert(a == none);
     assert(*a != 9);
     a = new int(9);
     assert(*a == 9);
@@ -375,289 +290,137 @@ unittest {
     assert(a != none);
 }
 
-unittest {
-    import std.meta: AliasSeq;
-    import std.conv: to;
-    import std.algorithm: map;
-    foreach (T; AliasSeq!(Optional!int, const Optional!int, immutable Optional!int)) {
-        T a = 10;
-        T b = none;
-        static assert(!__traits(compiles, { int x = a; }));
-        static assert(!__traits(compiles, { void func(int n){} func(a); }));
-        assert(a == 10);
-        assert(b == none);
-        assert(a != 20);
-        assert(a != none);
-        assert(+a == some(10));
-        assert(-b == none);
-        assert(-a == some(-10));
-        assert(+b == none);
-        assert(-b == none);
-        assert(a + 10 == some(20));
-        assert(b + 10 == none);
-        assert(a - 5 == some(5));
-        assert(b - 5 == none);
-        assert(a * 20 == some(200));
-        assert(b * 20 == none);
-        assert(a / 2 == some(5));
-        assert(b / 2 == none);
-        assert(10 + a == some(20));
-        assert(10 + b == none);
-        assert(15 - a == some(5));
-        assert(15 - b == none);
-        assert(20 * a == some(200));
-        assert(20 * b == none);
-        assert(50 / a == some(5));
-        assert(50 / b == none);
-        static if (is(T == Optional!int))  // mutable
-        {
-            assert(++a == some(11));
-            assert(a++ == some(11));
-            assert(a == some(12));
-            assert(--a == some(11));
-            assert(a-- == some(11));
-            assert(a == some(10));
-            a = a;
-            assert(a == some(10));
-            a = 20;
-            assert(a == some(20));
-        }
+/**
+    Get pointer to value. If T is a reference type then T is returned
+
+    Use this to safely access reference types, or to get at the raw value
+    of non reference types via a non-null pointer.
+
+    It is recommended that you access internal values by using `orElse` instead though
+
+    Returns:
+        Pointer to value or null if empty. If T is reference type, returns reference
+*/
+auto ref unwrap(T)(auto ref T opt) if (from!"optional.traits".isOptional!T) {
+    import optional.traits: OptionalTarget;
+    alias U = OptionalTarget!T;
+    static if (is(U == class) || is(U == interface)) {
+        return opt.empty ? null : opt.front;
+    } else {
+        return opt.empty ? null : &opt.front();
     }
 }
 
+///
+@("Example of unwrap()")
 unittest {
-    import std.algorithm: map;
-    import std.conv: to;
-    auto a = some(10);
-    auto b = no!int;
-    assert(a.map!(to!double).equal([10.0]));
-    assert(b.map!(to!double).empty);
+    class C {
+        int i = 3;
+    }
+
+    auto n = no!C;
+    if (auto u = n.unwrap) {} else n = some!C(null);
+    assert(n == none);
+    if (auto u = n.unwrap) {} else n = new C();
+    assert(n.unwrap !is null);
+    assert(n.unwrap.i == 3);
 }
 
+/**
+    Returns the value contained within the optional _or else_ another value if there's `no!T`
+
+    Params:
+        opt = the optional to call orElse on
+        value = The value to return if the optional is empty
+        pred = The predicate to call if the optional is empty
+*/
+auto ref U orElse(T, U)(auto ref Optional!T opt, auto ref U value) if (is(U : T)) {
+    return opt.empty ? value : opt.front;
+}
+
+/// Ditto
+auto ref orElse(alias pred, T)(Optional!T opt) if (is(typeof(pred()) : T)) {
+    return opt.empty ? pred() : opt.front;
+}
+
+///
+@("Example of orElse()")
+unittest {
+    assert(some(3).orElse(9) == 3);
+    assert(no!int.orElse(9) == 9);
+
+    struct S {
+        int g() { return 3; }
+    }
+
+    assert(some(S()).dispatch.g.orElse(9) == 3);
+    assert(no!S.dispatch.g.orElse(9) == 9);
+
+    class C {
+        int g() { return 3; }
+    }
+
+    assert(some(new C()).dispatch.g.orElse!(() => 9) == 3);
+    assert(no!C.dispatch.g.orElse!(() => 9) == 9);
+}
+
+/**
+    Calls an appropriate handler depending on if the optional has a value or not
+
+    Params:
+        opt = The optional to call match on
+        handlers = 2 predicates, one that takes the underlying optional type and another that names nothing
+*/
+template match(handlers...) if (handlers.length == 2) {
+	auto ref match(T)(auto ref Optional!T opt) {
+
+        static if (is(typeof(handlers[0](opt.front)))) {
+            alias someHandler = handlers[0];
+            alias noHandler = handlers[1];
+        } else {
+            alias someHandler = handlers[1];
+            alias noHandler = handlers[0];
+        }
+
+        import bolts: isFunctionOver;
+
+        static assert(
+            isFunctionOver!(someHandler, T) && isFunctionOver!(noHandler),
+            "One handler must have one parameter of type '" ~ T.stringof ~ "' and the other no parameter"
+        );
+
+        alias RS = typeof(someHandler(opt.front));
+        alias RN = typeof(noHandler());
+
+        static assert(
+            is(RS == RN),
+            "Expected two handlers to return same type, found type '" ~ RS.stringof ~ "' and type '" ~ RN.stringof ~ "'",
+        );
+
+        if (opt.empty) {
+            return noHandler();
+        } else {
+            return someHandler(opt.front);
+        }
+	}
+}
+
+///
+@("Example of match()")
 unittest {
     auto a = some(3);
-    assert(a + 3 == some(6));
     auto b = no!int;
-    assert(b + 3 == none);
-}
 
-unittest {
-    auto n = no!(int);
-    auto nc = no!(const int);
-    auto ni = no!(immutable int);
-    auto o = some!(int)(3);
-    auto oc = some!(const int)(3);
-    auto oi = some!(immutable int)(3);
+    auto ra = a.match!(
+        (int a) => "yes",
+        () => "no",
+    );
 
-    assert(o != n);
-    assert(o != nc);
-    assert(o != ni);
-    assert(oc != n);
-    assert(oc != nc);
-    assert(oc != ni);
-    assert(oi != n);
-    assert(oi != nc);
-    assert(oi != ni);
+    auto rb = b.match!(
+        (a) => "yes",
+        () => "no",
+    );
 
-    assert(o == oc);
-    assert(o == oi);
-    assert(oc == oi);
-
-    assert(n == nc);
-    assert(n == ni);
-    assert(nc == ni);
-
-    o = 4;
-    n = 4;
-    assert(o == n);
-
-    static assert(is(typeof(n = 3)));
-    static assert(is(typeof(ni = 3)));
-    static assert(is(typeof(nc = 3)));
-    static assert(is(typeof(o = 3)));
-    static assert(is(typeof(oi = 3)));
-    static assert(is(typeof(oc = 3)));
-}
-
-unittest {
-    static assert(!__traits(compiles, some(3).max));
-    static assert(!__traits(compiles, some(some(3)).max));
-}
-
-unittest {
-    import std.algorithm: filter;
-    import std.range: array;
-    const arr = [
-        no!int,
-        some(3),
-        no!int,
-        some(7),
-    ];
-    assert(arr.filter!(a => a != none).array == [some(3), some(7)]);
-}
-
-unittest {
-    assert(no!int.toString == "no!int");
-    assert(some(3).toString == "some!int(3)");
-    static class A {
-        override string toString() { return "Yo"; }
-    }
-    Object a = new A;
-    assert(some(cast(A)a).toString == "some!A(Yo)");
-    import std.algorithm: startsWith;
-    assert(some(cast(immutable A)a).toString.startsWith("some!immutable(A)"));
-}
-
-unittest {
-    import std.uni: toUpper;
-    import std.range: only;
-    import std.algorithm: joiner, map;
-
-    static maybeValues = [no!string, some("hello"), some("world")];
-    assert(maybeValues.joiner.map!toUpper.joiner(" ").equal("HELLO WORLD"));
-}
-
-unittest {
-    import std.algorithm.iteration : each, joiner;
-    static maybeValues = [some("hello"), some("world"), no!string];
-    uint count = 0;
-    foreach (value; maybeValues.joiner) ++count;
-    assert(count == 2);
-    maybeValues.joiner.each!(value => ++count);
-    assert(count == 4);
-}
-
-unittest {
-    Optional!(const int) opt = Optional!(const int)(42);
-    static assert(!__traits(compiles, opt = some(24)));
-    assert(!opt.empty);
-    assert(opt.front == 42);
-    opt = none;
-    assert(opt.empty);
-}
-
-unittest {
-    auto n = no!(int);
-    auto nc = no!(const int);
-    auto ni = no!(immutable int);
-    auto o = some!(int)(3);
-    auto oc = some!(const int)(3);
-    auto oi = some!(immutable int)(3);
-
-    assert(n.unwrap == null);
-    assert(nc.unwrap == null);
-    assert(ni.unwrap == null);
-
-    auto uo = o.unwrap;
-    auto uoc = oc.unwrap;
-    auto uoi = oi.unwrap;
-
-    assert(uo != null);
-    assert(uoc != null);
-    assert(uoi != null);
-
-    assert(*uo == 3);
-    assert(*uoc == 3);
-    assert(*uoi == 3);
-
-    *uo = 4;
-    assert(o == some(4));
-
-    static assert(!__traits(compiles, *uoc = 4));
-    static assert(!__traits(compiles, *uoi = 4));
-
-    static assert(is(typeof(uoc) == const(int)*));
-    static assert(is(typeof(uoi) == immutable(int)*));
-
-    assert(o == some(4));
-}
-
-unittest {
-    auto a = no!(int*);
-    auto b = *a;
-    assert(a == no!(int*));
-    assert(b == no!(int));
-    b = 3;
-    assert(b == some(3));
-    a = null;
-    assert(a == some!(int*)(null));
-    assert(*a == no!int);
-}
-
-unittest {
-    struct S {
-        int i = 1;
-    }
-    class C {
-        int i = 1;
-    }
-    auto a = some!C(null);
-    auto b = some!(S*)(null);
-
-    assert(a.unwrap is null);
-    assert(b.unwrap != null);
-    assert(*b.unwrap == null);
-
-    a = new C();
-    bool aUnwrapped = false;
-    if (auto c = a.unwrap) {
-        aUnwrapped = true;
-        assert(c.i == 1);
-    }
-    assert(aUnwrapped);
-
-    b = new S();
-    bool bUnwrapped = false;
-    if (auto s = b.unwrap) {
-        bUnwrapped = true;
-        assert((*s).i == 1);
-    }
-    assert(bUnwrapped);
-
-    auto c = no!int;
-    assert(c.unwrap is null);
-    c = some(3);
-    bool cUnwrapped = false;
-    if (auto p = c.unwrap) {
-        cUnwrapped = true;
-        assert(*p == 3);
-    }
-    assert(cUnwrapped);
-}
-
-unittest {
-    class C {}
-    auto a = no!C;
-    auto b = some(new C);
-    b = none;
-    Optional!C c = null;
-    auto d = some(new C);
-    d = null;
-    assert(a == none);
-    assert(a.unwrap is null);
-    assert(a.empty);
-    assert(b == none);
-    assert(b.unwrap is null);
-    assert(b.empty);
-    assert(c == none);
-    assert(c.unwrap is null);
-    assert(c.empty);
-    assert(d == none);
-    assert(d.unwrap is null);
-    assert(d.empty);
-}
-
-unittest {
-    auto a = some!(immutable int)(1);
-    a = 2;
-    assert(a == some(2));
-}
-
-unittest {
-    Optional!(immutable int) oii = some!(immutable int)(5);
-    immutable(int)* p = oii.unwrap;
-    assert(*p == 5);
-    oii = 4;
-    assert(*oii.unwrap == 4);
-    assert(*p == 5);
+    assert(ra == "yes");
+    assert(rb == "no");
 }
