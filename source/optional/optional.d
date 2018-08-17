@@ -261,7 +261,8 @@ auto ref some(T)(auto ref T value) {
 
 ///
 @("Example of some()")
-unittest {
+@nogc @safe unittest {
+    import std.range: only;
     auto a = no!int;
     assert(a == none);
     a = 9;
@@ -269,7 +270,7 @@ unittest {
     assert(a != none);
 
     import std.algorithm: map;
-    assert([1, 2, 3].map!some.equal([some(1), some(2), some(3)]));
+    assert(only(1, 2, 3).map!some.equal(only(some(1), some(2), some(3))));
 }
 
 /// Type constructor for an optional having no value of `T`
@@ -279,7 +280,7 @@ auto no(T)() {
 
 ///
 @("Example of no()")
-unittest {
+@safe unittest {
     auto a = no!(int*);
     assert(a == none);
     assert(*a != 9);
@@ -407,7 +408,7 @@ template match(handlers...) if (handlers.length == 2) {
 
 ///
 @("Example of match()")
-unittest {
+@nogc @safe unittest {
     auto a = some(3);
     auto b = no!int;
 

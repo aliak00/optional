@@ -416,7 +416,7 @@ unittest {
 
     auto a = Optional!S.construct(3);
     assert(a != none);
-    assert(a.unwrap.i == 3);
+    assert(a.front.i == 3);
 }
 
 @("Dispatching on an inner optional should work")
