@@ -19,7 +19,9 @@
             "sourcePaths": [
                 "./tests"
             ],
-            "targetType": "executable"
+            "dependencies": {
+                "silly": "~>0.0.2"
+            }
         }
     ]
 }
