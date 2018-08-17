@@ -16,7 +16,7 @@ private enum isObject(T) = is(T == class) || is(T == interface);
 import std.range, std.traits;
 
 @("Should allow equalify with all qualifiers")
-unittest {
+@nogc @safe unittest {
     foreach (T; QualifiedOptionalsOfQualified!int) {
         auto a = T();
         auto b = T(3);
@@ -29,7 +29,7 @@ unittest {
 }
 
 @("Should wotk with opUnary, opBinary, and opRightBinary")
-unittest {
+@nogc @safe unittest {
     import std.meta: AliasSeq;
     import std.traits: isMutable;
     import std.range: ElementType;
@@ -86,7 +86,7 @@ unittest {
 }
 
 @("Should be mappable")
-unittest {
+@safe unittest {
     import std.algorithm: map;
     import std.conv: to;
     auto a = some(10);
@@ -96,7 +96,7 @@ unittest {
 }
 
 @("Should have opBinary return an optional")
-unittest {
+@nogc @safe unittest {
     auto a = some(3);
     assert(a + 3 == some(6));
     auto b = no!int;
@@ -105,7 +105,7 @@ unittest {
 
 
 @("Should allow equality and opAssign between all qualified combinations")
-unittest {
+@nogc @safe unittest {
     import std.meta: AliasSeq;
 
     alias U = int;
@@ -178,7 +178,7 @@ unittest {
 }
 
 @("Should unwrap the the correct qualified type for reference type")
-unittest {
+@safe unittest {
     static class C {}
     auto nm = no!(C);
     auto nc = no!(const C);
@@ -196,13 +196,13 @@ unittest {
 }
 
 @("Should not allow properties of type to be reachable")
-unittest {
+@nogc @safe unittest {
     static assert(!__traits(compiles, some(3).max));
     static assert(!__traits(compiles, some(some(3)).max));
 }
 
 @("Should be filterable")
-unittest {
+@safe unittest {
     import std.algorithm: filter;
     import std.range: array;
     foreach (T; QualifiedOptionalsOfQualified!int) {
@@ -231,15 +231,15 @@ unittest {
 }
 
 @("Should be joinerable and eachable")
-unittest {
+@safe unittest {
     import std.uni: toUpper;
     import std.range: only;
     import std.algorithm: joiner, map, each;
 
-    static maybeValues = [no!string, some("hello"), some("world")];
+    static maybeValues = only(no!string, some("hello"), some("world"));
     assert(maybeValues.joiner.map!toUpper.joiner(" ").equal("HELLO WORLD"));
 
-    static moreValues = [some("hello"), some("world"), no!string];
+    static moreValues = only(some("hello"), some("world"), no!string);
     uint count = 0;
     foreach (value; moreValues.joiner) ++count;
     assert(count == 2);
@@ -248,14 +248,14 @@ unittest {
 }
 
 @("Should not allow assignment to const")
-unittest {
+@nogc @safe unittest {
     Optional!(const int) opt = Optional!(const int)(42);
     static assert(!__traits(compiles, opt = some(24)));
     static assert(!__traits(compiles, opt = none));
 }
 
 @("Should have correct unwrapped pointer type")
-unittest {
+@nogc unittest {
     auto n = no!(int);
     auto nc = no!(const int);
     auto ni = no!(immutable int);
@@ -292,7 +292,7 @@ unittest {
 }
 
 @("Should treat null as valid values for pointer types")
-unittest {
+@nogc @safe unittest {
     auto a = no!(int*);
     auto b = *a;
     assert(a == no!(int*));
@@ -370,13 +370,13 @@ unittest {
 }
 
 @("Should not allow assignment to immutable")
-unittest {
+@nogc @safe unittest {
     auto a = some!(immutable int)(1);
     static assert(!__traits(compiles, { a = 2; }));
 }
 
 @("Should forward to opCall if callable")
-unittest {
+@nogc @safe unittest {
     static int f0(int) { return 4; }
     alias A = typeof(&f0);
     auto a0 = some(&f0);
@@ -393,7 +393,7 @@ unittest {
 }
 
 @("Should work with disabled this")
-unittest {
+@nogc @safe unittest {
     struct S {
         @disable this();
         this(int) {}
@@ -406,7 +406,7 @@ unittest {
 }
 
 @("Should work with disabled post blit")
-unittest {
+@nogc @safe unittest {
     import std.conv: to;
     static struct S {
         int i;
