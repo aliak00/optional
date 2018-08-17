@@ -4,15 +4,12 @@
 module optional.traits;
 
 import optional.internal;
+import std.traits : isInstanceOf;
 
 /// Checks if T is an optional type
 template isOptional(T) {
     import optional: Optional;
-    static if (is(T U == Optional!U)) {
-        enum isOptional = true;
-    } else {
-        enum isOptional = false;
-    }
+    enum isOptional = isInstanceOf!(Optional, T);
 }
 
 ///
@@ -55,12 +52,8 @@ unittest {
 /// Checks if T is type that is `NotNull`
 template isNotNull(T) {
     import optional: NotNull;
-
-    static if (is(T U == NotNull!U)){
-        enum isNotNull = true;
-    } else {
-        enum isNotNull = false;
-    }
+    
+    enum isNotNull = isInstanceOf!(NotNull, T);
 }
 
 ///
