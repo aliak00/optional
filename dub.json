@@ -20,7 +20,7 @@
                 "./tests"
             ],
             "dependencies": {
-                "silly": "~>0.0.2"
+                "silly": "~>0.2.0"
             }
         }
     ]
