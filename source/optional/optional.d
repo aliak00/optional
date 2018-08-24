@@ -302,10 +302,8 @@ auto no(T)() {
     Returns:
         Pointer to value or null if empty. If T is reference type, returns reference
 */
-auto ref unwrap(T)(auto ref T opt) if (from!"optional.traits".isOptional!T) {
-    import optional.traits: OptionalTarget;
-    alias U = OptionalTarget!T;
-    static if (is(U == class) || is(U == interface)) {
+auto ref unwrap(T)(inout auto ref Optional!T opt) {
+    static if (is(T == class) || is(T == interface)) {
         return opt.empty ? null : opt.front;
     } else {
         return opt.empty ? null : &opt.front();
@@ -335,12 +333,12 @@ unittest {
         value = The value to return if the optional is empty
         pred = The predicate to call if the optional is empty
 */
-auto ref U orElse(T, U)(auto ref Optional!T opt, auto ref U value) if (is(U : T)) {
+auto ref U orElse(T, U)(inout auto ref Optional!T opt, auto ref U value) if (is(U : T)) {
     return opt.empty ? value : opt.front;
 }
 
 /// Ditto
-auto ref orElse(alias pred, T)(Optional!T opt) if (is(typeof(pred()) : T)) {
+auto ref orElse(alias pred, T)(inout auto ref Optional!T opt) if (is(typeof(pred()) : T)) {
     return opt.empty ? pred() : opt.front;
 }
 
