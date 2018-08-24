@@ -375,7 +375,7 @@ unittest {
         handlers = 2 predicates, one that takes the underlying optional type and another that names nothing
 */
 template match(handlers...) if (handlers.length == 2) {
-	auto ref match(T)(auto ref Optional!T opt) {
+	auto ref match(T)(inout auto ref Optional!T opt) {
 
         static if (is(typeof(handlers[0](opt.front)))) {
             alias someHandler = handlers[0];
