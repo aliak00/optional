@@ -453,3 +453,18 @@ unittest {
     n = john.dispatch.residence.dispatch.numberOfRooms;
     assert(n == some(1));
 }
+
+@("Should not destroy references")
+unittest {
+    class C {
+        int i;
+        this(int ai) { i = ai; }
+    }
+
+    C my = new C(3);
+    Optional!C opt = some(my);
+    assert(my.i == 3);
+
+    opt = none;
+    assert(my.i == 3);
+}

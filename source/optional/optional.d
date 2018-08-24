@@ -135,7 +135,11 @@ struct Optional(T) {
     */
     void opAssign()(const None) if (isMutable!T) {
         if (!this.empty) {
-            destroy(this._value);
+            static if (isNullInvalid) {
+                this._value = null;
+            } else {
+                destroy(this._value);
+            }
             this._empty = true;
         }
     }
