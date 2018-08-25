@@ -177,24 +177,6 @@ import std.range, std.traits;
     }}
 }
 
-@("Should unwrap the the correct qualified type for reference type")
-@safe unittest {
-    static class C {}
-    auto nm = no!(C);
-    auto nc = no!(const C);
-    auto ni = no!(immutable C);
-    auto sm = some(new C);
-    auto sc = some(new const C);
-    auto si = some(new immutable C);
-
-    static assert(is(typeof(nm.unwrap) == C));
-    static assert(is(typeof(nc.unwrap) == const(C)));
-    static assert(is(typeof(ni.unwrap) == immutable(C)));
-    static assert(is(typeof(sm.unwrap) == C));
-    static assert(is(typeof(sc.unwrap) == const(C)));
-    static assert(is(typeof(si.unwrap) == immutable(C)));
-}
-
 @("Should not allow properties of type to be reachable")
 @nogc @safe unittest {
     static assert(!__traits(compiles, some(3).max));
@@ -252,43 +234,6 @@ unittest {
     Optional!(const int) opt = Optional!(const int)(42);
     static assert(!__traits(compiles, opt = some(24)));
     static assert(!__traits(compiles, opt = none));
-}
-
-@("Should have correct unwrapped pointer type")
-@nogc unittest {
-    auto n = no!(int);
-    auto nc = no!(const int);
-    auto ni = no!(immutable int);
-    auto o = some!(int)(3);
-    auto oc = some!(const int)(3);
-    auto oi = some!(immutable int)(3);
-
-    assert(n.unwrap == null);
-    assert(nc.unwrap == null);
-    assert(ni.unwrap == null);
-
-    auto uo = o.unwrap;
-    auto uoc = oc.unwrap;
-    auto uoi = oi.unwrap;
-
-    assert(uo != null);
-    assert(uoc != null);
-    assert(uoi != null);
-
-    assert(*uo == 3);
-    assert(*uoc == 3);
-    assert(*uoi == 3);
-
-    *uo = 4;
-    assert(o == some(4));
-
-    static assert(!__traits(compiles, *uoc = 4));
-    static assert(!__traits(compiles, *uoi = 4));
-
-    static assert(is(typeof(uoc) == const(int)*));
-    static assert(is(typeof(uoi) == immutable(int)*));
-
-    assert(o == some(4));
 }
 
 @("Should treat null as valid values for pointer types")
