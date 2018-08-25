@@ -236,7 +236,7 @@ The following section has example usage of the various types
 
 ### Example Optional!T usage
 
-E.g.
+[![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/IAhkrR)
 ```d
 import optional;
 
@@ -263,8 +263,8 @@ import std.conv: to;
 auto b = some(10);
 auto c = no!int;
 
-b.map!(to!double) // [10.0]
-c.map!(to!double) // empty
+b.map!(to!double); // [10.0]
+c.map!(to!double); // empty
 
 // Can safely dispatch to whatever inner type is
 struct A {
@@ -298,15 +298,16 @@ assert(e.dispatch.inner.dispatch.g() == some(7));
 
 ### Example NotNull!T usage
 
+[![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/rJjG8N)
 ```d
-class C { void f() {} }
-struct S { void f() {} }
+static class C { void f() {} }
+static struct S { void f() {} }
 
-void f(NotNull!C c) {
+void f0(NotNull!C c) {
     c.f();
 }
 
-void f(NotNull!(S*) sp) {
+void f1(NotNull!(S*) sp) {
     sp.f();
 }
 
@@ -316,7 +317,7 @@ auto sp = notNull!(S*);
 f0(c);
 f1(sp);
 
-// c = null; // nope
-// sp = null; // nope
-// c = new C; // nope
+static assert(!__traits(compiles, { c = null; }));
+static assert(!__traits(compiles, { sp = null; }));
+static assert(!__traits(compiles, { c = new C; }));
 ```
