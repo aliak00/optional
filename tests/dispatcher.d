@@ -174,9 +174,8 @@ unittest {
     static assert( __traits(compiles, () { sca.dispatch.sharedConstMethod; } ));
 }
 
-@("Should not allow copy assign or copy construct")
+@("Should not be copyable")
 unittest {
-    import optional: none;
     struct S {
         S other() { return S(); }
     }
@@ -187,4 +186,12 @@ unittest {
     static assert(!__traits(compiles, { d1 = Dispatcher!S.init; } ));
     static assert(!__traits(compiles, { d1 = S(); } ));
     static assert(!__traits(compiles, { d1 = none; } ));
+}
+
+@("Should not be constructable")
+unittest {
+    static assert(!__traits(compiles, {
+        import optional.dispatcher: Dispatcher;
+        Dispatcher!int d;
+    }));
 }

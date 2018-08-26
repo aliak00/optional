@@ -64,13 +64,10 @@ package struct Dispatcher(T) {
     private Optional!Target* source;
 
     @disable this(); // Do not allow user creation of a Dispatcher
-    @disable this(this) {} // Do not allow blitting either
+    @disable this(this); // Do not allow blitting either
     @disable void opAssign(Dispatcher!T); // Do not allow identity assignment
 
-    // Differentiate between pointers to optionals and non pointers. When a dispatch
-    // chain is started, the optional that starts it creates a Dispatcher with its address
-    // so that we can start a chain if needed.
-    private this(U)(auto ref inout(U*) opt) inout if (isOptional!U) {
+    package this(inout Optional!T* opt) inout {
         source = opt;
     }
 
@@ -132,14 +129,4 @@ package struct Dispatcher(T) {
             }
         }
     }
-}
-
-@("Should not allow construction of Dispatcher")
-unittest {
-    struct S {
-        void f() {}
-    }
-    static assert(!__traits(compiles, { Dispatcher!S a; }));
-    Dispatcher!S b = Dispatcher!S.init;
-    static assert(!__traits(compiles, { auto c = b; }));
 }
