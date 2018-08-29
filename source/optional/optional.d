@@ -229,7 +229,7 @@ struct Optional(T) {
         some or a none.
 
         Returns:
-            A proxy that dispatched all dot operations to T if there is a T and returns an Optional of
+            A proxy that dispatches all dot operations to T if there is a T and returns an Optional of
             whatever T.blah would've returned.
         ---
         struct A {
@@ -250,6 +250,35 @@ struct Optional(T) {
     auto dispatch() inout {
         import optional.dispatcher: Dispatcher;
         return inout Dispatcher!(T)(&this);
+    }
+
+    /**
+        This is just like `dispatch` except it will chain the next call as well so that you don't have
+        to call `dispatch` with every function call
+
+        Returns:
+            A proxy that dispatches all dot operations to T if there is a T and returns an Optional of
+            whatever T.blah would've returned.
+        ---
+        struct A {
+            struct Inner {
+                int g() { return 7; }
+            }
+            Inner inner() { return Inner(); }
+            int f() { return 4; }
+        }
+        auto a = some(A());
+        auto b = no!A;
+        auto b = no!(A*);
+        a.dispatch.inner.g; // calls inner and calls g
+        b.dispatch.inner.g; // no op.
+        b.dispatch.inner.g; // no op.
+        ---
+    */
+    auto autoDispatch() {
+        import optional.autodispatcher;
+        import optional.optionalref;
+        return AutoDispatcher!T(OptionalRef!T(&this));
     }
 }
 

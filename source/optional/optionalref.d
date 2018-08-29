@@ -18,7 +18,7 @@ package struct OptionalRef(T) {
         isVal = false;
     }
 
-    this(Optional!T val) {
+    this()(auto ref Optional!T val) {
         data.val = val;
         isVal = true;
     }
@@ -26,4 +26,9 @@ package struct OptionalRef(T) {
     public @property ref get() { if (isVal) return data.val; else return *data.ptr; }
 
     alias get this;
+}
+
+package template isOptionalRef(T) {
+    import std.traits: isInstanceOf;
+    enum isOptionalRef = isInstanceOf!(OptionalRef, T);
 }
