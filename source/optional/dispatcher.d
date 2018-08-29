@@ -130,3 +130,25 @@ package struct Dispatcher(T) {
         }
     }
 }
+
+@("Should not be copyable")
+unittest {
+    import optional: some;
+    struct S {
+        S other() { return S(); }
+    }
+    auto a = some(S());
+    auto d1 = a.dispatch;
+    auto d2 = a.dispatch;
+    static assert(!__traits(compiles, { d1 = d2; } ));
+    static assert(!__traits(compiles, { d1 = Dispatcher!S.init; } ));
+    static assert(!__traits(compiles, { d1 = S(); } ));
+    static assert(!__traits(compiles, { d1 = none; } ));
+}
+
+@("Should not be constructable")
+unittest {
+    static assert(!__traits(compiles, {
+        Dispatcher!int d;
+    }));
+}
