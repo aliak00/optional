@@ -81,4 +81,5 @@ public {
     import optional.optional;
     import optional.traits;
     import optional.notnull;
+    import optional.safederef;
 }
