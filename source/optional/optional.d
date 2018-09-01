@@ -32,6 +32,8 @@ immutable none = None();
 */
 
 struct Optional(T) {
+    import optional.optionalref;
+
     import std.traits: isMutable, isSomeFunction, isAssignable, Unqual;
 
     private enum isNullInvalid = is(T == class) || is(T == interface) || isSomeFunction!T;
@@ -89,9 +91,14 @@ struct Optional(T) {
         mixin(setEmpty);
     }
     /// Ditto
-    this(const None) inout {
+    this(const None) {
         // For Error: field _value must be initialized in constructor, because it is nested struct
         this._value = T.init;
+    }
+    /// Ditto
+    this(U : T, this This)(OptionalRef!U oref) {
+        this._value = oref.get;
+        mixin(setEmpty);
     }
 
     @property bool empty() const {
@@ -143,8 +150,14 @@ struct Optional(T) {
             this._empty = true;
         }
     }
+    /// Ditto
     void opAssign(U : T)(auto ref U lhs) if (isMutable!T && isAssignable!(T, U)) {
         this._value = lhs;
+        mixin(setEmpty);
+    }
+    /// Ditto
+    void opAssign(U : T)(auto ref OptionalRef!U oref) if (isMutable!T && isAssignable!(T, U))  {
+        this._value = oref.get.front;
         mixin(setEmpty);
     }
 
