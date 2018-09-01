@@ -80,9 +80,16 @@ unittest {
         static assert(isOptionalRef!(typeof(t1)));
         static assert(isOptionalRef!(typeof(t2)));
 
-        x = makeS(null);
-        y = makeS(theC);
+        x = t1;
+        y = t2;
     }
+
+    import std.stdio;
+    writeln("## theC");
+    writeln(theC);
+    writeln(x.dispatch.c);
+    writeln(y.dispatch.c);
+    writeln("## end");
 
     assert(x.dispatch.c == none);
     assert(y.dispatch.c == theC);

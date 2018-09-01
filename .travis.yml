@@ -32,3 +32,5 @@ matrix:
     - d: dmd
       os: osx
     - d: ldc
+      os: osx
+    - d: ldc
