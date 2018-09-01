@@ -4,14 +4,12 @@ package struct OptionalRef(T) {
     import optional: Optional;
 
     private union Data {
+        Optional!T val; // this is first because it is the .init value
         Optional!T* ptr;
-        Optional!T val;
     }
 
     private Data data;
     private bool isVal;
-
-    @disable this();
 
     this(Optional!T* ptr) {
         data.ptr = ptr;
