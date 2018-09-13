@@ -93,11 +93,6 @@ struct Optional(T) {
         // For Error: field _value must be initialized in constructor, because it is nested struct
         this._value = T.init;
     }
-    /// Ditto
-    this(U : T, this This)(OptionalRef!U oref) {
-        this._value = oref.get;
-        mixin(setEmpty);
-    }
 
     @property bool empty() const {
         static if (isNullInvalid) {
@@ -154,8 +149,8 @@ struct Optional(T) {
         mixin(setEmpty);
     }
     /// Ditto
-    void opAssign(U : T)(auto ref OptionalRef!U oref) if (isMutable!T && isAssignable!(T, U))  {
-        this._value = oref.get.front;
+    void opAssign(U : T)(auto ref Optional!U lhs) if (isMutable!T && isAssignable!(T, U))  {
+        this._value = lhs._value;
         mixin(setEmpty);
     }
 
