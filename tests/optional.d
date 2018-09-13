@@ -378,3 +378,14 @@ unittest {
     opt = none;
     assert(my.i == 3);
 }
+
+@("Should assign convertaible type optional")
+unittest {
+    class A {}
+    class B : A {}
+
+    auto a = some(new A());
+    auto b = some(new B());
+    a = b;
+    assert(a.unwrap is b.unwrap);
+}
