@@ -40,23 +40,6 @@ unittest {
     if (auto u = n.unwrap) {} else n = new C();
     assert(n.unwrap !is null);
     assert(n.unwrap.i == 3);
-
-    // Safely dispatch calls to the wrapped type
-    struct A {
-        struct Inner {
-            int g() { return 7; }
-        }
-        Inner inner() { return Inner(); }
-        int f() { return 4; }
-    }
-    auto d = some(A());
-    assert(d.dispatch.f == some(4));
-    assert(d.dispatch.inner.dispatch.g == some(7));
-
-    // If there's no value in the optional dispatching still works, but produces none
-    auto e = no!(A*);
-    assert(e.dispatch.f == none);
-    assert(e.dispatch.inner.dispatch.g == none);
 }
 
 /// Phobos equvalent range.only test
