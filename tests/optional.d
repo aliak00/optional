@@ -364,41 +364,6 @@ unittest {
     assert(a.front.i == 3);
 }
 
-@("Dispatching on an inner optional should work")
-unittest {
-    struct A {
-        int i = 7;
-        int f() { return 3; }
-    }
-    struct B {
-        Optional!A a;
-    }
-
-    auto b = some(B());
-    assert(b.dispatch.a.dispatch.i == some(7));
-    assert(b.dispatch.a.dispatch.f == some(3));
-}
-
-@("Should dispatch one level deep")
-unittest {
-    class Residence {
-        auto numberOfRooms = 1;
-    }
-    class Person {
-        Optional!Residence residence;
-    }
-
-    auto john = some(new Person());
-    auto n = john.dispatch.residence.dispatch.numberOfRooms;
-
-    assert(n == no!int);
-
-    john.dispatch.residence = new Residence();
-
-    n = john.dispatch.residence.dispatch.numberOfRooms;
-    assert(n == some(1));
-}
-
 @("Should not destroy references")
 unittest {
     class C {

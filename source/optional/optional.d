@@ -32,8 +32,6 @@ immutable none = None();
 */
 
 struct Optional(T) {
-    import optional.optionalref;
-
     import std.traits: isMutable, isSomeFunction, isAssignable, Unqual;
 
     private enum isNullInvalid = is(T == class) || is(T == interface) || isSomeFunction!T;
@@ -231,68 +229,6 @@ struct Optional(T) {
         }
         return "[" ~ str ~ "]";
     }
-
-    /**
-        Allows you to call dot operator on the internal value if present
-        If there is no value inside, or it is null, dispatching will still work but will
-        produce a series of no-ops.
-
-        If you try and call a manifest constant or static data on T then whether the manifest
-        or static immutable data is called depends on if the instance it is called on is a
-        some or a none.
-
-        Returns:
-            A proxy that dispatches all dot operations to T if there is a T and returns an Optional of
-            whatever T.blah would've returned.
-        ---
-        struct A {
-            struct Inner {
-                int g() { return 7; }
-            }
-            Inner inner() { return Inner(); }
-            int f() { return 4; }
-        }
-        auto a = some(A());
-        auto b = no!A;
-        auto b = no!(A*);
-        a.dispatch.inner.dispatch.g; // calls inner and calls g
-        b.dispatch.inner.dispatch.g; // no op.
-        b.dispatch.inner.dispatch.g; // no op.
-        ---
-    */
-    auto dispatch() inout {
-        import optional.dispatcher: Dispatcher;
-        return inout Dispatcher!(T)(&this);
-    }
-
-    /**
-        This is just like `dispatch` except it will chain the next call as well so that you don't have
-        to call `dispatch` with every function call
-
-        Returns:
-            A proxy that dispatches all dot operations to T if there is a T and returns an Optional of
-            whatever T.blah would've returned.
-        ---
-        struct A {
-            struct Inner {
-                int g() { return 7; }
-            }
-            Inner inner() { return Inner(); }
-            int f() { return 4; }
-        }
-        auto a = some(A());
-        auto b = no!A;
-        auto b = no!(A*);
-        a.dispatch.inner.g; // calls inner and calls g
-        b.dispatch.inner.g; // no op.
-        b.dispatch.inner.g; // no op.
-        ---
-    */
-    auto autoDispatch() {
-        import optional.autodispatcher;
-        import optional.optionalref;
-        return AutoDispatcher!T(OptionalRef!T(&this));
-    }
 }
 
 /**
@@ -393,20 +329,6 @@ auto ref orElse(alias pred, T)(inout auto ref Optional!T opt) if (is(typeof(pred
 unittest {
     assert(some(3).orElse(9) == 3);
     assert(no!int.orElse(9) == 9);
-
-    struct S {
-        int g() { return 3; }
-    }
-
-    assert(some(S()).dispatch.g.orElse(9) == 3);
-    assert(no!S.dispatch.g.orElse(9) == 9);
-
-    class C {
-        int g() { return 3; }
-    }
-
-    assert(some(new C()).dispatch.g.orElse!(() => 9) == 3);
-    assert(no!C.dispatch.g.orElse!(() => 9) == 9);
 }
 
 /**

@@ -8,9 +8,8 @@ import optional.internal;
 /// Checks if T is an optional type
 template isOptional(T) {
     import optional: Optional;
-    import optional.optionalref;
     import std.traits: isInstanceOf;
-    enum isOptional = isInstanceOf!(Optional, T) || isOptionalRef!T;
+    enum isOptional = isInstanceOf!(Optional, T);
 }
 
 ///
