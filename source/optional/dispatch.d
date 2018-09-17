@@ -11,14 +11,6 @@ private string autoReturn(string expression)() {
             return ` ~ expression ~ `;
         }
         ` ~ q{
-        bool empty() {
-            import std.traits: isPointer;
-            static if (isPointer!T) {
-                return value.front is null;
-            } else {
-                return value.empty;
-            }
-        }
         alias R = typeof(expr());
         static if (is(R == void)) {
             if (!empty) {
@@ -48,6 +40,14 @@ struct NullSafeValueDispatcher(T) {
     }
 
     template opDispatch(string name) if (hasMember!(T, name)) {
+        bool empty() {
+            import std.traits: isPointer;
+            static if (isPointer!T) {
+                return value.front is null;
+            } else {
+                return value.empty;
+            }
+        }
         import optional: no, some, unwrap;
         static if (is(typeof(__traits(getMember, T, name)) == function)) {
             auto ref opDispatch(Args...)(auto ref Args args) {
