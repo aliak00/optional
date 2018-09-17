@@ -7,23 +7,23 @@ import optional;
 class Class {
     int i = 0;
 
-    this(int i) {
+    this(int i) @nogc @safe pure {
         this.i = i;
     }
 
-    int getI() {
+    int getI() @nogc @safe pure {
         return i;
     }
 
-    void setI(int i) {
+    void setI(int i) @nogc @safe pure {
         this.i = i;
     }
 
-    Class getAnotherClass() {
+    Class getAnotherClass() @safe pure {
         return new Class(i);
     }
 
-    Struct getStruct() {
+    Struct getStruct() @nogc @safe pure {
         return Struct(this.i);
     }
 }
@@ -31,25 +31,25 @@ class Class {
 struct Struct {
     int i = 0;
 
-    void setI(int i) {
+    void setI(int i) @nogc @safe pure {
         this.i = i;
     }
 
-    int getI() {
+    int getI() @nogc @safe pure {
         return i;
     }
 
-    Class getClass() {
+    Class getClass() @safe pure {
         return new Class(this.i);
     }
 
-    Struct getAnotherStruct() {
+    Struct getAnotherStruct() @nogc @safe pure {
         return Struct(this.i);
     }
 }
 
 @("Should dispatch multiple functions of a reference type")
-unittest {
+@safe unittest {
     auto a = no!Class;
     auto b = some(new Class(3));
 
@@ -64,7 +64,7 @@ unittest {
 }
 
 @("Should dispatch a function of a reference type")
-unittest {
+@safe unittest {
     Class a;
     Class b = new Class(3);
 
@@ -80,7 +80,7 @@ unittest {
 }
 
 @("Should dispatch multiple functions of a pointer type")
-unittest {
+@safe unittest {
     auto a = no!(Struct*);
     auto b = some(new Struct(3));
 
@@ -95,7 +95,7 @@ unittest {
 }
 
 @("Should dispatch a function of a pointer type")
-unittest {
+@safe unittest {
     Struct* a;
     Struct* b = new Struct(3);
 
@@ -111,7 +111,7 @@ unittest {
 }
 
 @("Should dispatch to different member types")
-unittest {
+@safe unittest {
     struct A {
         enum aManifestConstant = "aManifestConstant";
         static immutable aStaticImmutable = "aStaticImmutable";
@@ -154,7 +154,7 @@ unittest {
 }
 
 @("Should work for all qualifiers")
-unittest {
+@safe unittest {
     import optional: Optional, none;
 
     class A {
@@ -193,4 +193,15 @@ unittest {
     static assert(!__traits(compiles, () { ca.dispatch.sharedConstMethod; } ));
     static assert( __traits(compiles, () { sa.dispatch.sharedConstMethod; } ));
     static assert( __traits(compiles, () { sca.dispatch.sharedConstMethod; } ));
+}
+
+@nogc @safe pure unittest {
+    auto a = some(Struct(7));
+    auto b = no!Struct;
+    assert(a.dispatch.i == some(7));
+    assert(a.dispatch.getI == some(7));
+    assert(a.dispatch.getAnotherStruct.i == some(7));
+    assert(b.dispatch.i == no!int);
+    assert(b.dispatch.getI == no!int);
+    assert(b.dispatch.getAnotherStruct.i == no!int);
 }
