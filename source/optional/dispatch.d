@@ -11,9 +11,6 @@ private string autoReturn(string expression)() {
             return ` ~ expression ~ `;
         }
         ` ~ q{
-        auto ref val() {
-            return expr();
-        }
         bool empty() {
             import std.traits: isPointer;
             static if (isPointer!T) {
@@ -25,18 +22,18 @@ private string autoReturn(string expression)() {
         alias R = typeof(val());
         static if (is(R == void)) {
             if (!empty) {
-                val();
+                expr();
             }
         } else {
             if (empty) {
-                return SafeNullDispatcher!R(no!R());
+                return NullSafeValueDispatcher!R(no!R());
             }
-            return SafeNullDispatcher!R(some(val()));
+            return NullSafeValueDispatcher!R(some(expr()));
         }
     };
 }
 
-struct SafeNullDispatcher(T) {
+struct NullSafeValueDispatcher(T) {
     import std.traits: hasMember;
 
     Optional!T value;
@@ -83,9 +80,9 @@ struct SafeNullDispatcher(T) {
 }
 
 auto dispatch(T)(auto ref T value) if (isNullDispatchable!T) {
-    return SafeNullDispatcher!T(value);
+    return NullSafeValueDispatcher!T(value);
 }
 
 auto dispatch(T)(auto ref Optional!T value) {
-    return SafeNullDispatcher!T(value);
+    return NullSafeValueDispatcher!T(value);
 }
