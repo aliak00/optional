@@ -10,7 +10,6 @@ alias QualifiedAlisesOf(T) = AliasSeq!(T, const T, immutable T);
 alias OptionalsOfQualified(T) = AliasSeq!(Optional!T, Optional!(const T), Optional!(immutable T));
 alias QualifiedOptionalsOfQualified(T) = AliasSeq!(QualifiedAlisesOf!(Optional!T), OptionalsOfQualified!T);
 
-
 private enum isObject(T) = is(T == class) || is(T == interface);
 
 import std.range, std.traits;
