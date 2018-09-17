@@ -35,6 +35,10 @@ struct Struct {
         this.i = i;
     }
 
+    int getI() {
+        return i;
+    }
+
     Class getClass() {
         return new Class(this.i);
     }
@@ -63,6 +67,37 @@ unittest {
 unittest {
     Class a;
     Class b = new Class(3);
+
+    assert(a.dispatch.getI == no!int());
+    assert(b.dispatch.getI == some(3));
+
+    assert(b.i == 3);
+
+    a.dispatch.setI(5);
+    b.dispatch.setI(5);
+
+    assert(b.i == 5);
+}
+
+@("Should dispatch multiple functions of a pointer type")
+unittest {
+    auto a = no!(Struct*);
+    auto b = some(new Struct(3));
+
+    assert(a.dispatch.getI == no!int());
+    assert(b.dispatch.getI == some(3));
+
+    a.dispatch.setI(7);
+    b.dispatch.setI(7);
+
+    assert(a.dispatch.getAnotherStruct.i == no!int);
+    assert(b.dispatch.getAnotherStruct.i == some(7));
+}
+
+@("Should dispatch a function of a pointer type")
+unittest {
+    Struct* a;
+    Struct* b = new Struct(3);
 
     assert(a.dispatch.getI == no!int());
     assert(b.dispatch.getI == some(3));
