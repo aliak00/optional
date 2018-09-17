@@ -19,7 +19,7 @@ private string autoReturn(string expression)() {
                 return value.empty;
             }
         }
-        alias R = typeof(val());
+        alias R = typeof(expr());
         static if (is(R == void)) {
             if (!empty) {
                 expr();
