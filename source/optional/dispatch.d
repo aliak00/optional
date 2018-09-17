@@ -40,7 +40,7 @@ struct NullSafeValueDispatcher(T) {
     }
 
     template opDispatch(string name) if (hasMember!(T, name)) {
-        bool empty() {
+        bool empty() @safe @nogc pure const {
             import std.traits: isPointer;
             static if (isPointer!T) {
                 return value.front is null;
