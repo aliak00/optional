@@ -236,12 +236,16 @@ unittest {
         auto numberOfRooms = 1;
     }
     class Person {
-        Optional!Residence residence = new Residence();
+        Optional!Residence residence;
     }
 
     auto john = some(new Person());
+    auto n = john.dispatch.residence.dispatch.numberOfRooms;
 
-    auto n = john.dispatch.residence.numberOfRooms;
+    assert(n == no!int);
+
+    john.dispatch.residence = new Residence();
+    n = john.dispatch.residence.dispatch.numberOfRooms;
 
     assert(n == some(1));
 }
