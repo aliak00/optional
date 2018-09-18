@@ -213,6 +213,13 @@ struct Optional(T) {
         mixin(autoReturn!("this._value(args)"));
     }
 
+    /**
+        If the optional is some value op assigns rhs to it
+    */
+    auto ref opOpAssign(string op, U : T)(auto ref U rhs) {
+        mixin(autoReturn!("front" ~ op ~ "= rhs"));
+    }
+
     // auto ref opIndexAssign(U : T, Args...(auto ref U value, auto ref Args...);
 
     /// Converts value to string

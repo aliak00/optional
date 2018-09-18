@@ -388,3 +388,32 @@ unittest {
     a = b;
     assert(a.unwrap is b.unwrap);
 }
+
+@("Should call opOpAssign if value present")
+@nogc @safe unittest {
+    import std.meta: AliasSeq;
+    import std.traits: isMutable;
+    import std.range: ElementType;
+    foreach (T; QualifiedOptionalsOfQualified!int) {
+        T a = 10;
+        T b = none;
+        static if (isMutable!(ElementType!T) && isMutable!(T)) {
+            a += 10;
+            b += 10;
+            assert(a == some(20));
+            assert(b == none);
+            a -= 5;
+            b -= 5;
+            assert(a == some(15));
+            assert(b == none);
+            a %= 2;
+            b %= 2;
+            assert(a == some(1));
+            assert(b == none);
+        } else {
+            static assert(!__traits(compiles, { a += 10; b += 10; } ));
+            static assert(!__traits(compiles, { a -= 10; b -= 10; } ));
+            static assert(!__traits(compiles, { a %= 10; b %= 10; } ));
+        }
+    }
+}
