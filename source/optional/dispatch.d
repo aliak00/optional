@@ -92,7 +92,7 @@ private struct NullSafeValueDispatcher(T) {
     or static immutable data is called depends on if the instance is valid.
 
     Returns:
-        An Optional of whatever T.blah would've returned.
+        A type aliased to an Optional of whatever T.blah would've returned.
     ---
     struct A {
         struct Inner {
