@@ -5,6 +5,7 @@ module optional.dispatch;
 
 import optional.optional: Optional;
 import optional.internal;
+import std.typecons: Nullable;
 
 private enum isNullDispatchable(T) = is(T == class) || is(T == interface) || from!"std.traits".isPointer!T;
 
@@ -99,10 +100,12 @@ private struct NullSafeValueDispatcher(T) {
 }
 
 /**
-    Allows you to call dot operator on a nullable type of an optional.
+    Allows you to call dot operator on a nullable type or an optional.
 
     If there is no value inside, or it is null, dispatching will still work but will
     produce a series of no-ops.
+
+    Works with `std.typecons.Nullable`
 
     If you try and call a manifest constant or static data on T then whether the manifest
     or static immutable data is called depends on if the instance is valid.
@@ -131,4 +134,12 @@ auto dispatch(T)(auto ref T value) if (isNullDispatchable!T) {
 /// Ditto
 auto dispatch(T)(auto ref Optional!T value) {
     return NullSafeValueDispatcher!T(value);
+}
+/// Ditto
+auto dispatch(T)(auto ref Nullable!T value) {
+    import optional: no;
+    if (value.isNull) {
+        return NullSafeValueDispatcher!T(no!T);
+    }
+    return NullSafeValueDispatcher!T(value.get);
 }

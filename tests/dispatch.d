@@ -276,3 +276,13 @@ unittest {
             .i == no!int
     );
 }
+
+@("Should work on std.typecons.Nullable")
+unittest {
+    import std.typecons;
+    auto a = nullable(Struct(3));
+    auto b = Nullable!Struct.init;
+
+    assert(a.dispatch.i == some(3));
+    assert(b.dispatch.i == no!int);
+}

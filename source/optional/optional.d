@@ -237,7 +237,7 @@ struct Optional(T) {
     Calling some on the result of a dispatch chain will result
     in the original optional value.
 */
-auto ref some(T)(auto ref T value) {
+public auto ref some(T)(auto ref T value) {
     return Optional!T(value);
 }
 
@@ -256,7 +256,7 @@ auto ref some(T)(auto ref T value) {
 }
 
 /// Type constructor for an optional having no value of `T`
-auto no(T)() {
+public auto no(T)() {
     return Optional!T();
 }
 
@@ -284,7 +284,7 @@ auto no(T)() {
     Returns:
         Pointer to value or null if empty. If T is reference type, returns reference
 */
-auto ref unwrap(T)(inout auto ref Optional!T opt) {
+public auto ref unwrap(T)(inout auto ref Optional!T opt) {
     static if (is(T == class) || is(T == interface)) {
         return opt.empty ? null : opt.front;
     } else {
@@ -315,12 +315,12 @@ unittest {
         value = The value to return if the optional is empty
         pred = The predicate to call if the optional is empty
 */
-auto ref U orElse(T, U)(inout auto ref Optional!T opt, auto ref U value) if (is(U : T)) {
+public auto ref U orElse(T, U)(inout auto ref Optional!T opt, auto ref U value) if (is(U : T)) {
     return opt.empty ? value : opt.front;
 }
 
 /// Ditto
-auto ref orElse(alias pred, T)(inout auto ref Optional!T opt) if (is(typeof(pred()) : T)) {
+public auto ref orElse(alias pred, T)(inout auto ref Optional!T opt) if (is(typeof(pred()) : T)) {
     return opt.empty ? pred() : opt.front;
 }
 
@@ -338,7 +338,7 @@ unittest {
         opt = The optional to call match on
         handlers = 2 predicates, one that takes the underlying optional type and another that names nothing
 */
-template match(handlers...) if (handlers.length == 2) {
+public template match(handlers...) if (handlers.length == 2) {
 	auto ref match(T)(inout auto ref Optional!T opt) {
 
         static if (is(typeof(handlers[0](opt.front)))) {

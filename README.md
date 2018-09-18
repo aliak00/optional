@@ -1,4 +1,4 @@
-# Optional type for D featuring NotNull
+# Optional type for D with safe dispatching and NotNull type
 
 [![Latest version](https://img.shields.io/dub/v/optional.svg)](https://code.dlang.org/packages/optional) [![Build Status](https://travis-ci.org/aliak00/optional.svg?branch=master)](https://travis-ci.org/aliak00/optional) [![codecov](https://codecov.io/gh/aliak00/optional/branch/master/graph/badge.svg)](https://codecov.io/gh/aliak00/optional) [![license](https://img.shields.io/github/license/aliak00/optional.svg)](https://github.com/aliak00/optional/blob/master/LICENSE) [![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/912kVG)
 
@@ -13,6 +13,7 @@ Full API docs available [here](https://aliak00.github.io/optional/optional.html)
 * [Scala we have a Swift comparison](#scala-we-have-a-swift-comparison)
 * [Examples](#examples)
   * [Example Optional!T usage](#example-optionalt-usage)
+  * [Example dispatch usage](#example-dispatch-usage)
   * [Example NotNull!T usage](#example-notnullt-usage)
 
 ## Summary
@@ -20,18 +21,19 @@ Full API docs available [here](https://aliak00.github.io/optional/optional.html)
 The purpose of this library is two fold, to provide types that:
 
 1. Eliminate null dereferences - [Aka the Billion Dollar Mistake](https://en.wikipedia.org/wiki/Tony_Hoare#Apologies_and_retractions).
-2. Show an explicit intent of the absence of a value or the presensce of an invalid value
+2. Show an explicit intent of the absence of a value
 
-This is done with the following types:
+This is done with the following:
 
-* `Optional!T`: Represents an optional data type that may or may not contain a value. Acts like a range and allows safe dispatching
+* `Optional!T`: Represents an optional data type that may or may not contain a value that acts like a range.
 * `NotNull!T`: Represents a type that can never be null.
+* `dispatch`: A null-safe dispatching utility that allows you to call methods on possibly null values (including optionals, and `std.typecons.Nullable`)
 
-An `Optional!T` signifies the intent of your code, works as a range and is therefor useable with Phobos, and allows you to call methods and operators on your types even if they are null references - i.e. safe dispatching.
+An `Optional!T` signifies the intent of your code, works as a range and is therefor useable with Phobos algorithms, and allows you to call methods and operators on your types even if they are null references - i.e. safe dispatching.
 
 ## What about `std.typecons.Nullable` and `std.range.only`?
 
-It is NOT like the `Nullable` type in Phobos. `Nullable` is basically a pointer and applies pointer semantics to value types. It does not give you any safety guarantees and says nothing about the intent of "I might return a valid value". Whereas `Optional` signifies intent on both reference and value types, and is safe to use without need to check `isNull` before every usage.
+It is NOT like the `Nullable` type in Phobos. `Nullable` is basically a pointer and applies pointer semantics to value types. It does not give you any safety guarantees and says nothing about the intent of "I might not return a value". Whereas `Optional` signifies intent on both reference and value types, and is safe to use without the need to check `isNull` before every usage.
 
 It is also NOT like `std.range.only`. D's `only` cannot be used to signify intent of a value being present or not, nor can be used for safe dispatching, nor the result of `only(value)` be passed around. It's only (heh) usage is to create a range out of a value so that values can act as ranges and be used seamlessly with `std.algorithms`. This `Optional` has a type constructor - `some` - that can be used for this purpose as well.
 
@@ -141,7 +143,7 @@ class Person {
 
 auto john = some(new Person());
 
-auto n = john.dispatch.residence.dispatch.numberOfRooms;
+auto n = john.dispatch.residence.numberOfRooms;
 
 writeln(n); // prints [1]
 ```
@@ -229,7 +231,6 @@ if let number = Int(str) {
 }
 ```
 
-
 ## Examples
 
 The following section has example usage of the various types
@@ -266,34 +267,11 @@ auto c = no!int;
 b.map!(to!double); // [10.0]
 c.map!(to!double); // empty
 
-// Can safely dispatch to whatever inner type is
-struct A {
-    struct Inner {
-        int g() { return 7; }
-    }
-    Inner inner() { return Inner(); }
-    int f() { return 4; }
-}
-
-auto d = some(A());
-
-// Dispatch to one of its methods
-
-d.dispatch.f(); // calls a.f, returns some(4)
-d.dispatch.inner.dispatch.g(); // calls a.inner.g, returns some(7)
-
-auto e = no!(A*); 
-
-// If there's no value in the optional or it's a pointer that is null, dispatching still works, but produces none
-assert(e.dispatch.f() == none);
-assert(e.dispatch.inner.dispatch.g() == none);
-
-// Set a value and now it will work
-e = new A;
-
-assert(e.dispatch.f() == some(4));
-assert(e.dispatch.inner.dispatch.g() == some(7));
-
+auto r = b.match!(
+    (int a) => "yes",
+    () => "no",
+);
+assert(r == "yes");
 ```
 
 ### Example NotNull!T usage
@@ -320,4 +298,31 @@ f1(sp);
 static assert(!__traits(compiles, { c = null; }));
 static assert(!__traits(compiles, { sp = null; }));
 static assert(!__traits(compiles, { c = new C; }));
+```
+
+### Example dispatch usage
+
+```d
+// Safely dispatch to whatever inner type is
+struct A {
+    struct Inner {
+        int g() { return 7; }
+    }
+    Inner inner() { return Inner(); }
+    int f() { return 4; }
+}
+
+auto d = some(A());
+
+// Dispatch to one of its methods
+
+d.dispatch.f(); // calls a.f, returns some(4)
+d.dispatch.inner.g(); // calls a.inner.g, returns some(7)
+
+// Use on a pointer or reference type as well
+A* e = null;
+
+// If there's no value in the reference type, dispatching works, and produces an optional
+assert(e.dispatch.f() == none);
+assert(e.dispatch.inner.g() == none);
 ```
