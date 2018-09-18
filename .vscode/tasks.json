@@ -6,7 +6,7 @@
         {
             "label": "test",
             "type": "shell",
-            "command": "dub test -- --include 'tests.dispatch'",
+            "command": "dub test",
             "group": {
                 "kind": "test",
                 "isDefault": true

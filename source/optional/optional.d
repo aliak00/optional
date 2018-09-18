@@ -16,6 +16,23 @@ package struct None {}
 */
 immutable none = None();
 
+private static string autoReturn(string expression)() {
+    return `
+        auto ref expr() {
+            return ` ~ expression ~ `;
+        }
+        ` ~ q{
+        alias R = typeof(expr());
+        static if (!is(R == void))
+            return empty ? no!R : some!R(expr());
+        else {
+            if (!empty) {
+                expr();
+            }
+        }
+    };
+}
+
 /**
     Optional type. Also known as a Maybe or Option type in some languages.
 
@@ -39,18 +56,6 @@ struct Optional(T) {
 
     private T _value = T.init; // Set to init for when T has @disable this()
     private bool _empty = true;
-
-    private static string autoReturn(string call) {
-        return
-            "alias R = typeof(" ~ call ~ ");" ~
-            "static if (!is(R == void))" ~
-                "return empty ? no!R : some!R(" ~ call ~ ");" ~
-            "else {" ~
-                "if (!empty) {" ~
-                    call ~ ";" ~
-                "}" ~
-            "}";
-    }
 
     private enum setEmpty = q{
         static if (isNullInvalid) {
@@ -189,13 +194,13 @@ struct Optional(T) {
         If the optional is some value it returns an optional of some `value op rhs`
     */
     auto ref opBinary(string op, U : T, this This)(auto ref U rhs) {
-        mixin(autoReturn("front" ~ op ~ "rhs"));
+        mixin(autoReturn!("front" ~ op ~ "rhs"));
     }
     /**
         If the optional is some value it returns an optional of some `lhs op value`
     */
     auto ref opBinaryRight(string op, U : T, this This)(auto ref U lhs) {
-        mixin(autoReturn("lhs"  ~ op ~ "front"));
+        mixin(autoReturn!("lhs"  ~ op ~ "front"));
     }
 
     /**
@@ -205,7 +210,7 @@ struct Optional(T) {
             Optional value of whatever `T(args)` returns
     */
     auto ref opCall(Args...)(Args args) if (from!"std.traits".isCallable!T) {
-        mixin(autoReturn(q{ this._value(args) }));
+        mixin(autoReturn!("this._value(args)"));
     }
 
     // auto ref opIndexAssign(U : T, Args...(auto ref U value, auto ref Args...);
