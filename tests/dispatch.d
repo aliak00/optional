@@ -217,3 +217,15 @@ unittest {
     assert(b.dispatch.getStruct.getNullStruct.i == no!int);
     assert(b.dispatch.getStruct.getNullStruct.getI == no!int);
 }
+
+@("Should dispatch template functions")
+unittest {
+    class C {
+        void method() {}
+        void tmethod(T)() {}
+    }
+    auto c = some(new C());
+
+    static assert(__traits(compiles, c.dispatch.method()));
+    static assert(__traits(compiles, c.dispatch.tmethod!int()));
+}
