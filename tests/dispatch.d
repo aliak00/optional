@@ -251,3 +251,24 @@ unittest {
     import std.format;
     assert(some(Struct(3)).dispatch.i.toString == "[3]");
 }
+
+@("Should work with some deep nesting")
+unittest {
+    assert(
+        some(new Class(10))
+            .dispatch
+            .getStruct
+            .getClass
+            .getStructRef
+            .i == some(10)
+    );
+
+    assert(
+        some(new Class(10))
+            .dispatch
+            .getNullStruct
+            .getNullClass
+            .getNullClass
+            .i == no!int
+    );
+}
