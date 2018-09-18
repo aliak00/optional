@@ -1,4 +1,4 @@
-module tests.dispatcher;
+module tests.dispatch;
 
 import std.stdio;
 
@@ -7,45 +7,31 @@ import optional;
 class Class {
     int i = 0;
 
-    this(int i) @nogc @safe pure {
-        this.i = i;
-    }
+    this(int i) @nogc @safe pure { this.i = i;}
+    int getI() @nogc @safe pure { return i;}
+    void setI(int i) @nogc @safe pure { this.i = i; }
 
-    int getI() @nogc @safe pure {
-        return i;
-    }
+    Struct getStruct() @nogc @safe pure { return Struct(this.i); }
+    Class getClass() @safe pure { return new Class(this.i); }
 
-    void setI(int i) @nogc @safe pure {
-        this.i = i;
-    }
-
-    Class getAnotherClass() @safe pure {
-        return new Class(i);
-    }
-
-    Struct getStruct() @nogc @safe pure {
-        return Struct(this.i);
-    }
+    Struct* getStructRef() @safe pure { return new Struct(this.i); }
+    Class getNullClass() @nogc @safe pure { return null; }
+    Struct* getNullStruct() @nogc @safe pure { return null; }
 }
 
 struct Struct {
     int i = 0;
 
-    void setI(int i) @nogc @safe pure {
-        this.i = i;
-    }
+    this(int i) @nogc @safe pure { this.i = i;}
+    int getI() @nogc @safe pure { return i;}
+    void setI(int i) @nogc @safe pure { this.i = i; }
 
-    int getI() @nogc @safe pure {
-        return i;
-    }
+    Struct getStruct() @nogc @safe pure { return Struct(this.i);}
+    Class getClass() @safe pure { return new Class(this.i); }
 
-    Class getClass() @safe pure {
-        return new Class(this.i);
-    }
-
-    Struct getAnotherStruct() @nogc @safe pure {
-        return Struct(this.i);
-    }
+    Struct* getStructRef() @safe pure { return new Struct(this.i);}
+    Class getNullClass() @nogc @safe pure { return null; }
+    Struct* getNullStruct() @nogc @safe pure { return null; }
 }
 
 @("Should dispatch multiple functions of a reference type")
@@ -59,8 +45,8 @@ struct Struct {
     a.dispatch.setI(7);
     b.dispatch.setI(7);
 
-    assert(a.dispatch.getAnotherClass.i == no!int);
-    assert(b.dispatch.getAnotherClass.i == some(7));
+    assert(a.dispatch.getClass.i == no!int);
+    assert(b.dispatch.getClass.i == some(7));
 }
 
 @("Should dispatch a function of a reference type")
@@ -90,8 +76,8 @@ struct Struct {
     a.dispatch.setI(7);
     b.dispatch.setI(7);
 
-    assert(a.dispatch.getAnotherStruct.i == no!int);
-    assert(b.dispatch.getAnotherStruct.i == some(7));
+    assert(a.dispatch.getStruct.i == no!int);
+    assert(b.dispatch.getStruct.i == some(7));
 }
 
 @("Should dispatch a function of a pointer type")
@@ -195,13 +181,39 @@ struct Struct {
     static assert( __traits(compiles, () { sca.dispatch.sharedConstMethod; } ));
 }
 
+@("Should be safe nogc and pure")
 @nogc @safe pure unittest {
     auto a = some(Struct(7));
     auto b = no!Struct;
     assert(a.dispatch.i == some(7));
     assert(a.dispatch.getI == some(7));
-    assert(a.dispatch.getAnotherStruct.i == some(7));
+    assert(a.dispatch.getStruct.i == some(7));
     assert(b.dispatch.i == no!int);
     assert(b.dispatch.getI == no!int);
-    assert(b.dispatch.getAnotherStruct.i == no!int);
+    assert(b.dispatch.getStruct.i == no!int);
+}
+
+@("Should be safe with null pointer members")
+unittest {
+    struct B {
+        int f() {
+            return 8;
+        }
+        int m = 3;
+    }
+    struct A {
+        B* b_;
+        B* b() {
+            return b_;
+        }
+    }
+
+    auto a = some(new Struct(3));
+    auto b = some(new Struct(7));
+
+    assert(a.dispatch.getStruct.getStructRef.i == some(3));
+    assert(a.dispatch.getStruct.getStructRef.getI == some(3));
+
+    assert(b.dispatch.getStruct.getNullStruct.i == no!int);
+    assert(b.dispatch.getStruct.getNullStruct.getI == no!int);
 }
