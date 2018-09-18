@@ -229,3 +229,19 @@ unittest {
     static assert(__traits(compiles, c.dispatch.method()));
     static assert(__traits(compiles, c.dispatch.tmethod!int()));
 }
+
+@("Should flatten inner optional members")
+unittest {
+    class Residence {
+        auto numberOfRooms = 1;
+    }
+    class Person {
+        Optional!Residence residence = new Residence();
+    }
+
+    auto john = some(new Person());
+
+    auto n = john.dispatch.residence.numberOfRooms;
+
+    assert(n == some(1));
+}
