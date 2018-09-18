@@ -245,3 +245,9 @@ unittest {
 
     assert(n == some(1));
 }
+
+@("Should use Optional.toString")
+unittest {
+    import std.format;
+    assert(some(Struct(3)).dispatch.i.toString == "[3]");
+}
