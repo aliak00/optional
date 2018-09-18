@@ -16,6 +16,23 @@ package struct None {}
 */
 immutable none = None();
 
+private static string autoReturn(string expression)() {
+    return `
+        auto ref expr() {
+            return ` ~ expression ~ `;
+        }
+        ` ~ q{
+        alias R = typeof(expr());
+        static if (!is(R == void))
+            return empty ? no!R : some!R(expr());
+        else {
+            if (!empty) {
+                expr();
+            }
+        }
+    };
+}
+
 /**
     Optional type. Also known as a Maybe or Option type in some languages.
 
@@ -32,8 +49,6 @@ immutable none = None();
 */
 
 struct Optional(T) {
-    import optional.optionalref;
-
     import std.traits: isMutable, isSomeFunction, isAssignable, Unqual;
 
     private enum isNullInvalid = is(T == class) || is(T == interface) || isSomeFunction!T;
@@ -41,18 +56,6 @@ struct Optional(T) {
 
     private T _value = T.init; // Set to init for when T has @disable this()
     private bool _empty = true;
-
-    private static string autoReturn(string call) {
-        return
-            "alias R = typeof(" ~ call ~ ");" ~
-            "static if (!is(R == void))" ~
-                "return empty ? no!R : some!R(" ~ call ~ ");" ~
-            "else {" ~
-                "if (!empty) {" ~
-                    call ~ ";" ~
-                "}" ~
-            "}";
-    }
 
     private enum setEmpty = q{
         static if (isNullInvalid) {
@@ -94,11 +97,6 @@ struct Optional(T) {
     this(const None) {
         // For Error: field _value must be initialized in constructor, because it is nested struct
         this._value = T.init;
-    }
-    /// Ditto
-    this(U : T, this This)(OptionalRef!U oref) {
-        this._value = oref.get;
-        mixin(setEmpty);
     }
 
     @property bool empty() const {
@@ -156,8 +154,8 @@ struct Optional(T) {
         mixin(setEmpty);
     }
     /// Ditto
-    void opAssign(U : T)(auto ref OptionalRef!U oref) if (isMutable!T && isAssignable!(T, U))  {
-        this._value = oref.get.front;
+    void opAssign(U : T)(auto ref Optional!U lhs) if (isMutable!T && isAssignable!(T, U))  {
+        this._value = lhs._value;
         mixin(setEmpty);
     }
 
@@ -196,13 +194,13 @@ struct Optional(T) {
         If the optional is some value it returns an optional of some `value op rhs`
     */
     auto ref opBinary(string op, U : T, this This)(auto ref U rhs) {
-        mixin(autoReturn("front" ~ op ~ "rhs"));
+        mixin(autoReturn!("front" ~ op ~ "rhs"));
     }
     /**
         If the optional is some value it returns an optional of some `lhs op value`
     */
     auto ref opBinaryRight(string op, U : T, this This)(auto ref U lhs) {
-        mixin(autoReturn("lhs"  ~ op ~ "front"));
+        mixin(autoReturn!("lhs"  ~ op ~ "front"));
     }
 
     /**
@@ -212,7 +210,7 @@ struct Optional(T) {
             Optional value of whatever `T(args)` returns
     */
     auto ref opCall(Args...)(Args args) if (from!"std.traits".isCallable!T) {
-        mixin(autoReturn(q{ this._value(args) }));
+        mixin(autoReturn!("this._value(args)"));
     }
 
     // auto ref opIndexAssign(U : T, Args...(auto ref U value, auto ref Args...);
@@ -230,68 +228,6 @@ struct Optional(T) {
             immutable str = to!string(this._value);
         }
         return "[" ~ str ~ "]";
-    }
-
-    /**
-        Allows you to call dot operator on the internal value if present
-        If there is no value inside, or it is null, dispatching will still work but will
-        produce a series of no-ops.
-
-        If you try and call a manifest constant or static data on T then whether the manifest
-        or static immutable data is called depends on if the instance it is called on is a
-        some or a none.
-
-        Returns:
-            A proxy that dispatches all dot operations to T if there is a T and returns an Optional of
-            whatever T.blah would've returned.
-        ---
-        struct A {
-            struct Inner {
-                int g() { return 7; }
-            }
-            Inner inner() { return Inner(); }
-            int f() { return 4; }
-        }
-        auto a = some(A());
-        auto b = no!A;
-        auto b = no!(A*);
-        a.dispatch.inner.dispatch.g; // calls inner and calls g
-        b.dispatch.inner.dispatch.g; // no op.
-        b.dispatch.inner.dispatch.g; // no op.
-        ---
-    */
-    auto dispatch() inout {
-        import optional.dispatcher: Dispatcher;
-        return inout Dispatcher!(T)(&this);
-    }
-
-    /**
-        This is just like `dispatch` except it will chain the next call as well so that you don't have
-        to call `dispatch` with every function call
-
-        Returns:
-            A proxy that dispatches all dot operations to T if there is a T and returns an Optional of
-            whatever T.blah would've returned.
-        ---
-        struct A {
-            struct Inner {
-                int g() { return 7; }
-            }
-            Inner inner() { return Inner(); }
-            int f() { return 4; }
-        }
-        auto a = some(A());
-        auto b = no!A;
-        auto b = no!(A*);
-        a.dispatch.inner.g; // calls inner and calls g
-        b.dispatch.inner.g; // no op.
-        b.dispatch.inner.g; // no op.
-        ---
-    */
-    auto autoDispatch() {
-        import optional.autodispatcher;
-        import optional.optionalref;
-        return AutoDispatcher!T(OptionalRef!T(&this));
     }
 }
 
@@ -393,20 +329,6 @@ auto ref orElse(alias pred, T)(inout auto ref Optional!T opt) if (is(typeof(pred
 unittest {
     assert(some(3).orElse(9) == 3);
     assert(no!int.orElse(9) == 9);
-
-    struct S {
-        int g() { return 3; }
-    }
-
-    assert(some(S()).dispatch.g.orElse(9) == 3);
-    assert(no!S.dispatch.g.orElse(9) == 9);
-
-    class C {
-        int g() { return 3; }
-    }
-
-    assert(some(new C()).dispatch.g.orElse!(() => 9) == 3);
-    assert(no!C.dispatch.g.orElse!(() => 9) == 9);
 }
 
 /**
