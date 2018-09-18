@@ -14,16 +14,26 @@ private string autoReturn(string expression)() {
             return ` ~ expression ~ `;
         }
         ` ~ q{
-        alias R = typeof(expr());
+        auto ref val() {
+            import optional.traits: isOptional;
+            // If the dispatched result is an Optional itself, we flatten it out so that client code
+            // does not have to do a.dispatch.member.dispatch.otherMember
+            static if (isOptional!(typeof(expr()))) {
+                return expr().front;
+            } else {
+                return expr();
+            }
+        }
+        alias R = typeof(val());
         static if (is(R == void)) {
             if (!empty) {
-                expr();
+                val();
             }
         } else {
             if (empty) {
                 return NullSafeValueDispatcher!R(no!R());
             }
-            return NullSafeValueDispatcher!R(some(expr()));
+            return NullSafeValueDispatcher!R(some(val()));
         }
     };
 }
@@ -40,6 +50,12 @@ private struct NullSafeValueDispatcher(T) {
 
     this(T value) {
         this.value = value;
+    }
+
+    static if (!hasMember!(T, "toString")) {
+        public string toString() const {
+            return value.toString;
+        }
     }
 
     public template opDispatch(string name) if (hasMember!(T, name)) {
