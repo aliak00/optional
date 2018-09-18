@@ -28,10 +28,10 @@ private string autoReturn(string expression)() {
     };
 }
 
-struct NullSafeValueDispatcher(T) {
+private struct NullSafeValueDispatcher(T) {
     import std.traits: hasMember;
 
-    Optional!T value;
+    public Optional!T value;
     alias value this;
 
     this(Optional!T value) {
@@ -42,7 +42,7 @@ struct NullSafeValueDispatcher(T) {
         this.value = value;
     }
 
-    template opDispatch(string name) if (hasMember!(T, name)) {
+    public template opDispatch(string name) if (hasMember!(T, name)) {
         bool empty() @safe @nogc pure const {
             import std.traits: isPointer;
             static if (isPointer!T) {
