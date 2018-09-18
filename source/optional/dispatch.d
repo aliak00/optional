@@ -1,9 +1,12 @@
+/**
+    Provides safe dispatching utilities
+*/
 module optional.dispatch;
 
 import optional.optional: Optional;
 import optional.internal;
 
-enum isNullDispatchable(T) = is(T == class) || is(T == interface) || from!"std.traits".isPointer!T;
+private enum isNullDispatchable(T) = is(T == class) || is(T == interface) || from!"std.traits".isPointer!T;
 
 private string autoReturn(string expression)() {
     return `
@@ -79,10 +82,37 @@ struct NullSafeValueDispatcher(T) {
     }
 }
 
+/**
+    Allows you to call dot operator on a nullable type of an optional.
+
+    If there is no value inside, or it is null, dispatching will still work but will
+    produce a series of no-ops.
+
+    If you try and call a manifest constant or static data on T then whether the manifest
+    or static immutable data is called depends on if the instance is valid.
+
+    Returns:
+        An Optional of whatever T.blah would've returned.
+    ---
+    struct A {
+        struct Inner {
+            int g() { return 7; }
+        }
+        Inner inner() { return Inner(); }
+        int f() { return 4; }
+    }
+    auto a = some(A());
+    auto b = no!A;
+    auto b = no!(A*);
+    a.dispatch.inner.g; // calls inner and calls g
+    b.dispatch.inner.g; // no op.
+    b.dispatch.inner.g; // no op.
+    ---
+*/
 auto dispatch(T)(auto ref T value) if (isNullDispatchable!T) {
     return NullSafeValueDispatcher!T(value);
 }
-
+/// Ditto
 auto dispatch(T)(auto ref Optional!T value) {
     return NullSafeValueDispatcher!T(value);
 }
