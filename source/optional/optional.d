@@ -214,11 +214,33 @@ struct Optional(T) {
     }
 
     /**
-        If the optional is some value op assigns rhs to it
+        If the optional is some value, op assigns rhs to it
     */
-    auto ref opOpAssign(string op, U : T)(auto ref U rhs) {
+    auto ref opOpAssign(string op, U : T, this This)(auto ref U rhs) {
         mixin(autoReturn!("front" ~ op ~ "= rhs"));
     }
+
+    /**
+        If the optional is some value calls opIndex on it.
+
+        If T is an array then the range is also checked and `none` is returned
+        if the index is out of bounds
+    */
+    auto ref opIndex(this This, Is...)(auto ref Is indices) {
+        import std.traits: isArray;
+        import std.range: ElementType;
+        static if (isArray!T && indices.length == 1) {
+            if (indices[0] >= front.length || indices[0] < 0) {
+                return no!(ElementType!T);
+            }
+        }
+        mixin(autoReturn!("front[indices]"));
+    }
+    /// Ditto
+    auto ref opIndex(this This)() {
+        mixin(autoReturn!("front[]"));
+    }
+
 
     // auto ref opIndexAssign(U : T, Args...(auto ref U value, auto ref Args...);
 
