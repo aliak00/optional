@@ -220,29 +220,40 @@ struct Optional(T) {
         mixin(autoReturn!("front" ~ op ~ "= rhs"));
     }
 
-    /**
-        If the optional is some value calls opIndex on it.
+    static if (from!"std.traits".isArray!T) {
+        /**
+            Provides indexing into arrays
 
-        If T is an array then the range is also checked and `none` is returned
-        if the index is out of bounds
-    */
-    auto ref opIndex(this This, Is...)(auto ref Is indices) {
-        import std.traits: isArray;
-        import std.range: ElementType;
-        static if (isArray!T && indices.length == 1) {
-            if (indices[0] >= front.length || indices[0] < 0) {
-                return no!(ElementType!T);
+            The indexes and slices are also checked to be valid and `none` is returned if they are
+            not
+        */
+        auto opIndex(this This)(size_t index) {
+            enum call = "front[index]";
+            import std.range: ElementType;
+            if (index >= front.length || index < 0) {
+                return no!(mixin("typeof("~call~")"));
             }
+            mixin(autoReturn!(call));
         }
-        mixin(autoReturn!("front[indices]"));
-    }
-    /// Ditto
-    auto ref opIndex(this This)() {
-        mixin(autoReturn!("front[]"));
+        /// Ditto
+        auto ref opIndex(this This)() {
+            mixin(autoReturn!("front[]"));
+        }
+        /// Ditto
+        auto opSlice(this This)(size_t begin, size_t end) {
+            enum call = "front[begin .. end]";
+            import std.range: ElementType;
+            if (begin > end || end > front.length) {
+                return no!(mixin("typeof("~call~")"));
+            }
+            mixin(autoReturn!(call));
+        }
+        /// Ditto
+        auto opDollar() const {
+            return front.length;
+        }
     }
 
-
-    // auto ref opIndexAssign(U : T, Args...(auto ref U value, auto ref Args...);
 
     /// Converts value to string
     string toString() const {

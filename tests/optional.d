@@ -418,12 +418,14 @@ unittest {
     }
 }
 
-@("Should slice or index in to array if present and array index valid")
+@("Should work on arrays")
 unittest {
     foreach (T; QualifiedAlisesOf!(int[])) {
         T data = [1, 2];
+
         auto a = some(data);
         auto b = no!T;
+
         assert(a[0] == some(1));
         assert(b[0] == none);
         assert(a[1] == some(2));
@@ -436,5 +438,17 @@ unittest {
         // Slice
         assert(a[] == data);
         assert(b[] == none);
+
+        // opSlice
+        assert(a[0..1] == data[0..1]);
+        assert(b[0..1] == none);
+
+        // Invalid slice
+        assert(a[0..7] == none);
+        assert(b[0..7] == none);
+
+        // opDollar
+        assert(a[0 .. $] == data);
+        assert(b[0 .. $] == none);
     }
 }
