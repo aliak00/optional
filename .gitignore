@@ -13,3 +13,4 @@ optional-test-*
 *.lst
 bin/
 dub.selections.json
+package-lock.json

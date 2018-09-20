@@ -22,6 +22,7 @@ The purpose of this library is two fold, to provide types that:
 
 1. Eliminate null dereferences - [Aka the Billion Dollar Mistake](https://en.wikipedia.org/wiki/Tony_Hoare#Apologies_and_retractions).
 2. Show an explicit intent of the absence of a value
+3. Safe (non crashing) array access
 
 This is done with the following:
 
@@ -30,6 +31,12 @@ This is done with the following:
 * `dispatch`: A null-safe dispatching utility that allows you to call methods on possibly null values (including optionals, and `std.typecons.Nullable`)
 
 An `Optional!T` signifies the intent of your code, works as a range and is therefor useable with Phobos algorithms, and allows you to call methods and operators on your types even if they are null references - i.e. safe dispatching.
+
+You can use this library:
+* When you need a type that may have a value or may not (`Optional!Type`)
+* When you want to safely dispatch on types (`possibleNullClass.dispatch.someFuncion // safe`)
+* When you want a guaranteed non null object (`NotNull!Type`)
+* When you want to not crash with array access (`some([1, 2])[7] == none // no out of bounds exception`)
 
 ## What about `std.typecons.Nullable` and `std.range.only`?
 

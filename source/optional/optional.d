@@ -254,7 +254,6 @@ struct Optional(T) {
         }
     }
 
-
     /// Converts value to string
     string toString() const {
         import std.conv: to; import std.traits;
