@@ -1,6 +1,6 @@
 # Optional type for D with safe dispatching and NotNull type
 
-[![Latest version](https://img.shields.io/dub/v/optional.svg)](https://code.dlang.org/packages/optional) [![Build Status](https://travis-ci.org/aliak00/optional.svg?branch=master)](https://travis-ci.org/aliak00/optional) [![codecov](https://codecov.io/gh/aliak00/optional/branch/master/graph/badge.svg)](https://codecov.io/gh/aliak00/optional) [![license](https://img.shields.io/github/license/aliak00/optional.svg)](https://github.com/aliak00/optional/blob/master/LICENSE) [![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/912kVG)
+[![Latest version](https://img.shields.io/dub/v/optional.svg)](https://code.dlang.org/packages/optional) [![Build Status](https://travis-ci.org/aliak00/optional.svg?branch=master)](https://travis-ci.org/aliak00/optional) [![codecov](https://codecov.io/gh/aliak00/optional/branch/master/graph/badge.svg)](https://codecov.io/gh/aliak00/optional) [![license](https://img.shields.io/github/license/aliak00/optional.svg)](https://github.com/aliak00/optional/blob/master/LICENSE) [![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/CxJwiO)
 
 Full API docs available [here](https://aliak00.github.io/optional/optional.html)
 
@@ -12,9 +12,9 @@ Full API docs available [here](https://aliak00.github.io/optional/optional.html)
     * [Let's try an Optional!int](#lets-try-an-optionalint)
 * [Scala we have a Swift comparison](#scala-we-have-a-swift-comparison)
 * [Examples](#examples)
-  * [Example Optional!T usage](#example-optionalt-usage)
-  * [Example dispatch usage](#example-dispatch-usage)
-  * [Example NotNull!T usage](#example-notnullt-usage)
+    * [Example Optional!T usage](#example-optionalt-usage)
+    * [Example dispatch usage](#example-dispatch-usage)
+    * [Example NotNull!T usage](#example-notnullt-usage)
 
 ## Summary
 
@@ -243,18 +243,15 @@ if let number = Int(str) {
 The following section has example usage of the various types
 
 ### Example Optional!T usage
-
-[![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/IAhkrR)
 ```d
 import optional;
 
 // Create empty optional
 auto a = no!int;
-
 assert(a == none);
 
-++a; // none;
-a - 1; // none;
+++a; // safe;
+a - 1; // safe;
 
 // Assign and try doing the same stuff
 a = 9;
@@ -264,26 +261,18 @@ assert(a == some(9));
 a - 1; // some(9);
 
 // Acts like a range as well
+import std.algorithm : map;
+import std.conv : to;
 
-import std.algorithm: map;
-import std.conv: to;
+cast(void)some(10).map!(to!double); // [10.0]
+cast(void)no!int.map!(to!double); // empty
 
-auto b = some(10);
-auto c = no!int;
-
-b.map!(to!double); // [10.0]
-c.map!(to!double); // empty
-
-auto r = b.match!(
-    (int a) => "yes",
-    () => "no",
-);
+auto r = some(1).match!((int a) => "yes", () => "no",);
 assert(r == "yes");
 ```
+[![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/AH9LkT)
 
 ### Example NotNull!T usage
-
-[![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/rJjG8N)
 ```d
 static class C { void f() {} }
 static struct S { void f() {} }
@@ -306,9 +295,9 @@ static assert(!__traits(compiles, { c = null; }));
 static assert(!__traits(compiles, { sp = null; }));
 static assert(!__traits(compiles, { c = new C; }));
 ```
+[![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/3AJpNA)
 
 ### Example dispatch usage
-
 ```d
 // Safely dispatch to whatever inner type is
 struct A {
@@ -333,3 +322,4 @@ A* e = null;
 assert(e.dispatch.f() == none);
 assert(e.dispatch.inner.g() == none);
 ```
+[![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/SmsGQu)
