@@ -452,3 +452,10 @@ unittest {
         assert(b[0 .. $] == none);
     }
 }
+
+@("Should compare with other ranges")
+unittest {
+    auto a = [1];
+    auto b = some(1);
+    assert(a == b);
+}

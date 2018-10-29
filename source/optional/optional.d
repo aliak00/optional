@@ -131,6 +131,13 @@ struct Optional(T) {
     bool opEquals(U : T)(const auto ref U rhs) const {
         return !this.empty && this._value == rhs;
     }
+    /// Ditto
+    bool opEquals(R)(const R other) const if (from!"std.range".isInputRange!R) {
+        import std.range: empty, front;
+        if (this.empty && other.empty) return true;
+        if (this.empty || other.empty) return false;
+        return this.front == other.front;
+    }
 
     /**
         Assigns a value to the optional or sets it to `none`.
