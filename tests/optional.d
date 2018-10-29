@@ -455,7 +455,10 @@ unittest {
 
 @("Should compare with other ranges")
 unittest {
-    auto a = [1];
-    auto b = some(1);
-    assert(a == b);
+    import std.algorithm: map, filter;
+    auto a = some(1);
+
+    assert(a == [1]);
+    assert(a == [1].map!"a");
+    assert(a == [1].filter!"true");
 }

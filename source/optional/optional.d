@@ -132,7 +132,7 @@ struct Optional(T) {
         return !this.empty && this._value == rhs;
     }
     /// Ditto
-    bool opEquals(R)(const R other) const if (from!"std.range".isInputRange!R) {
+    bool opEquals(R)(auto ref R other) const if (from!"std.range".isInputRange!R) {
         import std.range: empty, front;
         if (this.empty && other.empty) return true;
         if (this.empty || other.empty) return false;
