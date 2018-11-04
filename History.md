@@ -1,4 +1,12 @@
+v0.7.3 / 2018-10-29
+===================
 
+  * Changed: pass range as auto ref to opEquals
+
+v0.7.2 / 2018-10-29
+===================
+
+  * Added: Allow optional to be compared with other ranges
 
 v0.7.0 / 2018-09-21
 ==================
