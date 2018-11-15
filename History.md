@@ -1,3 +1,10 @@
+
+v0.7.4 / 2018-11-15
+===================
+
+  * Fixed: empty state when assigning another optional
+
+
 v0.7.3 / 2018-10-29
 ===================
 
