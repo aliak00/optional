@@ -462,3 +462,20 @@ unittest {
     assert(a == [1].map!"a");
     assert(a == [1].filter!"true");
 }
+
+@("Should maintain empty state after being assigned to another optional")
+unittest {
+    Optional!string makeNone() {
+        Optional!string v;
+        return v;
+    }
+    Optional!string makeSome() {
+        auto v = Optional!string("hi");
+        return v;
+    }
+    Optional!string o;
+    o = makeNone();
+    assert(o.empty);
+    o = makeSome();
+    assert(!o.empty);
+}

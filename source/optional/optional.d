@@ -57,15 +57,15 @@ struct Optional(T) {
     private T _value = T.init; // Set to init for when T has @disable this()
     private bool _empty = true;
 
-    private enum setEmpty = q{
+    private enum nonEmpty = q{
         static if (isNullInvalid) {
             this._empty = this._value is null;
         } else {
             this._empty = false;
         }
     };
-    private void setEmptyState() {
-        mixin(setEmpty);
+    private void setNonEmptyState() {
+        mixin(nonEmpty);
     }
 
     /**
@@ -78,20 +78,19 @@ struct Optional(T) {
         auto value = T(args);
         Optional!T opt;
         opt._value = move(value);
-        opt.setEmptyState;
+        opt.setNonEmptyState;
         return move(opt);
     }
 
     /**
         Constructs an Optional!T value by assigning T
 
-        If T is of class type, interface type, or some function pointer than passing in null
+        If T is of class type, interface type, or some function pointer then passing in null
         sets the optional to `none` interally
-
     */
     this(U : T, this This)(auto ref U value) {
         this._value = value;
-        mixin(setEmpty);
+        mixin(nonEmpty);
     }
     /// Ditto
     this(const None) {
@@ -134,6 +133,7 @@ struct Optional(T) {
     /// Ditto
     bool opEquals(R)(auto ref R other) const if (from!"std.range".isInputRange!R) {
         import std.range: empty, front;
+
         if (this.empty && other.empty) return true;
         if (this.empty || other.empty) return false;
         return this.front == other.front;
@@ -158,12 +158,12 @@ struct Optional(T) {
     /// Ditto
     void opAssign(U : T)(auto ref U lhs) if (isMutable!T && isAssignable!(T, U)) {
         this._value = lhs;
-        mixin(setEmpty);
+        mixin(nonEmpty);
     }
     /// Ditto
     void opAssign(U : T)(auto ref Optional!U lhs) if (isMutable!T && isAssignable!(T, U))  {
         this._value = lhs._value;
-        mixin(setEmpty);
+        this._empty = lhs._empty;
     }
 
     /**
