@@ -5,7 +5,7 @@
 Full API docs available [here](https://aliak00.github.io/optional/optional.html)
 
 * [Summary](#summary)
-* [What about std.typecons.Nullable std.range.only?](#what-about-std.typecons.nullable-and-std.range.only?)
+* [What about std.typecons.Nullable std.range.only?](#what-about-std.typecons.nullable-and-std.range.only)
 * [Motivation for Optional](#motivation-for-optional)
     * [Use pointers?](#use-pointers)
     * [How about ranges?](#how-about-ranges)
