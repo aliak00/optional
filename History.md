@@ -1,9 +1,13 @@
 
+v0.8.0 / 2018-12-11
+==================
+
+  * Added: betterC support PR #28 from @skoppe
+
 v0.7.4 / 2018-11-15
 ===================
 
   * Fixed: empty state when assigning another optional
-
 
 v0.7.3 / 2018-10-29
 ===================
