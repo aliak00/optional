@@ -261,19 +261,21 @@ struct Optional(T) {
         }
     }
 
-    /// Converts value to string
-    string toString() const {
-        import std.conv: to; import std.traits;
-        if (empty) {
-            return "[]";
+    version (D_BetterC) {} else {
+        /// Converts value to string
+        string toString() const {
+            import std.conv: to; import std.traits;
+            if (empty) {
+                return "[]";
+            }
+            // Cast to unqual if we can copy so writing it out does the right thing.
+            static if (isCopyable!T) {
+                immutable str = to!string(cast(Unqual!T)this._value);
+            } else {
+                immutable str = to!string(this._value);
+            }
+            return "[" ~ str ~ "]";
         }
-        // Cast to unqual if we can copy so writing it out does the right thing.
-        static if (isCopyable!T) {
-            immutable str = to!string(cast(Unqual!T)this._value);
-        } else {
-            immutable str = to!string(this._value);
-        }
-        return "[" ~ str ~ "]";
     }
 }
 
