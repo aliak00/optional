@@ -377,6 +377,7 @@ public auto ref orElse(alias pred, T)(inout auto ref Optional!T opt) if (is(type
 unittest {
     assert(some(3).orElse(9) == 3);
     assert(no!int.orElse(9) == 9);
+    assert(no!int.orElse!(() => 10) == 10);
 }
 
 /**

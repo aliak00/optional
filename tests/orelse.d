@@ -14,3 +14,11 @@ unittest {
         }
     }
 }
+
+@("Should work with lambdas")
+unittest {
+    auto a = some("hello");
+    auto b = no!string;
+    assert(a.orElse!(() => "world") == "hello");
+    assert(b.orElse!(() => "world") == "world");
+}
