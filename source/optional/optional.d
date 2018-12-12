@@ -363,8 +363,8 @@ unittest {
         value = The value to return if the optional is empty
         pred = The predicate to call if the optional is empty
 */
-public auto ref U orElse(T, U)(inout auto ref Optional!T opt, auto ref U value) if (is(U : T)) {
-    return opt.empty ? value : opt.front;
+public auto ref U orElse(T, U)(inout auto ref Optional!T opt, lazy U value) if (is(U : T)) {
+    return opt.orElse!value;
 }
 
 /// Ditto
