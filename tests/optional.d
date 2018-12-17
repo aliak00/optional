@@ -479,3 +479,18 @@ unittest {
     o = makeSome();
     assert(!o.empty);
 }
+
+@("Should preserve nulls with array of pointers")
+unittest {
+    struct S {
+        int i;
+    }
+
+    auto a = [new S(1), new S(2)].some;
+    auto b = [new S(1), new S(2), null].some;
+    auto c = [new S(1), new S(2), new S(3)].some;
+
+    assert(a[2] == none);
+    assert(b[2] != none);
+    assert(c[2] != none);
+}
