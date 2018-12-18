@@ -4,17 +4,55 @@
 
 Full API docs available [here](https://aliak00.github.io/optional/optional.html)
 
+* [Features](#features)
 * [Summary](#summary)
-* [What about std.typecons.Nullable std.range.only?](#what-about-stdtypeconsnullable-and-stdrangeonly)
 * [Motivation for Optional](#motivation-for-optional)
     * [Use pointers?](#use-pointers)
     * [How about ranges?](#how-about-ranges)
     * [Let's try an Optional!int](#lets-try-an-optionalint)
+* [FAQ](#faq)
+    * [Can't I just use a pointer as an optional](#cant-i-just-use-a-pointer-as-an-optional)
+    * [What about std.typecons.Nullable?](#what-about-stdtypeconsnullable)
+    * [What about std.range.only?](#what-about-stdrangeonly)
 * [Scala we have a Swift comparison](#scala-we-have-a-swift-comparison)
 * [Examples](#examples)
     * [Example Optional!T usage](#example-optionalt-usage)
-    * [Example dispatch usage](#example-dispatch-usage)
     * [Example NotNull!T usage](#example-notnullt-usage)
+    * [Example dispatch usage](#example-dispatch-usage)
+
+
+## Features
+
+* `@nogc` and `@safe`
+* Shows the intent of your code that may or may not return a value
+    ```d
+    Optiona!int fun() {} // Might return an int, or might not
+    ```
+* Use pattern matching
+    ```
+    fun.match!(
+        (int value) => writeln("it returns an int"),
+        () => writeln("did not return anything"),
+    );
+    ```
+* Safely call functions on classes that are null or structs that don't exist
+    ```
+    class C { int fun() { return 3; } }
+    Optional!C a = null;
+    a.dispatch.fun; // no crash, returns no!int
+    ```
+* Forwards any operator calls to the wrapped typed only if it exists, else just returns a `none`
+    ```
+    Optional!int a = 3;
+    Optional!int b = none;
+    a + a; // evaluates to some(6);
+    a + b; // evaluates to no!int;
+    ```
+* Copmatible with `std.algorithm` and `std.range`
+    ```
+    fun.each!(value => writeln("I got the value"));
+    fun.filter!"a % 2 == 0".each!(value => writeln("got even value"));
+    ```
 
 ## Summary
 
@@ -22,7 +60,6 @@ The purpose of this library is two fold, to provide types that:
 
 1. Eliminate null dereferences - [Aka the Billion Dollar Mistake](https://en.wikipedia.org/wiki/Tony_Hoare#Apologies_and_retractions).
 2. Show an explicit intent of the absence of a value
-3. Safe (non crashing) array access
 
 This is done with the following:
 
@@ -37,12 +74,6 @@ You can use this library:
 * When you want to safely dispatch on types (`possibleNullClass.dispatch.someFuncion // safe`)
 * When you want a guaranteed non null object (`NotNull!Type`)
 * When you want to not crash with array access (`some([1, 2])[7] == none // no out of bounds exception`)
-
-## What about `std.typecons.Nullable` and `std.range.only`?
-
-It is NOT like the `Nullable` type in Phobos. `Nullable` is basically a pointer and applies pointer semantics to value types. It does not give you any safety guarantees and says nothing about the intent of "I might not return a value". Whereas `Optional` signifies intent on both reference and value types, and is safe to use without the need to check `isNull` before every usage.
-
-It is also NOT like `std.range.only`. D's `only` cannot be used to signify intent of a value being present or not, nor can be used for safe dispatching, nor the result of `only(value)` be passed around. It's only (heh) usage is to create a range out of a value so that values can act as ranges and be used seamlessly with `std.algorithms`. This `Optional` has a type constructor - `some` - that can be used for this purpose as well.
 
 ## Motivation for Optional
 
@@ -130,6 +161,47 @@ void f() {
     writeln(v);
 }
 ```
+
+## FAQ
+
+### Can't I just use a pointer as an optional
+
+Well yes, you can, but you *can* also stick a pencil up your nostril. It's a bad idea for the following reasons:
+
+1. In order to achieve stability, you have to enforce checking for null. Which you cannot do
+1. Null is part of the value domain of pointers. This means you can't an optional of null
+1. The caller doesn't know who owns the pointer returned. Is it garbage collected? If not should you deallocate it?
+1. It says nothing about intent.
+
+### What about `std.typecons.Nullable`?
+
+It is not like the `Nullable` type in Phobos. `Nullable` is basically a pointer and applies pointer semantics to value types. It does not give you any safety guarantees and says nothing about the intent of "I might not return a value". It does, however, tell you if something has been assigned a value or not. Albeit a bit counterintuitively, and in some cases nonsensically:
+
+```d
+class C {}
+Nullable!C a = null;
+writeln(a.isNull); // prints false
+```
+
+This may make sense when null is part of the value domain of a type - i.e. for pointers. But with classes you end up having to write code like this:
+
+```d
+void f(T)(Nullable!T a) {
+    if (!a.isNull) {
+        static if (is(T == class) || (T == interface) || /* what else have I missed? */) {
+            if (a.get !is null) {
+                a.callSomeFunction;
+            }
+        } else {
+            a.callSomeFunction;
+        }
+    }
+}
+```
+
+### What about `std.range.only`?
+
+It is also NOT like `std.range.only`. D's `only` cannot be used to signify intent of a value being present or not, nor can be used for safe dispatching, nor the result of `only(value)` be passed around. It's only (heh) usage is to create a range out of a value so that values can act as ranges and be used seamlessly with `std.algorithms`. This `Optional` has a type constructor - `some` - that can be used for this purpose as well.
 
 ## Scala we have a Swift comparison
 
