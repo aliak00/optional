@@ -1,4 +1,10 @@
 
+0.9.0 / 2018-12-18
+==================
+
+  * Changed: make orElse value lazy
+  * Added: predicate version of orElse
+
 v0.8.0 / 2018-12-11
 ==================
 
