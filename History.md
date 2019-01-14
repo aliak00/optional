@@ -1,3 +1,8 @@
+0.10.0 / 2019-01-14
+==================
+
+  * Changed: make initial Optional!T state all zeros
+  * Fixed: assert when front called on empty optional
 
 0.9.0 / 2018-12-18
 ==================
