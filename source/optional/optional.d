@@ -105,7 +105,10 @@ struct Optional(T) {
             return this._empty;
         }
     }
-    @property ref inout(T) front() inout { return this._value; }
+    @property ref inout(T) front() inout {
+        assert(!empty, "Attempting to fetch the front of an empty optional.");
+        return this._value;
+    }
     void popFront() { this._empty = true; }
 
     /**
@@ -237,7 +240,7 @@ struct Optional(T) {
         auto opIndex(this This)(size_t index) {
             enum call = "front[index]";
             import std.range: ElementType;
-            if (index >= front.length || index < 0) {
+            if (empty || index >= front.length || index < 0) {
                 return no!(mixin("typeof("~call~")"));
             }
             mixin(autoReturn!(call));
@@ -250,14 +253,14 @@ struct Optional(T) {
         auto opSlice(this This)(size_t begin, size_t end) {
             enum call = "front[begin .. end]";
             import std.range: ElementType;
-            if (begin > end || end > front.length) {
+            if (empty || begin > end || end > front.length) {
                 return no!(mixin("typeof("~call~")"));
             }
             mixin(autoReturn!(call));
         }
         /// Ditto
         auto opDollar() const {
-            return front.length;
+            return empty ? 0 : front.length;
         }
     }
 

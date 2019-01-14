@@ -15,8 +15,8 @@ private string autoReturn(string expression)() {
             return ` ~ expression ~ `;
         }
         ` ~ q{
+        import optional.traits: isOptional;
         auto ref val() {
-            import optional.traits: isOptional;
             // If the dispatched result is an Optional itself, we flatten it out so that client code
             // does not have to do a.dispatch.member.dispatch.otherMember
             static if (isOptional!(typeof(expr()))) {
@@ -33,6 +33,13 @@ private string autoReturn(string expression)() {
         } else {
             if (empty) {
                 return NullSafeValueDispatcher!R(no!R());
+            }
+            static if (isOptional!(typeof(expr()))) {
+                // If the dispatched result is an optional, check if the expression is empty before
+                // calling val() because val() calls .front which would assert if empty.
+                if (expr().empty) {
+                    return NullSafeValueDispatcher!R(no!R());
+                }
             }
             return NullSafeValueDispatcher!R(some(val()));
         }
@@ -63,7 +70,7 @@ private struct NullSafeValueDispatcher(T) {
         bool empty() @safe @nogc pure const {
             import std.traits: isPointer;
             static if (isPointer!T) {
-                return value.front is null;
+                return value.empty || value.front is null;
             } else {
                 return value.empty;
             }

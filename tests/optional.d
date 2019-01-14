@@ -494,3 +494,16 @@ unittest {
     assert(b[2] != none);
     assert(c[2] != none);
 }
+
+@("should throw if out of range")
+unittest {
+    import core.exception: AssertError;
+    auto a = no!int;
+    bool thrown = false;
+    try {
+        cast(void)a.front;
+    } catch (AssertError err) {
+        thrown = true;
+    }
+    assert(thrown);
+}
