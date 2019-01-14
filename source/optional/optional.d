@@ -55,13 +55,13 @@ struct Optional(T) {
     private enum isNullable = is(typeof(T.init is null));
 
     private T _value = T.init; // Set to init for when T has @disable this()
-    private bool _empty = true;
+    private bool defined = false;
 
     private enum nonEmpty = q{
         static if (isNullInvalid) {
-            this._empty = this._value is null;
+            this.defined = this._value !is null;
         } else {
-            this._empty = false;
+            this.defined = true;
         }
     };
     private void setNonEmptyState() {
@@ -100,16 +100,16 @@ struct Optional(T) {
 
     @property bool empty() const {
         static if (isNullInvalid) {
-            return this._empty || this._value is null;
+            return !this.defined || this._value is null;
         } else {
-            return this._empty;
+            return !this.defined;
         }
     }
     @property ref inout(T) front() inout {
         assert(!empty, "Attempting to fetch the front of an empty optional.");
         return this._value;
     }
-    void popFront() { this._empty = true; }
+    void popFront() { this.defined = false; }
 
     /**
         Compare two optionals or an optional with some value
@@ -155,7 +155,7 @@ struct Optional(T) {
             } else {
                 destroy(this._value);
             }
-            this._empty = true;
+            this.defined = false;
         }
     }
     /// Ditto
@@ -166,7 +166,7 @@ struct Optional(T) {
     /// Ditto
     void opAssign(U : T)(auto ref Optional!U lhs) if (isMutable!T && isAssignable!(T, U))  {
         this._value = lhs._value;
-        this._empty = lhs._empty;
+        this.defined = lhs.defined;
     }
 
     /**
