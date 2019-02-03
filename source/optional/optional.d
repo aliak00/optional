@@ -443,3 +443,32 @@ public template match(handlers...) if (handlers.length == 2) {
     assert(ra == "yes");
     assert(rb == "no");
 }
+
+/**
+    Converts any type of range to an Optional type
+
+    Params:
+        range = the range to convert. It must have no more than 1 element
+
+    Returns:
+        `some(range.front)` or `no!(ElementType!Range)`
+*/
+auto toOptional(R)(auto ref R range) if (from!"std.range".isInputRange!R) {
+    import std.range: walkLength, ElementType;
+    assert(range.empty || range.walkLength == 1);
+    if (range.empty) {
+        return no!(ElementType!R);
+    } else {
+        return some(range.front);
+    }
+}
+
+///
+@("Example of toOptional")
+unittest {
+    import std.algorithm: map;
+    import optional;
+
+    assert(no!int.map!"a".toOptional == none);
+    assert(some(1).map!"a".toOptional == some(1));
+}
