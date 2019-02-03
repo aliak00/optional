@@ -272,7 +272,7 @@ struct Optional(T) {
                 return "[]";
             }
             // Cast to unqual if we can copy so writing it out does the right thing.
-            static if (isCopyable!T) {
+            static if (isCopyable!T && __traits(compiles, cast(Unqual!T)this._value)) {
                 immutable str = to!string(cast(Unqual!T)this._value);
             } else {
                 immutable str = to!string(this._value);
