@@ -454,7 +454,7 @@ public template match(handlers...) if (handlers.length == 2) {
         `some(range.front)` or `no!(ElementType!Range)`
 */
 auto toOptional(R)(auto ref R range) if (from!"std.range".isInputRange!R) {
-    import std.range: walkLength, ElementType;
+    import std.range: walkLength, ElementType, front;
     assert(range.empty || range.walkLength == 1);
     if (range.empty) {
         return no!(ElementType!R);
