@@ -26,7 +26,7 @@ Full API docs available [here](https://aliak00.github.io/optional/optional.html)
 * `@nogc` and `@safe`
 * Shows the intent of your code that may or may not return a value
     ```d
-    Optiona!int fun() {} // Might return an int, or might not
+    Optional!int fun() {} // Might return an int, or might not
     ```
 * Use pattern matching
     ```
@@ -48,7 +48,7 @@ Full API docs available [here](https://aliak00.github.io/optional/optional.html)
     a + a; // evaluates to some(6);
     a + b; // evaluates to no!int;
     ```
-* Copmatible with `std.algorithm` and `std.range`
+* Compatible with `std.algorithm` and `std.range`
     ```
     fun.each!(value => writeln("I got the value"));
     fun.filter!"a % 2 == 0".each!(value => writeln("got even value"));
@@ -67,17 +67,17 @@ This is done with the following:
 * `NotNull!T`: Represents a type that can never be null.
 * `dispatch`: A null-safe dispatching utility that allows you to call methods on possibly null values (including optionals, and `std.typecons.Nullable`)
 
-An `Optional!T` signifies the intent of your code, works as a range and is therefor useable with Phobos algorithms, and allows you to call methods and operators on your types even if they are null references - i.e. safe dispatching.
+An `Optional!T` signifies the intent of your code, works as a range and is therefore usable with Phobos algorithms, and allows you to call methods and operators on your types even if they are null references - i.e. safe dispatching.
 
 You can use this library:
 * When you need a type that may have a value or may not (`Optional!Type`)
-* When you want to safely dispatch on types (`possibleNullClass.dispatch.someFuncion // safe`)
+* When you want to safely dispatch on types (`possibleNullClass.dispatch.someFunction // safe`)
 * When you want a guaranteed non null object (`NotNull!Type`)
 * When you want to not crash with array access (`some([1, 2])[7] == none // no out of bounds exception`)
 
 ## Motivation for Optional
 
-Lets take a very contrived example, and say you have a function that may return a value (that should be some integer) or not (config file, server, find operation, whatever), and then you have functions add1 and add2, that have the requirements that they may or may not produce a valid value. (maybe they do some crazy division, or they contact a server themselves to fetch a value, whatevs).
+Let's take a very contrived example, and say you have a function that may return a value (that should be some integer) or not (config file, server, find operation, whatever), and then you have functions add1 and add2, that have the requirements that they may or may not produce a valid value. (maybe they do some crazy division, or they contact a server themselves to fetch a value, whatevs).
 
 How can you go about this?
 
@@ -169,7 +169,7 @@ void f() {
 Well yes, you can, but you *can* also stick a pencil up your nostril. It's a bad idea for the following reasons:
 
 1. In order to achieve stability, you have to enforce checking for null. Which you cannot do
-1. Null is part of the value domain of pointers. This means you can't an optional of null
+1. Null is part of the value domain of pointers. This means you can't use an optional of null
 1. The caller doesn't know who owns the pointer returned. Is it garbage collected? If not should you deallocate it?
 1. It says nothing about intent.
 
