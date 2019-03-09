@@ -3,6 +3,8 @@
 */
 module optional.optional;
 
+import std.typecons: Nullable;
+
 import optional.internal;
 
 package struct None {}
@@ -445,13 +447,14 @@ public template match(handlers...) if (handlers.length == 2) {
 }
 
 /**
-    Converts any type of range to an Optional type
+    Converts a range or Nullable to an optional type
 
     Params:
         range = the range to convert. It must have no more than 1 element
+        nullable = the Nullable to convert
 
     Returns:
-        `some(range.front)` or `no!(ElementType!Range)`
+        an optional of the element of range or Nullable
 */
 auto toOptional(R)(auto ref R range) if (from!"std.range".isInputRange!R) {
     import std.range: walkLength, ElementType, front;
@@ -460,6 +463,15 @@ auto toOptional(R)(auto ref R range) if (from!"std.range".isInputRange!R) {
         return no!(ElementType!R);
     } else {
         return some(range.front);
+    }
+}
+
+/// Ditto
+auto toOptional(T)(auto ref Nullable!T value) {
+    if (value.isNull) {
+        return no!T;
+    } else {
+        return some(value.get);
     }
 }
 
