@@ -484,3 +484,28 @@ unittest {
     assert(no!int.map!"a".toOptional == none);
     assert(some(1).map!"a".toOptional == some(1));
 }
+
+/**
+    Turns an Optional in to a Nullable
+
+    Params:
+        opt = the optional to convert from a Nullable!T
+
+    Returns:
+        An Nullable!T
+*/
+auto toNullable(T)(auto ref Optional!T opt) {
+    import std.typecons: nullable;
+    if (opt.empty) {
+        return Nullable!T();
+    } else {
+        return opt.front.nullable;
+    }
+}
+
+///
+@("Example of toNullable")
+unittest {
+    assert(some(3).toNullable == Nullable!int(3));
+    assert(no!int.toNullable == Nullable!int());
+}
