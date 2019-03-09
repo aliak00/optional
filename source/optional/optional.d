@@ -468,10 +468,10 @@ auto toOptional(R)(auto ref R range) if (from!"std.range".isInputRange!R) {
 
 /// Ditto
 auto toOptional(T)(auto ref Nullable!T nullable) {
-    if (value.isNull) {
+    if (nullable.isNull) {
         return no!T;
     } else {
-        return some(value.get);
+        return some(nullable.get);
     }
 }
 
