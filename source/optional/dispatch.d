@@ -150,3 +150,7 @@ auto dispatch(T)(auto ref Nullable!T value) {
     }
     return NullSafeValueDispatcher!T(value.get);
 }
+
+unittest {
+    auto a = NullSafeValueDispatcher!string("hello") == Optional!string("hello");
+}

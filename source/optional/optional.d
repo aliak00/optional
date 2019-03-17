@@ -90,12 +90,16 @@ struct Optional(T) {
         If T is of class type, interface type, or some function pointer then passing in null
         sets the optional to `none` interally
     */
-    this(U : T, this This)(auto ref U value) {
+    this(U : T)(inout auto ref U value) inout {
+        this._value = value;
+        mixin(nonEmpty);
+    }
+    this(inout T value) inout {
         this._value = value;
         mixin(nonEmpty);
     }
     /// Ditto
-    this(const None) {
+    this(const None) inout {
         // For Error: field _value must be initialized in constructor, because it is nested struct
         this._value = T.init;
     }
@@ -136,7 +140,7 @@ struct Optional(T) {
         return !this.empty && this._value == rhs;
     }
     /// Ditto
-    bool opEquals(R)(auto ref R other) const if (from!"std.range".isInputRange!R) {
+    bool opEquals(R)(const auto ref R other) const if (from!"std.range".isInputRange!R) {
         import std.range: empty, front;
 
         if (this.empty && other.empty) return true;
@@ -290,8 +294,13 @@ struct Optional(T) {
     Calling some on the result of a dispatch chain will result
     in the original optional value.
 */
-public auto ref some(T)(auto ref T value) {
-    return Optional!T(value);
+public auto ref some(T)(inout auto ref T value) {
+    // https://issues.dlang.org/show_bug.cgi?id=19126
+    static if (is(T == immutable)) {
+        return Optional!T(value);
+    } else {
+        return inout(Optional!T)(value);
+    }
 }
 
 ///
@@ -467,7 +476,7 @@ auto toOptional(R)(auto ref R range) if (from!"std.range".isInputRange!R) {
 }
 
 /// Ditto
-auto toOptional(T)(auto ref Nullable!T nullable) {
+auto toOptional(T)(inout auto ref Nullable!T nullable) {
     if (nullable.isNull) {
         return no!T;
     } else {
