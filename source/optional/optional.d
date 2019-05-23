@@ -518,3 +518,18 @@ unittest {
     assert(some(3).toNullable == Nullable!int(3));
     assert(no!int.toNullable == Nullable!int());
 }
+
+unittest {
+    // class A {}
+    // auto a = Optional!(inout A)(new A);
+    class A { }
+
+    class C {
+        int i;
+        auto f() inout
+        {
+            return some(i);
+        }
+    }
+    // static assert(__traits(compiles, () { auto a = Optional!(inout A)(new A); } () ));
+}
