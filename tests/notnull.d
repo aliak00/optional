@@ -14,8 +14,8 @@ unittest {
 
 @("Should allow copy of other NotNull")
 unittest {
-    struct S {}
-    static assert(__traits(compiles, { auto c = notNull!S; } ));
+    static class C {}
+    static assert(__traits(compiles, { auto c = notNull!C; } ));
 }
 
 @("Should allow covariant assignment")
@@ -53,17 +53,18 @@ unittest {
     assert(a.x == 3);
 }
 
-@("Should work with a struct")
+@("Should work with a class")
 unittest {
     static class C { int i; }
     auto c = notNull!C;
     c.i = 3;
     assert(c.i == 3);
+}
 
+@("Should not work with a struct")
+unittest {
     struct S { int i; }
-    auto s = notNull!S;
-    s.i = 3;
-    assert(s.i == 3);
+    static assert(!__traits(compiles, { auto s = notNull!S; } ));
 }
 
 @("Should work with a struct pointer")
@@ -89,7 +90,7 @@ unittest {
     assert(s !is null);
 }
 
-@("Should not implicitly convert to type")
+@("Should not implicitly convert to ref of type")
 unittest {
     static class C { int i; }
     struct S { int i; }

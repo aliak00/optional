@@ -4,6 +4,7 @@
 module optional.notnull;
 
 import optional.internal;
+import std.traits: isPointer;
 
 /**
     Creates a `NotNull` type
@@ -12,14 +13,16 @@ import optional.internal;
         args = any arguments that need to be passed to T's constructor
 */
 auto notNull(T, Args...)(Args args) {
-    import std.traits: isPointer;
     static if (isPointer!T) {
         import std.traits: PointerTarget;
         auto instance = new PointerTarget!T(args);
-    } else static if (is(T == class)) {
+    } else static if (is(T == class) || is(T == interface)) {
         auto instance = new T(args);
     } else {
-        auto instance = T(args);
+        static assert(
+            0,
+            T.stringof ~ " cannot have a value of null",
+        );
     }
     return NotNull!T(instance);
 }
@@ -36,12 +39,12 @@ auto notNull(T, Args...)(Args args) {
 
     the constructor is disabled, so you have to use the function `notNull` to construct `NotNull` objects.
 */
-struct NotNull(T) {
+struct NotNull(T) if (is(T == class) || is(T == interface) || isPointer!T) {
     import std.traits: isPointer;
     import optional: isNotNull;
 
     private T _value;
-    @property ref inout(T) value() inout { return this._value; }
+    @property inout(T) value() inout { return this._value; }
     alias value this;
 
     @disable void opAssign(typeof(null));
@@ -80,20 +83,13 @@ unittest {
         sp.f();
     }
 
-    void f2(ref NotNull!(S) s) {
-        s.f();
-    }
-
     auto c = notNull!C;
     auto sp = notNull!(S*);
-    auto s = notNull!S;
 
     f0(c);
     f1(sp);
-    f2(s);
 
     assert(c.i == 3);
     assert(sp.i == 3);
-    assert(s.i == 3);
 }
 

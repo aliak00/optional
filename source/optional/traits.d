@@ -61,7 +61,8 @@ template isNotNull(T) {
 unittest {
     import optional: NotNull;
 
-    assert(isNotNull!(NotNull!int) == true);
+    class C {}
+    assert(isNotNull!(NotNull!C) == true);
     assert(isNotNull!int == false);
     assert(isNotNull!(int[]) == false);
 }
