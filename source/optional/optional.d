@@ -286,21 +286,21 @@ struct Optional(T) {
     static if (__traits(compiles, {
         import vibe.data.serialization;
         import vibe.data.json;
-        auto a = Json(T.init);
-        auto b = a.to!T;
+        auto a = T.init.serializeToJson;
+        auto b = deserializeJson!T(a);
     })) {
         import vibe.data.json;
         Json toRepresentation() const {
             if (empty) {
                 return Json.undefined;
             }
-            return Json(_value);
+            return _value.serializeToJson;
         }
 	    static Optional!T fromRepresentation(Json value) {
             if (value == Json.undefined) {
                 return no!T;
             }
-            return some(value.to!T);
+            return some(deserializeJson!T(value));
         }
     }
 }
