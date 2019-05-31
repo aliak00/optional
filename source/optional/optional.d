@@ -282,6 +282,27 @@ struct Optional(T) {
             return "[" ~ str ~ "]";
         }
     }
+
+    static if (__traits(compiles, {
+        import vibe.data.serialization;
+        import vibe.data.json;
+        auto a = Json(T.init);
+        auto b = a.to!T;
+    })) {
+        import vibe.data.json;
+        Json toRepresentation() const {
+            if (empty) {
+                return Json.undefined;
+            }
+            return Json(_value);
+        }
+	    static Optional!T fromRepresentation(Json value) {
+            if (value == Json.undefined) {
+                return no!T;
+            }
+            return some(value.to!T);
+        }
+    }
 }
 
 /**
