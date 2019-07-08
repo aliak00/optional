@@ -507,3 +507,20 @@ unittest {
     }
     assert(thrown);
 }
+
+@("should work from inside a const function")
+unittest {
+    static struct A {
+        Optional!int i;
+    }
+    static struct S {
+        int value;
+        A make() const {
+            A a = {
+                i: some(value),
+            };
+            return a;
+        }
+    }
+    assert(S(3).make == A(some(3)));
+}

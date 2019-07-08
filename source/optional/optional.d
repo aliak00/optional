@@ -315,6 +315,11 @@ public auto ref some(T)(auto ref T value) {
     return Optional!T(value);
 }
 
+/// Ditto
+// public auto some(T)(auto ref const T value) {
+//     return Optional!T(T(value));
+// }
+
 ///
 @("Example of some()")
 @nogc @safe unittest {
