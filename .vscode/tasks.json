@@ -11,6 +11,12 @@
                 "kind": "test",
                 "isDefault": true
             }
+        },
+        {
+            "label": "test-release-ldc",
+            "type": "shell",
+            "command": "dub test --compiler=ldc2 --build=unittest-release",
+            "group": "test",
         }
     ]
 }
