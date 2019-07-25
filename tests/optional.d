@@ -358,7 +358,7 @@ unittest {
         this(int i) { this.i = i; }
     }
 
-    auto a = Optional!S.construct(3);
+    auto a = some(S(3));
     assert(a != none);
     assert(a.front.i == 3);
 }
@@ -506,4 +506,13 @@ unittest {
         thrown = true;
     }
     assert(thrown);
+}
+
+@("Sanitary check")
+unittest {
+    // This fails when ASAN is used with ldc if there's stack corruption
+    // auto ref get(T)(auto ref Optional!T value) {
+    //     return value.front;
+    // }
+    // assert(get(some(1)) == 1);
 }

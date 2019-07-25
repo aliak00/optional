@@ -22,6 +22,25 @@
             "dependencies": {
                 "silly": "*"
             }
+        },
+        {
+            "name": "unittest-safe",
+            "buildType": "unittest",
+            "importPaths": [
+                "./tests"
+            ],
+            "sourcePaths": [
+                "./tests"
+            ],
+            "dependencies": {
+                "silly": "*"
+            },
+            "dflags": ["-preview=dip1000"],
+            "dflags-ldc": [
+                "-fsanitize=address",
+                "-disable-fp-elim",
+                "-frame-pointer=all"
+            ]
         }
     ],
     "buildTypes": {
