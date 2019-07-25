@@ -71,27 +71,19 @@ struct Optional(T) {
     }
 
     /**
-        Allows you to create an Optional type in place.
-
-        This is useful if type T has a @disable this(this) for e.g.
-    */
-    static Optional!T construct(Args...)(auto ref Args args) {
-        import std.algorithm: move;
-        auto value = T(args);
-        Optional!T opt;
-        opt._value = move(value);
-        opt.setNonEmptyState;
-        return move(opt);
-    }
-
-    /**
         Constructs an Optional!T value by assigning T
 
         If T is of class type, interface type, or some function pointer then passing in null
         sets the optional to `none` interally
     */
-    this(U : T, this This)(auto ref U value) {
-        this._value = value;
+    this(T value) {
+        import std.algorithm: move;
+        import std.traits: isMutable;
+        static if (isMutable!T) {
+            this._value = value.move;
+        } else {
+            this._value = value;
+        }
         mixin(nonEmpty);
     }
     /// Ditto
@@ -107,7 +99,7 @@ struct Optional(T) {
             return !this.defined;
         }
     }
-    @property ref inout(T) front() inout return {
+    @property ref inout(T) front() inout {
         assert(!empty, "Attempting to fetch the front of an empty optional.");
         return this._value;
     }
@@ -310,7 +302,13 @@ struct Optional(T) {
     in the original optional value.
 */
 public auto ref some(T)(auto ref T value) {
-    return Optional!T(value);
+    import std.traits: isMutable;
+    static if (__traits(isRef, value) || !isMutable!T) {
+        return Optional!T(value);
+    } else {
+        import std.algorithm: move;
+        return Optional!T(value.move);
+    }
 }
 
 ///

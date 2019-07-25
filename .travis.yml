@@ -1,10 +1,13 @@
 language: d
 
+env:
+  - ASAN_OPTIONS=detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:detect_leaks=1:verbosity=2
+
 matrix:
   include:
     - d: dmd
       script:
-        - dub test -b unittest-cov
+        - dub test -b unittest-cov -c unittest-safe
         - git clone https://github.com/aliak00/ddox-dark-theme.git
         - mv ddox-dark-theme/docs .
         - dub build -b ddox
@@ -33,4 +36,8 @@ matrix:
       os: osx
     - d: ldc
       os: osx
+      script:
+        - dub test -c unittest-safe -- -t 1
     - d: ldc
+      script:
+        - dub test -c unittest-safe -- -t 1
