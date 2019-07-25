@@ -77,10 +77,10 @@ struct Optional(T) {
         sets the optional to `none` interally
     */
     this(T value) {
-        import std.algorithm: move;
-        import std.traits: isMutable, isCopyable;
-        static if (isMutable!T && !isCopyable!T) {
-            this._value = value.move;
+        import std.traits: isCopyable;
+        static if (!isCopyable!T) {
+            import std.functional: forward;
+            this._value = forward!value;
         } else {
             this._value = value;
         }
@@ -303,9 +303,9 @@ struct Optional(T) {
 */
 public auto ref some(T)(auto ref T value) {
     import std.traits: isMutable, isCopyable;
-    static if (isMutable!T && !isCopyable!T && !__traits(isRef, value)) {
-        import std.algorithm: move;
-        return Optional!T(value.move);
+    static if (!isCopyable!T) {
+        import std.functional: forward;
+        return Optional!T(forward!value);
     } else {
         return Optional!T(value);
     }
