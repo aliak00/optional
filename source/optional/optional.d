@@ -99,7 +99,7 @@ struct Optional(T) {
             return !this.defined;
         }
     }
-    @property ref inout(T) front() inout {
+    @property ref inout(T) front() inout return {
         assert(!empty, "Attempting to fetch the front of an empty optional.");
         return this._value;
     }
