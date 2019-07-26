@@ -259,7 +259,7 @@ struct Optional(T) {
     }
 
     /// Converts value to string
-    string toString()() const {
+    string toString()() @safe const {
         import std.conv: to; import std.traits;
         if (empty) {
             return "[]";

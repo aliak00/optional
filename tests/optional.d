@@ -198,7 +198,7 @@ import std.range, std.traits;
 }
 
 @("Should print like a range")
-unittest {
+@safe unittest {
     assert(no!int.toString == "[]");
     assert(some(3).toString == "[3]");
 

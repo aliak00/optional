@@ -75,7 +75,7 @@ private struct NullSafeValueDispatcher(T) {
                 return value.empty;
             }
         }
-        import optional: no, some, unwrap;
+        import optional: no, some;
         static if (is(typeof(__traits(getMember, T, name)) == function)) {
             auto ref opDispatch(Args...)(auto ref Args args) {
                 mixin(autoReturn!("value.front." ~ name ~ "(args)"));

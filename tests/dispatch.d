@@ -97,7 +97,7 @@ struct Struct {
 }
 
 @("Should dispatch to different member types")
-@safe unittest {
+@safe @nogc unittest {
     struct A {
         enum aManifestConstant = "aManifestConstant";
         static immutable aStaticImmutable = "aStaticImmutable";
@@ -194,7 +194,7 @@ struct Struct {
 }
 
 @("Should be safe with null pointer members")
-unittest {
+@safe unittest {
     struct B {
         int f() {
             return 8;
@@ -231,7 +231,7 @@ unittest {
 }
 
 @("Should flatten inner optional members")
-unittest {
+@safe unittest {
     class Residence {
         auto numberOfRooms = 1;
     }
@@ -251,13 +251,12 @@ unittest {
 }
 
 @("Should use Optional.toString")
-unittest {
-    import std.format;
+@safe unittest {
     assert(some(Struct(3)).dispatch.i.toString == "[3]");
 }
 
 @("Should work with some deep nesting")
-unittest {
+@safe unittest {
     assert(
         some(new Class(10))
             .dispatch
@@ -278,7 +277,7 @@ unittest {
 }
 
 @("Should work on std.typecons.Nullable")
-unittest {
+@safe @nogc unittest {
     import std.typecons;
     auto a = nullable(Struct(3));
     auto b = Nullable!Struct.init;
