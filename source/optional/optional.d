@@ -4,8 +4,7 @@
 module optional.optional;
 
 import std.typecons: Nullable;
-
-import optional.internal;
+import bolts.from;
 
 package struct None {}
 
@@ -128,7 +127,7 @@ struct Optional(T) {
         return !this.empty && this._value == rhs;
     }
     /// Ditto
-    bool opEquals(R)(auto ref R other) const if (from!"std.range".isInputRange!R) {
+    bool opEquals(R)(auto ref R other) const if (from.std.range.isInputRange!R) {
         import std.range: empty, front;
 
         if (this.empty && other.empty) return true;
@@ -213,7 +212,7 @@ struct Optional(T) {
         Returns:
             Optional value of whatever `T(args)` returns
     */
-    auto opCall(Args...)(Args args) if (from!"std.traits".isCallable!T) {
+    auto opCall(Args...)(Args args) if (from.std.traits.isCallable!T) {
         mixin(autoReturn!("this._value(args)"));
     }
 
@@ -224,7 +223,7 @@ struct Optional(T) {
         mixin(autoReturn!("front" ~ op ~ "= rhs"));
     }
 
-    static if (from!"std.traits".isArray!T) {
+    static if (from.std.traits.isArray!T) {
         /**
             Provides indexing into arrays
 
@@ -297,7 +296,7 @@ struct Optional(T) {
 /**
     Type constructor for an optional having some value of `T`
 
-    Calling some on the result of a dispatch chain will result
+    Calling some on the result of a oc chain will result
     in the original optional value.
 */
 public auto some(T)(auto ref T value) {
@@ -314,6 +313,8 @@ public auto some(T)(auto ref T value) {
 @("Example of some()")
 @nogc @safe unittest {
     import std.range: only;
+    import std.algorithm: equal;
+
     auto a = no!int;
     assert(a == none);
     a = 9;
@@ -386,7 +387,7 @@ unittest {
     Returns:
         an optional of the element of range or Nullable
 */
-auto toOptional(R)(auto ref R range) if (from!"std.range".isInputRange!R) {
+auto toOptional(R)(auto ref R range) if (from.std.range.isInputRange!R) {
     import std.range: walkLength, ElementType, front;
     assert(range.empty || range.walkLength == 1);
     if (range.empty) {

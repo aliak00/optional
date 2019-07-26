@@ -3,8 +3,6 @@
 */
 module optional.traits;
 
-import optional.internal;
-
 /// Checks if T is an optional type
 template isOptional(T) {
     import optional: Optional;

@@ -6,6 +6,8 @@ module optional;
 ///
 @("Example 1")
 unittest {
+    import std.algorithm: equal;
+
     // Create empty optional
     auto a = no!int;
 
@@ -45,7 +47,7 @@ unittest {
 /// Phobos equvalent range.only test
 @("Example 2")
 unittest {
-    import std.algorithm: filter, joiner, map;
+    import std.algorithm: filter, joiner, map, equal;
     import std.uni: isUpper;
 
     assert(equal(some('♡'), "♡"));
@@ -58,12 +60,10 @@ unittest {
         .equal("T.D.P.L"));
 }
 
-import optional.internal;
-
 public {
     import optional.optional;
     import optional.traits;
-    import optional.dispatch;
+    import optional.oc;
     import optional.orelse;
     import optional.match;
 }

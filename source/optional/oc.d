@@ -1,13 +1,13 @@
 /**
     Provides safe dispatching utilities
 */
-module optional.dispatch;
+module optional.oc;
 
 import optional.optional: Optional;
-import optional.internal;
 import std.typecons: Nullable;
+import bolts.from;
 
-private enum isNullDispatchable(T) = is(T == class) || is(T == interface) || from!"std.traits".isPointer!T;
+private enum isNullDispatchable(T) = is(T == class) || is(T == interface) || from.std.traits.isPointer!T;
 
 private string autoReturn(string expression)() {
     return `
@@ -18,7 +18,7 @@ private string autoReturn(string expression)() {
         import optional.traits: isOptional;
         auto ref val() {
             // If the dispatched result is an Optional itself, we flatten it out so that client code
-            // does not have to do a.dispatch.member.dispatch.otherMember
+            // does not have to do a.oc.member.oc.otherMember
             static if (isOptional!(typeof(expr()))) {
                 return expr().front;
             } else {
@@ -32,21 +32,21 @@ private string autoReturn(string expression)() {
             }
         } else {
             if (empty) {
-                return NullSafeValueDispatcher!R(no!R());
+                return OptionalChain!R(no!R());
             }
             static if (isOptional!(typeof(expr()))) {
                 // If the dispatched result is an optional, check if the expression is empty before
                 // calling val() because val() calls .front which would assert if empty.
                 if (expr().empty) {
-                    return NullSafeValueDispatcher!R(no!R());
+                    return OptionalChain!R(no!R());
                 }
             }
-            return NullSafeValueDispatcher!R(some(val()));
+            return OptionalChain!R(some(val()));
         }
     };
 }
 
-private struct NullSafeValueDispatcher(T) {
+private struct OptionalChain(T) {
     import std.traits: hasMember;
 
     public Optional!T value;
@@ -130,23 +130,23 @@ private struct NullSafeValueDispatcher(T) {
     auto a = some(A());
     auto b = no!A;
     auto b = no!(A*);
-    a.dispatch.inner.g; // calls inner and calls g
-    b.dispatch.inner.g; // no op.
-    b.dispatch.inner.g; // no op.
+    a.oc.inner.g; // calls inner and calls g
+    b.oc.inner.g; // no op.
+    b.oc.inner.g; // no op.
     ---
 */
-auto dispatch(T)(auto ref T value) if (isNullDispatchable!T) {
-    return NullSafeValueDispatcher!T(value);
+auto oc(T)(auto ref T value) if (isNullDispatchable!T) {
+    return OptionalChain!T(value);
 }
 /// Ditto
-auto dispatch(T)(auto ref Optional!T value) {
-    return NullSafeValueDispatcher!T(value);
+auto oc(T)(auto ref Optional!T value) {
+    return OptionalChain!T(value);
 }
 /// Ditto
-auto dispatch(T)(auto ref Nullable!T value) {
+auto oc(T)(auto ref Nullable!T value) {
     import optional: no;
     if (value.isNull) {
-        return NullSafeValueDispatcher!T(no!T);
+        return OptionalChain!T(no!T);
     }
-    return NullSafeValueDispatcher!T(value.get);
+    return OptionalChain!T(value.get);
 }

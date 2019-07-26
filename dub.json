@@ -35,7 +35,7 @@
             "dependencies": {
                 "silly": "*"
             },
-            "dflags": ["-preview=dip1000"]
+            "dflags": ["-dip1000", "-dip25"]
         },
         {
             "name": "unittest-safe-asan",
@@ -49,7 +49,7 @@
             "dependencies": {
                 "silly": "*"
             },
-            "dflags": ["-preview=dip1000"],
+            "dflags": ["-dip1000", "-dip25"],
             "dflags-ldc": [
                 "-fsanitize=address",
                 "-disable-fp-elim",

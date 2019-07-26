@@ -1,3 +1,18 @@
+1.0.0 / 2019-07-06
+==================
+
+Big changes for version 1.0.0
+
+* Added: dip1000/dip25 conformance
+* Added: Used optional with @disabled copy types
+* Added: Tests for vibe-d integration
+* Added: Address sanitization to testing
+* Changed: orElse to be much more generic
+* Changed: renamed `dispatch` to `oc`
+* Fixed: Unsafe return values
+* Removed: NotNull
+
+
 0.10.0 / 2019-01-14
 ==================
 
