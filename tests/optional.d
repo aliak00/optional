@@ -514,18 +514,3 @@ unittest {
     }
     assert(thrown);
 }
-
-@("Sanitary check")
-@safe unittest {
-    // This fails when ASAN is used with ldc if there's stack corruption
-    auto ref get(T)(auto ref Optional!T value) {
-        import bolts: isRefDecl;
-        static if (isRefDecl!value) {
-            return value.front;
-        } else {
-            auto copy = value.front;
-            return copy;
-        }
-    }
-    assert(get(some(1)) == 1);
-}

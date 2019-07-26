@@ -300,7 +300,7 @@ struct Optional(T) {
     Calling some on the result of a dispatch chain will result
     in the original optional value.
 */
-public auto ref some(T)(auto ref T value) {
+public auto some(T)(auto ref T value) {
     import std.traits: isMutable, isCopyable;
     static if (!isCopyable!T) {
         import std.functional: forward;
@@ -353,7 +353,7 @@ public auto no(T)() {
     Returns:
         Pointer to value or null if empty. If T is reference type, returns reference
 */
-public auto ref unwrap(T)(inout auto ref Optional!T opt) {
+public auto unwrap(T)(inout auto ref Optional!T opt) {
     static if (is(T == class) || is(T == interface)) {
         return opt.empty ? null : opt.front;
     } else {

@@ -28,7 +28,7 @@ import bolts.from;
         $(LI When `value` is a range: if empty is true, then it will return `elseValue`. If false, and
             `elseValue` is a compatible range it will return `value`, else `value.front`)
 */
-auto ref orElse(alias elsePred, T)(auto ref T value) {
+auto orElse(alias elsePred, T)(auto ref T value) {
 
     import std.typecons: Nullable;
     import optional.traits: isOptional, OptionalTarget;
@@ -71,7 +71,6 @@ auto ref orElse(alias elsePred, T)(auto ref T value) {
         } else {
             if (value.empty) {
                 return elsePred();
-
             } else {
                 return value.front;
             }
@@ -118,7 +117,7 @@ auto ref orElse(alias elsePred, T)(auto ref T value) {
 }
 
 /// Ditto
-auto ref orElse(T, U)(auto ref T value, lazy U elseValue) {
+auto orElse(T, U)(auto ref T value, lazy U elseValue) {
     return value.orElse!(elseValue);
 }
 
