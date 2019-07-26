@@ -65,4 +65,5 @@ public {
     import optional.traits;
     import optional.notnull;
     import optional.dispatch;
+    import optional.orelse;
 }

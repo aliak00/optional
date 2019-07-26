@@ -8,6 +8,7 @@ matrix:
     - d: dmd
       script:
         - dub test -b unittest-cov -c unittest-safe
+        - dub test -b -c unittest-compat
         - git clone https://github.com/aliak00/ddox-dark-theme.git
         - mv ddox-dark-theme/docs .
         - dub build -b ddox
@@ -34,6 +35,9 @@ matrix:
 
     - d: dmd
       os: osx
+      script:
+        - dub test -b -c unittest-safe
+        - dub test -b -c unittest-compat
     - d: ldc
       os: osx
       script:

@@ -8,7 +8,7 @@
     "license": "MIT",
 	"targetPath": "bin",
 	"dependencies": {
-        "bolts": "~>1.0.0"
+        "bolts": "~>1.2.0"
     },
     "configurations": [
         {
@@ -35,12 +35,40 @@
             "dependencies": {
                 "silly": "*"
             },
+            "dflags": ["-preview=dip1000"]
+        },
+        {
+            "name": "unittest-safe-asan",
+            "buildType": "unittest",
+            "importPaths": [
+                "./tests"
+            ],
+            "sourcePaths": [
+                "./tests"
+            ],
+            "dependencies": {
+                "silly": "*"
+            },
             "dflags": ["-preview=dip1000"],
             "dflags-ldc": [
                 "-fsanitize=address",
                 "-disable-fp-elim",
                 "-frame-pointer=all"
             ]
+        },
+        {
+            "name": "unittest-compat",
+            "buildType": "unittest",
+            "importPaths": [
+                "./compattests"
+            ],
+            "sourcePaths": [
+                "./compattests"
+            ],
+            "dependencies": {
+                "silly": "*",
+                "vibe-d:data": "*"
+            }
         }
     ],
     "buildTypes": {
