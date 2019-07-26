@@ -36,7 +36,7 @@ matrix:
     - d: dmd
       os: osx
       script:
-        - dub test -b -c unittest-safe
+        - dub test -c unittest-safe
         - dub test -c unittest-compat
     - d: ldc
       os: osx
