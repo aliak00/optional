@@ -173,7 +173,7 @@ struct Optional(T) {
         b = 3; // b is an Optional!int because of the deref
         ---
     */
-    auto ref opUnary(string op, this This)() {
+    auto opUnary(string op, this This)() {
         import std.traits: isPointer;
         static if (op == "*" && isPointer!T) {
             import std.traits: PointerTarget;
@@ -197,13 +197,13 @@ struct Optional(T) {
     /**
         If the optional is some value it returns an optional of some `value op rhs`
     */
-    auto ref opBinary(string op, U : T, this This)(auto ref U rhs) {
+    auto opBinary(string op, U : T, this This)(auto ref U rhs) {
         mixin(autoReturn!("front" ~ op ~ "rhs"));
     }
     /**
         If the optional is some value it returns an optional of some `lhs op value`
     */
-    auto ref opBinaryRight(string op, U : T, this This)(auto ref U lhs) {
+    auto opBinaryRight(string op, U : T, this This)(auto ref U lhs) {
         mixin(autoReturn!("lhs"  ~ op ~ "front"));
     }
 
@@ -213,14 +213,14 @@ struct Optional(T) {
         Returns:
             Optional value of whatever `T(args)` returns
     */
-    auto ref opCall(Args...)(Args args) if (from!"std.traits".isCallable!T) {
+    auto opCall(Args...)(Args args) if (from!"std.traits".isCallable!T) {
         mixin(autoReturn!("this._value(args)"));
     }
 
     /**
         If the optional is some value, op assigns rhs to it
     */
-    auto ref opOpAssign(string op, U : T, this This)(auto ref U rhs) {
+    auto opOpAssign(string op, U : T, this This)(auto ref U rhs) {
         mixin(autoReturn!("front" ~ op ~ "= rhs"));
     }
 
@@ -240,7 +240,7 @@ struct Optional(T) {
             mixin(autoReturn!(call));
         }
         /// Ditto
-        auto ref opIndex(this This)() {
+        auto opIndex(this This)() {
             mixin(autoReturn!("front[]"));
         }
         /// Ditto

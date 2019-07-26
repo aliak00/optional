@@ -77,12 +77,12 @@ private struct NullSafeValueDispatcher(T) {
         }
         import optional: no, some;
         static if (is(typeof(__traits(getMember, T, name)) == function)) {
-            auto ref opDispatch(Args...)(auto ref Args args) {
+            auto opDispatch(Args...)(auto ref Args args) {
                 mixin(autoReturn!("value.front." ~ name ~ "(args)"));
             }
         } else static if (is(typeof(mixin("value.front." ~ name)))) {
             // non-function field
-            auto ref opDispatch(Args...)(auto ref Args args) {
+            auto opDispatch(Args...)(auto ref Args args) {
                 static if (Args.length == 0) {
                     mixin(autoReturn!("value.front." ~ name));
                 } else static if (Args.length == 1) {
@@ -98,7 +98,7 @@ private struct NullSafeValueDispatcher(T) {
             // member template
             template opDispatch(Ts...) {
                 enum targs = Ts.length ? "!Ts" : "";
-                auto ref opDispatch(Args...)(auto ref Args args) {
+                auto opDispatch(Args...)(auto ref Args args) {
                     mixin(autoReturn!("value.front." ~ name ~ targs ~ "(args)"));
                 }
             }
