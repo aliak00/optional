@@ -259,16 +259,15 @@ struct Optional(T) {
     }
 
     /// Converts value to string
-    string toString()() @safe const {
-        import std.conv: to; import std.traits;
+    string toString()() inout {
         if (empty) {
             return "[]";
         }
-        // Cast to unqual if we can copy so writing it out does the right thing.
-        static if (isCopyable!T && __traits(compiles, cast(Unqual!T)this._value)) {
-          immutable str = to!string(cast(Unqual!T)this._value);
+        static if (__traits(compiles, { this._value.toString; } )) {
+            auto str = this._value.toString;
         } else {
-          immutable str = to!string(this._value);
+            import std.conv: to;
+            auto str = to!string(this._value);
         }
         return "[" ~ str ~ "]";
     }

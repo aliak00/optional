@@ -61,7 +61,7 @@ private struct NullSafeValueDispatcher(T) {
     }
 
     static if (!hasMember!(T, "toString")) {
-        public string toString() const {
+        public string toString()() {
             return value.toString;
         }
     }

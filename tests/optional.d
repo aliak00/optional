@@ -198,17 +198,24 @@ import std.range, std.traits;
 }
 
 @("Should print like a range")
-@safe unittest {
+unittest {
     assert(no!int.toString == "[]");
     assert(some(3).toString == "[3]");
 
     static class A {
         override string toString() { return "Yo"; }
+        string toString() const { return "Yo"; }
     }
     Object a = new A;
+
     assert(some(cast(A)a).toString == "[Yo]");
-    import std.algorithm: startsWith;
-    assert(some(cast(immutable A)a).toString == "[Yo]");
+    assert(some(cast(const A)a).toString == "[Yo]");
+}
+
+@("Should print out const optional")
+@safe unittest {
+    const a = some(3);
+    assert(a.toString == "[3]");
 }
 
 @("Should be joinerable and eachable")
@@ -481,7 +488,7 @@ unittest {
 }
 
 @("Should preserve nulls with array of pointers")
-unittest {
+@safe unittest {
     struct S {
         int i;
     }
@@ -509,10 +516,16 @@ unittest {
 }
 
 @("Sanitary check")
-unittest {
+@safe unittest {
     // This fails when ASAN is used with ldc if there's stack corruption
-    // auto ref get(T)(auto ref Optional!T value) {
-    //     return value.front;
-    // }
-    // assert(get(some(1)) == 1);
+    auto ref get(T)(auto ref Optional!T value) {
+        import bolts: isRefDecl;
+        static if (isRefDecl!value) {
+            return value.front;
+        } else {
+            auto copy = value.front;
+            return copy;
+        }
+    }
+    assert(get(some(1)) == 1);
 }
