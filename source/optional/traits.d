@@ -48,21 +48,3 @@ unittest {
         static assert(is(OptionalTarget!(Optional!ST) == ST));
     }
 }
-
-/// Checks if T is type that is `NotNull`
-template isNotNull(T) {
-    import optional: NotNull;
-    import std.traits: isInstanceOf;
-    enum isNotNull = isInstanceOf!(NotNull, T);
-}
-
-///
-@("Example of isNotNull")
-unittest {
-    import optional: NotNull;
-
-    class C {}
-    assert(isNotNull!(NotNull!C) == true);
-    assert(isNotNull!int == false);
-    assert(isNotNull!(int[]) == false);
-}

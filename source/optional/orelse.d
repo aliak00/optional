@@ -7,7 +7,12 @@ import bolts.from;
 
 /**
     Retrieves the value if it is a valid value else it will retrieve the `elseValue`. Instead of
-    an `elseValue`, an `elsePred` can be passed to create the value functionally
+    an `elseValue`, an `elsePred` can be passed to create the value functionally.
+
+    This orElse will also act correctly if the `elseValue` is an element of the type being acted on.
+    For example if you call orElse on a range, and the `elseValue` is another range, then it will
+    return the "other range" if the current range is empty. It will do the same for `std.typecons.Nullable`
+    and for `Optional`.
 
     Params:
         value = the value to resolve
@@ -15,12 +20,13 @@ import bolts.from;
         elsePred = the perdicate to call if `value` cannot be resolved
 
     Returns:
-        $(LI If `value` is testable to null and null, then it will return `elsePred`, else `value`)
-        $(LI If `value` is typecons.Nullable and isNull, then it will return `elsePred`, else `value`)
-        $(LI If `value` is a range and empty, and `elseValue` is a compatible range,
-            then `elseValue` range will be returned, else `value`)
-        $(LI If `value` is a range and empty, and `elseValue` is an `ElementType!Range`,
-            then `elseValue` will be returned, else `value.front`)
+        $(LI When `value` is testable to null: if null, it will return `elseValue`, else `value`)
+        $(LI When `value` is `std.typecons.Nullable`: if isNull is true, then it will return `elseValue`. If false, and
+            `elseValue` is a `Nullable` it will return `value`, else `value.get`)
+        $(LI When `value` is an `Optional`: if empty is true, then it will return `elseValue`. If false, and
+            `elseValue` is an `Optional` it will return `value`, else `value.front`)
+        $(LI When `value` is a range: if empty is true, then it will return `elseValue`. If false, and
+            `elseValue` is a compatible range it will return `value`, else `value.front`)
 */
 auto ref orElse(alias elsePred, T)(auto ref T value) {
 
@@ -119,18 +125,37 @@ auto ref orElse(T, U)(auto ref T value, lazy U elseValue) {
 ///
 @("works with ranges, front, and lambdas")
 unittest {
-    import std.algorithm.comparison: equal;
+    import optional.optional: some, no;
 
-    // Get orElse ranges
-    assert((int[]).init.orElse([1, 2, 3]).equal([1, 2, 3]));
-    assert(([789]).orElse([1, 2, 3]).equal([789]));
+    auto opt0 = no!int;
+    auto opt1 = some(1);
 
-    // Get orElse front of ranges
-    assert((int[]).init.orElse(3) == 3);
-    assert(([789]).orElse(3) == 789);
+    // Get orElse optional
+    assert(opt0.orElse(some(789)) == some(789));
+    assert(opt1.orElse(some(789)) == opt1);
+
+    // Get orElse front of optional
+    assert(opt0.orElse(789) == 789);
+    assert(opt1.orElse(789) == 1);
 
     // Lambdas
-    assert(([789]).orElse!(() => 3) == 789);
-    assert(([789]).orElse!(() => [1, 2, 3]).equal([789]));
-}
+    assert(opt0.orElse!(() => 789) == 789);
+    assert(opt0.orElse!(() => some(789)) == some(789));
 
+    // Same with arrays/ranges
+
+    int[] arr0;
+    int[] arr1  = [1, 2];
+
+    // Get orElse ranges
+    assert(arr0.orElse([789]) == [789]);
+    assert(arr1.orElse([789]) == arr1);
+
+    // Get orElse front of range
+    assert(arr0.orElse(789) == 789);
+    assert(arr1.orElse(789) == 1);
+
+    // Lambdas
+    assert(arr0.orElse!(() => 789) == 789);
+    assert(arr0.orElse!(() => [789]) == [789]);
+}
