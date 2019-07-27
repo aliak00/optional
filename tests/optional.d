@@ -514,3 +514,10 @@ unittest {
     }
     assert(thrown);
 }
+
+@("should work with const Nullable")
+unittest {
+    import std.typecons: nullable;
+    const a = 3.nullable;
+    static assert(__traits(compiles, { auto b = a.toOptional; } ));
+}
