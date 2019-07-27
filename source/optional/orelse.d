@@ -124,7 +124,7 @@ auto orElse(alias elsePred, T)(auto ref T value) {
     } else {
         static assert(0,
             "Unable to call orElse on type " ~ T.stringof ~ ". It has to either be an input range,"
-            ~ " a null testable type, a Nullable!T or implement hookOrElse(alias elsePred)()"
+            ~ " a null testable type, a Nullable!T, or Optional!T"
         );
     }
 }

@@ -13,11 +13,9 @@ Full API docs available [here](https://aliak00.github.io/optional/optional.html)
 * [FAQ](#faq)
     * [Can't I just use a pointer as an optional](#cant-i-just-use-a-pointer-as-an-optional)
     * [What about std.typecons.Nullable?](#what-about-stdtypeconsnullable)
-    * [What about std.range.only?](#what-about-stdrangeonly)
 * [Scala we have a Swift comparison](#scala-we-have-a-swift-comparison)
 * [Examples](#examples)
     * [Example Optional!T usage](#example-optionalt-usage)
-    * [Example NotNull!T usage](#example-notnullt-usage)
     * [Example dispatch usage](#example-dispatch-usage)
 
 
@@ -28,52 +26,59 @@ Full API docs available [here](https://aliak00.github.io/optional/optional.html)
     ```d
     Optional!int fun() {} // Might return an int, or might not
     ```
-* Use pattern matching
+* Includes a generic `orElse` range algorithm:
+    ```d
+    auto a = some(3);
+    auto b = a.orElse(7);
+    auto c = a.orElse(some(4));
+    c.orElse!(() => writeln("c is empty"));
     ```
+* Use pattern matching
+    ```d
     fun.match!(
         (int value) => writeln("it returns an int"),
         () => writeln("did not return anything"),
     );
     ```
-* Safely call functions on classes that are null or structs that don't exist
-    ```
+* Safely call functions on classes that are null, structs that don't exist, or `std.typecons.Nullable`
+    ```d
     class C { int fun() { return 3; } }
     Optional!C a = null;
-    a.dispatch.fun; // no crash, returns no!int
+    oc(a).fun; // no crash, returns no!int
     ```
 * Forwards any operator calls to the wrapped typed only if it exists, else just returns a `none`
-    ```
+    ```d
     Optional!int a = 3;
     Optional!int b = none;
-    a + a; // evaluates to some(6);
-    a + b; // evaluates to no!int;
+    a + 3; // evaluates to some(6);
+    b + 3; // evaluates to no!int;
+
+    int f0(int) { return 4; }
+    auto a0 = some(&f0); // return some(4)
     ```
 * Compatible with `std.algorithm` and `std.range`
-    ```
+    ```d
     fun.each!(value => writeln("I got the value"));
     fun.filter!"a % 2 == 0".each!(value => writeln("got even value"));
     ```
 
 ## Summary
 
-The purpose of this library is two fold, to provide types that:
+The pupose of this library is to provide an [Optional type](https://en.wikipedia.org/wiki/Option_type).
 
-1. Eliminate null dereferences - [Aka the Billion Dollar Mistake](https://en.wikipedia.org/wiki/Tony_Hoare#Apologies_and_retractions).
-2. Show an explicit intent of the absence of a value
-
-This is done with the following:
-
+It contains the following constructs:
 * `Optional!T`: Represents an optional data type that may or may not contain a value that acts like a range.
-* `NotNull!T`: Represents a type that can never be null.
-* `dispatch`: A null-safe dispatching utility that allows you to call methods on possibly null values (including optionals, and `std.typecons.Nullable`)
+* `oc`: A null-safe optional chaining (oc) utility that allows you to chain methos through possible empty objects.
+* `orElse`: A range algorithm that also acts as a coalescing operator
+* `match`: Pattern match on optionals
 
 An `Optional!T` signifies the intent of your code, works as a range and is therefore usable with Phobos algorithms, and allows you to call methods and operators on your types even if they are null references - i.e. safe dispatching.
 
-You can use this library:
+Some use cases:
 * When you need a type that may have a value or may not (`Optional!Type`)
-* When you want to safely dispatch on types (`possibleNullClass.dispatch.someFunction // safe`)
-* When you want a guaranteed non null object (`NotNull!Type`)
+* When you want to safely dispatch on types (`oc(obj).someFunction // always safe`)
 * When you want to not crash with array access (`some([1, 2])[7] == none // no out of bounds exception`)
+* When you want to perform an operation if you get a value (`obj.map!doSomething.orElse!doSomethingElse`)
 
 ## Motivation for Optional
 
@@ -175,7 +180,9 @@ Well yes, you can, but you *can* also stick a pencil up your nostril. It's a bad
 
 ### What about `std.typecons.Nullable`?
 
-It is not like the `Nullable` type in Phobos. `Nullable` is basically a pointer and applies pointer semantics to value types. It does not give you any safety guarantees and says nothing about the intent of "I might not return a value". It does, however, tell you if something has been assigned a value or not. Albeit a bit counterintuitively, and in some cases nonsensically:
+It is not like the `Nullable` type in Phobos. `Nullable` is basically a pointer and applies pointer semantics to value types. It does not give you any safety guarantees and says nothing about the intent of "I might not return a value". It does not have range semantics so you cannot use it with algorithms in phobos. And it treats null class objects as valid.
+
+It does, however, tell you if something has been assigned a value or not. Albeit a bit counterintuitively, and in some cases nonsensically:
 
 ```d
 class C {}
@@ -183,7 +190,7 @@ Nullable!C a = null;
 writeln(a.isNull); // prints false
 ```
 
-This may make sense when null is part of the value domain of a type - i.e. for pointers. But with classes you end up having to write code like this:
+With classes you end up having to write code like this:
 
 ```d
 void f(T)(Nullable!T a) {
@@ -198,10 +205,6 @@ void f(T)(Nullable!T a) {
     }
 }
 ```
-
-### What about `std.range.only`?
-
-It is also NOT like `std.range.only`. D's `only` cannot be used to signify intent of a value being present or not, nor can be used for safe dispatching, nor the result of `only(value)` be passed around. It's only (heh) usage is to create a range out of a value so that values can act as ranges and be used seamlessly with `std.algorithms`. This `Optional` has a type constructor - `some` - that can be used for this purpose as well.
 
 ## Scala we have a Swift comparison
 
@@ -222,7 +225,7 @@ class Person {
 
 auto john = some(new Person());
 
-auto n = john.dispatch.residence.numberOfRooms;
+auto n = oc(john).residence.numberOfRooms;
 
 writeln(n); // prints [1]
 ```
@@ -249,7 +252,9 @@ Like in Scala, a number of range primitives are provided to help (not to mention
 ```d
 auto x = toInt("1").orElse(0);
 
-import std.algorithm: each; import std.stdio: writeln;
+import std.algorithm: each;
+import std.stdio: writeln;
+
 toInt("1").each!writeln;
 
 toInt("1").match!(
@@ -288,28 +293,6 @@ def toInt(s: String): Option[Int] = {
 }
 ```
 
-Also like in Swift, you can unwrap an optional to get at it's value:
-
-**D**
-```d
-auto str = "123";
-if (auto number = toInt(str).unwrap) {
-    writeln(*number);
-} else {
-    writeln("could not convert string ", str);
-}
-```
-
-**Swift**
-```swift
-let string = "123"
-if let number = Int(str) {
-    print(number) // was successfully converted
-} else {
-    print("could not convert string \(string)")
-}
-```
-
 ## Examples
 
 The following section has example usage of the various types
@@ -344,32 +327,7 @@ assert(r == "yes");
 ```
 [![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/AH9LkT)
 
-### Example NotNull!T usage
-```d
-static class C { void f() {} }
-static struct S { void f() {} }
-
-void f0(NotNull!C c) {
-    c.f();
-}
-
-void f1(NotNull!(S*) sp) {
-    sp.f();
-}
-
-auto c = notNull!C;
-auto sp = notNull!(S*);
-
-f0(c);
-f1(sp);
-
-static assert(!__traits(compiles, { c = null; }));
-static assert(!__traits(compiles, { sp = null; }));
-static assert(!__traits(compiles, { c = new C; }));
-```
-[![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/3AJpNA)
-
-### Example dispatch usage
+### Example optional chaining usage
 ```d
 // Safely dispatch to whatever inner type is
 struct A {
@@ -384,14 +342,14 @@ auto d = some(A());
 
 // Dispatch to one of its methods
 
-d.dispatch.f(); // calls a.f, returns some(4)
-d.dispatch.inner.g(); // calls a.inner.g, returns some(7)
+oc(d).f(); // calls a.f, returns some(4)
+oc(d).inner.g(); // calls a.inner.g, returns some(7)
 
 // Use on a pointer or reference type as well
 A* e = null;
 
 // If there's no value in the reference type, dispatching works, and produces an optional
-assert(e.dispatch.f() == none);
-assert(e.dispatch.inner.g() == none);
+assert(e.oc.f() == none);
+assert(e.oc.inner.g() == none);
 ```
 [![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/SmsGQu)

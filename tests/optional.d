@@ -256,14 +256,14 @@ unittest {
 
 @("Should forward to opCall if callable")
 @nogc @safe unittest {
-    static int f0(int) { return 4; }
+    int f0(int) { return 4; }
     alias A = typeof(&f0);
     auto a0 = some(&f0);
     auto a1 = no!A;
     assert(a0(3) == some(4));
     assert(a1(3) == no!int);
 
-    static void f1() {}
+    void f1() {}
     alias B = typeof(&f1);
     auto b0 = some(&f1);
     auto b1 = no!B;
