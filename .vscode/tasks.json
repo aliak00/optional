@@ -4,13 +4,19 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "test",
+            "label": "test-all",
             "type": "shell",
             "command": "dub test -c unittest-safe && dub test -c unittest-compat",
             "group": {
                 "kind": "test",
                 "isDefault": true
             }
+        },
+        {
+            "label": "test",
+            "type": "shell",
+            "command": "dub test -c unittest-safe",
+            "group": "test"
         },
         {
             "label": "test-ldc-asan",

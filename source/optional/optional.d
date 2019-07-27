@@ -58,16 +58,13 @@ struct Optional(T) {
     private T _value = T.init; // Set to init for when T has @disable this()
     private bool defined = false;
 
-    private enum nonEmpty = q{
+    private enum setDefinedTrue = q{
         static if (isNullInvalid) {
             this.defined = this._value !is null;
         } else {
             this.defined = true;
         }
     };
-    private void setNonEmptyState() {
-        mixin(nonEmpty);
-    }
 
     /**
         Constructs an Optional!T value by assigning T
@@ -83,7 +80,7 @@ struct Optional(T) {
         } else {
             this._value = value;
         }
-        mixin(nonEmpty);
+        mixin(setDefinedTrue);
     }
     /// Ditto
     this(const None) {
@@ -154,7 +151,7 @@ struct Optional(T) {
     /// Ditto
     void opAssign(U : T)(auto ref U lhs) if (isMutable!T && isAssignable!(T, U)) {
         this._value = lhs;
-        mixin(nonEmpty);
+        mixin(setDefinedTrue);
     }
     /// Ditto
     void opAssign(U : T)(auto ref Optional!U lhs) if (isMutable!T && isAssignable!(T, U))  {

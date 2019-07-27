@@ -47,13 +47,15 @@ auto orElse(alias elsePred, T)(auto ref T value) {
             if (value.isNull) {
                 return elsePred();
             } else {
-                return value;
+                static if (!is(ElseType == void))
+                    return value;
             }
         } else {
             if (value.isNull) {
                 return elsePred();
             } else {
-                return value.get;
+                static if (!is(ElseType == void))
+                    return value.get;
             }
         }
 
@@ -66,13 +68,15 @@ auto orElse(alias elsePred, T)(auto ref T value) {
             if (value.empty) {
                 return elsePred();
             } else {
-                return value;
+                static if (!is(ElseType == void))
+                    return value;
             }
         } else {
             if (value.empty) {
                 return elsePred();
             } else {
-                return value.front;
+                static if (!is(ElseType == void))
+                    return value.front;
             }
         }
 
@@ -84,19 +88,27 @@ auto orElse(alias elsePred, T)(auto ref T value) {
             if (value.empty) {
                 return elsePred();
             } else {
-                return value.front;
+                static if (!is(ElseType == void))
+                    return value.front;
             }
         } else static if (is(T : ElseType)) {
             // Coalescing to the same range type
             if (value.empty) {
                 return elsePred();
             } else {
-                return value;
+                static if (!is(ElseType == void))
+                    return value;
             }
         } else static if (isInputRange!ElseType) {
             // If it's a range but not implicly convertible we can use choose
             import std.range: choose;
-            return choose(value.empty, elsePred(), value);
+            static if (!is(ElseType == void)) {
+                return choose(value.empty, elsePred(), value);
+            } else {
+                if (value.empty) {
+                    elsePred();
+                }
+            }
         } else {
             static assert(
                 0,
@@ -107,7 +119,8 @@ auto orElse(alias elsePred, T)(auto ref T value) {
         if (value is null) {
             return elsePred();
         }
-        return value;
+        static if (!is(ElseType == void))
+            return value;
     } else {
         static assert(0,
             "Unable to call orElse on type " ~ T.stringof ~ ". It has to either be an input range,"

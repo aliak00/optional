@@ -88,3 +88,14 @@ unittest {
     assert(a.orElse(b) == a);
     assert(c.orElse(b) == b);
 }
+
+@("should work with void callbacks")
+@nogc @safe unittest {
+    int a = 0;
+    auto b = no!int;
+    b.orElse!(() => a = 3);
+    assert(a == 3);
+    b = 3;
+    b.orElse!(() => a = 7);
+    assert(a == 3);
+}

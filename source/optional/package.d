@@ -42,6 +42,11 @@ unittest {
     if (auto u = n.unwrap) {} else n = new C();
     assert(n.unwrap !is null);
     assert(n.unwrap.i == 3);
+
+    int d = 7;
+    auto e = some(1);
+    e.orElse!(() => a = 4);
+
 }
 
 /// Phobos equvalent range.only test
