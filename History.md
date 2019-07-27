@@ -7,10 +7,12 @@ Big changes for version 1.0.0
 * Added: Used optional with @disabled copy types
 * Added: Tests for vibe-d integration
 * Added: Address sanitization to testing
-* Changed: orElse to be much more generic
+* Changed: orElse to accept ranges, nullables, and references
+* Changed: orElse to allow for void returning else-values
 * Changed: renamed `dispatch` to `oc`
 * Fixed: Unsafe return values
 * Removed: NotNull
+* Removed: unwrap
 
 
 0.10.0 / 2019-01-14
