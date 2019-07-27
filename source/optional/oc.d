@@ -7,8 +7,6 @@ import optional.optional: Optional;
 import std.typecons: Nullable;
 import bolts.from;
 
-private enum isNullDispatchable(T) = is(T == class) || is(T == interface) || from.std.traits.isPointer!T;
-
 private string autoReturn(string expression)() {
     return `
         auto ref expr() {
@@ -70,6 +68,8 @@ private struct OptionalChain(T) {
         bool empty() @safe @nogc pure const {
             import std.traits: isPointer;
             static if (isPointer!T) {
+                // Optional doens't consider a null pointer as empty, so we need to check
+                // for it explicitly
                 return value.empty || value.front is null;
             } else {
                 return value.empty;
@@ -130,12 +130,12 @@ private struct OptionalChain(T) {
     auto a = some(A());
     auto b = no!A;
     auto b = no!(A*);
-    a.oc.inner.g; // calls inner and calls g
-    b.oc.inner.g; // no op.
-    b.oc.inner.g; // no op.
+    oc(a).inner.g; // calls inner and calls g
+    oc(b).inner.g; // no op.
+    oc(b).inner.g; // no op.
     ---
 */
-auto oc(T)(auto ref T value) if (isNullDispatchable!T) {
+auto oc(T)(auto ref T value) if (from.bolts.traits.isNullTestable!T) {
     return OptionalChain!T(value);
 }
 /// Ditto

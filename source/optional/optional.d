@@ -295,9 +295,6 @@ struct Optional(T) {
 
 /**
     Type constructor for an optional having some value of `T`
-
-    Calling some on the result of a oc chain will result
-    in the original optional value.
 */
 public auto some(T)(auto ref T value) {
     import std.traits: isMutable, isCopyable;
