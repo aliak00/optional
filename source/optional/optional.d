@@ -338,40 +338,6 @@ public auto no(T)() {
 }
 
 /**
-    Get pointer to value. If T is a reference type then T is returned
-
-    Use this to safely access reference types, or to get at the raw value
-    of non reference types via a non-null pointer.
-
-    It is recommended that you access internal values by using `orElse` instead though
-
-    Returns:
-        Pointer to value or null if empty. If T is reference type, returns reference
-*/
-public auto unwrap(T)(inout auto ref Optional!T opt) {
-    static if (is(T == class) || is(T == interface)) {
-        return opt.empty ? null : opt.front;
-    } else {
-        return opt.empty ? null : &opt.front();
-    }
-}
-
-///
-@("Example of unwrap()")
-unittest {
-    class C {
-        int i = 3;
-    }
-
-    auto n = no!C;
-    if (auto u = n.unwrap) {} else n = some!C(null);
-    assert(n == none);
-    if (auto u = n.unwrap) {} else n = new C();
-    assert(n.unwrap !is null);
-    assert(n.unwrap.i == 3);
-}
-
-/**
     Converts a range or Nullable to an optional type
 
     Params:

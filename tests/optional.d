@@ -166,13 +166,6 @@ import std.range, std.traits;
         static assert( __traits(compiles, { sm = other; }));
         static assert(!__traits(compiles, { si = other; }));
         static assert(!__traits(compiles, { sc = other; }));
-
-        static assert(is(typeof(nm.unwrap) == int*));
-        static assert(is(typeof(nc.unwrap) == const(int)*));
-        static assert(is(typeof(ni.unwrap) == immutable(int)*));
-        static assert(is(typeof(sm.unwrap) == int*));
-        static assert(is(typeof(sc.unwrap) == const(int)*));
-        static assert(is(typeof(si.unwrap) == immutable(int)*));
     }}
 }
 
@@ -255,71 +248,6 @@ unittest {
     assert(*a == no!int);
 }
 
-@("Should unwrap when there's a value")
-unittest {
-    struct S {
-        int i = 1;
-    }
-    class C {
-        int i = 1;
-    }
-    auto a = some!C(null);
-    auto b = some!(S*)(null);
-
-    assert(a.unwrap is null);
-    assert(b.unwrap != null);
-    assert(*b.unwrap == null);
-
-    a = new C();
-    bool aUnwrapped = false;
-    if (auto c = a.unwrap) {
-        aUnwrapped = true;
-        assert(c.i == 1);
-    }
-    assert(aUnwrapped);
-
-    b = new S();
-    bool bUnwrapped = false;
-    if (auto s = b.unwrap) {
-        bUnwrapped = true;
-        assert((*s).i == 1);
-    }
-    assert(bUnwrapped);
-
-    auto c = no!int;
-    assert(c.unwrap is null);
-    c = some(3);
-    bool cUnwrapped = false;
-    if (auto p = c.unwrap) {
-        cUnwrapped = true;
-        assert(*p == 3);
-    }
-    assert(cUnwrapped);
-}
-
-@("Should allow 'is' on unwrap" )
-unittest {
-    class C {}
-    auto a = no!C;
-    auto b = some(new C);
-    b = none;
-    Optional!C c = null;
-    auto d = some(new C);
-    d = null;
-    assert(a == none);
-    assert(a.unwrap is null);
-    assert(a.empty);
-    assert(b == none);
-    assert(b.unwrap is null);
-    assert(b.empty);
-    assert(c == none);
-    assert(c.unwrap is null);
-    assert(c.empty);
-    assert(d == none);
-    assert(d.unwrap is null);
-    assert(d.empty);
-}
-
 @("Should not allow assignment to immutable")
 @nogc @safe unittest {
     auto a = some!(immutable int)(1);
@@ -393,7 +321,7 @@ unittest {
     auto a = some(new A());
     auto b = some(new B());
     a = b;
-    assert(a.unwrap is b.unwrap);
+    assert(a.front is b.front);
 }
 
 @("Should call opOpAssign if value present")
