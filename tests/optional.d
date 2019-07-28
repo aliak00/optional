@@ -415,7 +415,7 @@ unittest {
     assert(!o.empty);
 }
 
-@("Should preserve nulls with array of pointers")
+@("Should handle nulls with array of pointers")
 @safe unittest {
     struct S {
         int i;
@@ -426,7 +426,7 @@ unittest {
     auto c = [new S(1), new S(2), new S(3)].some;
 
     assert(a[2] == none);
-    assert(b[2] != none);
+    assert(b[2] == none);
     assert(c[2] != none);
 }
 

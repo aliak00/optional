@@ -190,7 +190,7 @@ Nullable!C a = null;
 writeln(a.isNull); // prints false
 ```
 
-With classes you end up having to write code like this:
+With refernece types (e.g., pointers, classes, functions) you end up having to write code like this:
 
 ```d
 void f(T)(Nullable!T a) {

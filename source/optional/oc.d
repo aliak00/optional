@@ -25,11 +25,11 @@ private string autoReturn(string expression)() {
         }
         alias R = typeof(val());
         static if (is(R == void)) {
-            if (!empty) {
+            if (!value.empty) {
                 val();
             }
         } else {
-            if (empty) {
+            if (value.empty) {
                 return OptionalChain!R(no!R());
             }
             static if (isOptional!(typeof(expr()))) {
@@ -65,16 +65,6 @@ private struct OptionalChain(T) {
     }
 
     public template opDispatch(string name) if (hasMember!(T, name)) {
-        bool empty() @safe @nogc pure const {
-            import std.traits: isPointer;
-            static if (isPointer!T) {
-                // Optional doens't consider a null pointer as empty, so we need to check
-                // for it explicitly
-                return value.empty || value.front is null;
-            } else {
-                return value.empty;
-            }
-        }
         import optional: no, some;
         static if (is(typeof(__traits(getMember, T, name)) == function)) {
             auto opDispatch(Args...)(auto ref Args args) {

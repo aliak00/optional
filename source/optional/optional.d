@@ -37,12 +37,11 @@ private static string autoReturn(string expression)() {
 /**
     Optional type. Also known as a Maybe or Option type in some languages.
 
-    This can either contain a value or be `none`. It works with any value, including
-    values that can be null. I.e. null is a valid value that can be contained inside
-    an optional if T is a pointer type
+    This can either contain a value or be `none`. If the value is a refernce type then
+    `null` is considered `none`.
 
     It also has range like behavior. So this acts as a range that contains 1 element or
-    is empty. Similar to `std.algorithm.only`
+    is empty.
 
     And all operations that can be performed on a T can also be performed on an Optional!T.
     The behavior of applying an operation on a no-value or null pointer is well defined
@@ -50,10 +49,9 @@ private static string autoReturn(string expression)() {
 */
 
 struct Optional(T) {
-    import std.traits: isMutable, isSomeFunction, isAssignable, Unqual;
+    import std.traits: isMutable, isSomeFunction, isAssignable, isPointer;
 
-    private enum isNullInvalid = is(T == class) || is(T == interface) || isSomeFunction!T;
-    private enum isNullable = is(typeof(T.init is null));
+    private enum isNullInvalid = is(T == class) || is(T == interface) || isSomeFunction!T || isPointer!T;
 
     private T _value = T.init; // Set to init for when T has @disable this()
     private bool defined = false;
@@ -170,7 +168,6 @@ struct Optional(T) {
         ---
     */
     auto opUnary(string op, this This)() {
-        import std.traits: isPointer;
         static if (op == "*" && isPointer!T) {
             import std.traits: PointerTarget;
             alias P = PointerTarget!T;
@@ -334,7 +331,7 @@ public auto no(T)() {
     assert(*a == 9);
     assert(a != none);
     a = null;
-    assert(a != none);
+    assert(a == none);
 }
 
 /**
