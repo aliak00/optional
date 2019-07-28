@@ -8,6 +8,8 @@ import optional.optional;
 /**
     Calls an appropriate handler depending on if the optional has a value or not
 
+    If either handler returns void, the return type of match is void.
+
     Params:
         opt = The optional to call match on
         handlers = 2 predicates, one that takes the underlying optional type and another that names nothing
@@ -30,18 +32,27 @@ public template match(handlers...) if (handlers.length == 2) {
             "One handler must have one parameter of type '" ~ T.stringof ~ "' and the other no parameter"
         );
 
-        alias RS = typeof(someHandler(opt.front));
-        alias RN = typeof(noHandler());
+        alias SomeHandlerReturn = typeof(someHandler(opt.front));
+        alias NoHandlerReturn = typeof(noHandler());
+        enum isVoidReturn = is(SomeHandlerReturn == void) || is(NoHandlerReturn == void);
 
         static assert(
-            is(RS == RN),
-            "Expected two handlers to return same type, found type '" ~ RS.stringof ~ "' and type '" ~ RN.stringof ~ "'",
+            is(SomeHandlerReturn == NoHandlerReturn) || isVoidReturn,
+            "Expected two handlers to return same type, found type '" ~ SomeHandlerReturn.stringof ~ "' and type '" ~ NoHandlerReturn.stringof ~ "'",
         );
 
         if (opt.empty) {
-            return noHandler();
+            static if (isVoidReturn) {
+                noHandler();
+            } else {
+                return noHandler();
+            }
         } else {
-            return someHandler(opt.front);
+            static if (isVoidReturn) {
+                someHandler(opt.front);
+            } else {
+                return someHandler(opt.front);
+            }
         }
 	}
 }
