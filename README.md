@@ -26,12 +26,12 @@ Full API docs available [here](https://aliak00.github.io/optional/optional.html)
     ```d
     Optional!int fun() {} // Might return an int, or might not
     ```
-* Includes a generic `orElse` range algorithm:
+* Includes a generic `or` range algorithm:
     ```d
     auto a = some(3);
-    auto b = a.orElse(7);
-    auto c = a.orElse(some(4));
-    c.orElse!(() => writeln("c is empty"));
+    auto b = a.or(7);
+    auto c = a.or(some(4));
+    c.or!(() => writeln("c is empty"));
     ```
 * Use pattern matching
     ```d
@@ -69,7 +69,7 @@ The pupose of this library is to provide an [Optional type](https://en.wikipedia
 It contains the following constructs:
 * `Optional!T`: Represents an optional data type that may or may not contain a value that acts like a range.
 * `oc`: A null-safe optional chaining (oc) utility that allows you to chain methos through possible empty objects.
-* `orElse`: A range algorithm that also acts as a coalescing operator
+* `or`: A range algorithm that also acts as a coalescing operator
 * `match`: Pattern match on optionals
 
 An `Optional!T` signifies the intent of your code, works as a range and is therefore usable with Phobos algorithms, and allows you to call methods and operators on your types even if they are null references - i.e. safe dispatching.
@@ -78,7 +78,7 @@ Some use cases:
 * When you need a type that may have a value or may not (`Optional!Type`)
 * When you want to safely dispatch on types (`oc(obj).someFunction // always safe`)
 * When you want to not crash with array access (`some([1, 2])[7] == none // no out of bounds exception`)
-* When you want to perform an operation if you get a value (`obj.map!doSomething.orElse!doSomethingElse`)
+* When you want to perform an operation if you get a value (`obj.map!doSomething.or!doSomethingElse`)
 
 ## Motivation for Optional
 
@@ -250,7 +250,7 @@ Like in Scala, a number of range primitives are provided to help (not to mention
 
 **D**
 ```d
-auto x = toInt("1").orElse(0);
+auto x = toInt("1").or(0);
 
 import std.algorithm: each;
 import std.stdio: writeln;

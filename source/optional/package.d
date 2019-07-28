@@ -28,8 +28,8 @@ unittest {
     assert(c.map!(a => a * 2).empty);
 
     // Safely get the inner value
-    assert(b.frontOrElse(3) == 10);
-    assert(c.frontOrElse(3) == 3);
+    assert(b.frontOr(3) == 10);
+    assert(c.frontOr(3) == 3);
 
     // Unwrap to get to the raw data (returns a non-null pointer or reference if there's data)
     class C {
@@ -37,9 +37,9 @@ unittest {
     }
 
     auto n = no!C;
-    n.orElse!(() => n = some!C(null));
+    n.or!(() => n = some!C(null));
     assert(n == none);
-    n.orElse!(() => n = new C());
+    n.or!(() => n = new C());
     assert(n.front !is null);
     assert(n.front.i == 3);
 }
@@ -64,6 +64,6 @@ public {
     import optional.optional;
     import optional.traits;
     import optional.oc;
-    import optional.orelse;
+    import optional.or;
     import optional.match;
 }

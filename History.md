@@ -7,10 +7,10 @@ Big changes for version 1.0.0
 * Added: Can use optionals with @disabled copy types
 * Added: Tests for vibe-d integration
 * Added: Address sanitization to testing
-* Added: frontOrElse that works on ranges, optionals, and nullables
-* Changed: orElse to return only rhs or lhs, and not care about internals
-* Changed: orElse to accept ranges, nullables, and references
-* Changed: orElse to allow for void returning else-values
+* Added: frontOr that works on ranges, optionals, and nullables
+* Changed: or to return only rhs or lhs, and not care about internals
+* Changed: or to accept ranges, nullables, and references
+* Changed: or to allow for void returning else-values
 * Changed: renamed `dispatch` to `oc`
 * Changed: pointer semantics to be the same as class semantics (i.e. `some!(int*)(null) == none`)
 * Fixed: Unsafe return values
@@ -27,8 +27,8 @@ Big changes for version 1.0.0
 0.9.0 / 2018-12-18
 ==================
 
-  * Changed: make orElse value lazy
-  * Added: predicate version of orElse
+  * Changed: make or value lazy
+  * Added: predicate version of or
 
 v0.8.0 / 2018-12-11
 ==================
