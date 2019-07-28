@@ -49,7 +49,7 @@ private static string autoReturn(string expression)() {
 */
 
 struct Optional(T) {
-    import std.traits: isMutable, isSomeFunction, isAssignable, isPointer;
+    import std.traits: isMutable, isSomeFunction, isAssignable, isPointer, isArray;
 
     private enum isNullInvalid = is(T == class) || is(T == interface) || isSomeFunction!T || isPointer!T;
 
@@ -217,7 +217,7 @@ struct Optional(T) {
         mixin(autoReturn!("front" ~ op ~ "= rhs"));
     }
 
-    static if (from.std.traits.isArray!T) {
+    static if (isArray!T) {
         /**
             Provides indexing into arrays
 

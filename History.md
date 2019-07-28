@@ -4,12 +4,15 @@
 Big changes for version 1.0.0
 
 * Added: dip1000/dip25 conformance
-* Added: Used optional with @disabled copy types
+* Added: Can use optionals with @disabled copy types
 * Added: Tests for vibe-d integration
 * Added: Address sanitization to testing
+* Added: frontOrElse that works on ranges, optionals, and nullables
+* Changed: orElse to return only rhs or lhs, and not care about internals
 * Changed: orElse to accept ranges, nullables, and references
 * Changed: orElse to allow for void returning else-values
 * Changed: renamed `dispatch` to `oc`
+* Changed: pointer semantics to be the same as class semantics (i.e. `some!(int*)(null) == none`)
 * Fixed: Unsafe return values
 * Removed: NotNull
 * Removed: unwrap

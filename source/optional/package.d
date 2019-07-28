@@ -28,8 +28,8 @@ unittest {
     assert(c.map!(a => a * 2).empty);
 
     // Safely get the inner value
-    assert(b.orElse(3) == 10);
-    assert(c.orElse(3) == 3);
+    assert(b.frontOrElse(3) == 10);
+    assert(c.frontOrElse(3) == 3);
 
     // Unwrap to get to the raw data (returns a non-null pointer or reference if there's data)
     class C {

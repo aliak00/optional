@@ -3,7 +3,7 @@ module tests.orelse;
 import optional;
 import std.algorithm.comparison: equal;
 
-@("Should work with qualified optionals")
+@("works with qualified optionals")
 unittest {
     import std.meta: AliasSeq;
     alias T = string;
@@ -11,21 +11,29 @@ unittest {
         foreach (V; AliasSeq!(Optional!T, const Optional!T, immutable Optional!T)) {
             V a = some("hello");
             T t = "world";
-            assert(a.orElse(t) == "hello");
+            assert(a.frontOrElse("x") == "hello");
+            assert(t.frontOrElse('x') == 'w');
+            assert(a.orElse(some(t)) == a);
+            assert(t.orElse("x") == "world");
         }
     }
 }
 
-@("Should work with lambdas")
+@("works with lambdas")
 unittest {
     auto a = some("hello");
     auto b = no!string;
-    assert(a.orElse!(() => "world") == "hello");
-    assert(b.orElse!(() => "world") == "world");
+    assert(a.frontOrElse!(() => "world") == "hello");
+    assert(b.frontOrElse!(() => "world") == "world");
+    assert(a.orElse!(() => b) == a);
+    assert(b.orElse!(() => a) == a);
 }
 
 @("works with strings")
 unittest {
+    assert((cast(string)null).frontOrElse('h') == 'h');
+    assert("yo".frontOrElse('h') == 'y');
+    assert("".frontOrElse('x') == 'x');
     assert((cast(string)null).orElse("hi") == "hi");
     assert("yo".orElse("hi") == "yo");
     assert("".orElse("x") == "x");
@@ -45,26 +53,30 @@ unittest {
     assert(r3.equal([1, 2]));
 }
 
-@("range to front")
-unittest {
-    assert([1, 2].orElse(3) == 1);
-    assert((int[]).init.orElse(3) == 3);
-}
-
-@("should work with Nullable")
+@("frontOrElse should work with Nullable")
 unittest {
     import std.typecons: nullable;
     auto a = "foo".nullable;
-    assert(a.orElse("bar") == "foo");
+    assert(a.frontOrElse("bar") == "foo");
     a.nullify;
-    assert(a.orElse("bar") == "bar");
+    assert(a.frontOrElse("bar") == "bar");
 }
 
-@("should work with mapping ")
+@("orElse should work with Nullable")
+unittest {
+    import std.typecons: nullable, Nullable;
+    auto a = "foo".nullable;
+    auto b = Nullable!string();
+    assert(a.orElse(b) == a);
+    assert(b.orElse(a) == a);
+}
+
+@("should work with mapping")
 unittest {
     import std.algorithm: map;
     import std.conv: to;
-    auto a = [3].map!(to!string).orElse("");
+    auto a = [3].map!(to!string).orElse([""]);
+    assert(a.equal(["3"]));
 }
 
 @("should work with two ranges")
@@ -93,9 +105,9 @@ unittest {
 @nogc @safe unittest {
     int a = 0;
     auto b = no!int;
-    b.orElse!(() => a = 3);
+    b.orElse!(() => cast(void)(a = 3));
     assert(a == 3);
     b = 3;
-    b.orElse!(() => a = 7);
+    b.orElse!(() => cast(void)(a = 7));
     assert(a == 3);
 }
