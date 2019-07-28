@@ -9,7 +9,7 @@ import std.range: isInputRange;
 import optional.traits: isOptional;
 
 private enum isTypeconsNullable(T) = is(T : Nullable!U, U);
-private auto ref ret(ElseType, T)(auto ref T v) {
+private auto ret(ElseType, T)(auto ref T v) {
     static if (!is(ElseType == void))
         return v;
 }

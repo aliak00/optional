@@ -8,10 +8,11 @@ Big changes for version 1.0.0
 * Added: Tests for vibe-d integration
 * Added: Address sanitization to testing
 * Added: frontOr that works on ranges, optionals, and nullables
-* Changed: or to return only rhs or lhs, and not care about internals
-* Changed: or to accept ranges, nullables, and references
-* Changed: or to allow for void returning else-values
+* Changed: renamed `orElse` to `or`
 * Changed: renamed `dispatch` to `oc`
+* Changed: `or` will return only rhs or lhs, and not care about internals
+* Changed: `or` to accept ranges, nullables, and references
+* Changed: `or` to allow for void returning else-values
 * Changed: pointer semantics to be the same as class semantics (i.e. `some!(int*)(null) == none`)
 * Fixed: Unsafe return values
 * Removed: NotNull
