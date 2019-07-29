@@ -72,7 +72,7 @@ auto frontOr(T, U)(auto ref T value, lazy U elseValue) {
 }
 
 ///
-@("or example")
+@("frontOr example")
 @safe unittest {
     import optional.optional: some, no;
 
@@ -218,7 +218,7 @@ auto or(T, U)(auto ref T value, lazy U elseValue) {
 /**
     An exception that's throw by `frontOrThrow` should the exception maker throw
 */
-public class OrElseThrowException : Exception {
+public class FrontOrThrowException : Exception {
     /// Original cause of this exception
     Exception cause;
 
@@ -271,7 +271,7 @@ auto frontOrThrow(alias makeThrowable, T)(auto ref T value) {
         try {
             return makeThrowable();
         } catch (Exception ex) {
-            throw new OrElseThrowException(ex);
+            throw new FrontOrThrowException(ex);
         }
     }();
 }
