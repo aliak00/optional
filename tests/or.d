@@ -121,7 +121,7 @@ unittest {
 
     ""
         .frontOrThrow!(() { boo; return new Exception(""); } )
-        .assertThrown!OrElseThrowException;
+        .assertThrown!FrontOrThrowException;
 }
 
 @("Should throw exception if range empty")
