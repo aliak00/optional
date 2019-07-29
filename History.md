@@ -10,9 +10,10 @@ Big changes for version 1.0.0
 * Added: frontOr that works on ranges, optionals, and nullables
 * Changed: renamed `orElse` to `or`
 * Changed: renamed `dispatch` to `oc`
-* Changed: `or` will return only rhs or lhs, and not care about internals
-* Changed: `or` to accept ranges, nullables, and references
-* Changed: `or` to allow for void returning else-values
+* Changed: `or` will return only rhs or lhs, and not front of optional
+* Changed: `or` now accepts ranges, nullables, and references
+* Changed: `or` accepts void lambda
+* Changed: `match` returns void if either lambda returns void
 * Changed: pointer semantics to be the same as class semantics (i.e. `some!(int*)(null) == none`)
 * Fixed: Unsafe return values
 * Removed: NotNull
