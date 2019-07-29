@@ -153,3 +153,16 @@ unittest {
     a.frontOrThrow(new Exception(""))
         .assertThrown!Exception;
 }
+
+@("or should work with rhs or lhs of null")
+unittest {
+    auto a = "hello".or(null);
+    auto b = null.or("hello");
+    assert(a == "hello");
+    assert(b == "hello");
+
+    auto c = "".or(null);
+    auto d = null.or("");
+    assert(c == null);
+    assert(d == "");
+}
