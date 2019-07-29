@@ -73,7 +73,7 @@ auto frontOr(T, U)(auto ref T value, lazy U elseValue) {
 
 ///
 @("or example")
-unittest {
+@safe unittest {
     import optional.optional: some, no;
 
     auto opt0 = no!int;
@@ -84,8 +84,10 @@ unittest {
     assert(opt1.frontOr(789) == 1);
 
     // Lambdas
-    assert(opt0.frontOr!(() => 789) == 789);
-    assert(opt1.frontOr!(() => 789) == 1);
+    () @nogc {
+        assert(opt0.frontOr!(() => 789) == 789);
+        assert(opt1.frontOr!(() => 789) == 1);
+    }();
 
     // Same with arrays/ranges
 
@@ -97,8 +99,10 @@ unittest {
     assert(arr1.frontOr(789) == 1);
 
     // Lambdas
-    assert(arr0.frontOr!(() => 789) == 789);
-    assert(arr1.frontOr!(() => 789) == 1);
+    () @nogc {
+        assert(arr0.frontOr!(() => 789) == 789);
+        assert(arr1.frontOr!(() => 789) == 1);
+    }();
 }
 
 /**
@@ -179,7 +183,7 @@ auto or(T, U)(auto ref T value, lazy U elseValue) {
 
 ///
 @("or example")
-unittest {
+@safe unittest {
     import optional.optional: some, no;
 
     auto opt0 = no!int;
@@ -190,8 +194,10 @@ unittest {
     assert(opt1.or(opt0) == opt1);
 
     // Lambdas
-    assert(opt0.or!(() => opt1) == opt1);
-    assert(opt1.or!(() => opt0) == opt1);
+    () @nogc {
+        assert(opt0.or!(() => opt1) == opt1);
+        assert(opt1.or!(() => opt0) == opt1);
+    }();
 
     // Same with arrays/ranges
 
@@ -203,8 +209,10 @@ unittest {
     assert(arr1.or(arr0) == arr1);
 
     // Lambdas
-    assert(arr0.or!(() => arr1) == arr1);
-    assert(arr1.or!(() => arr0) == arr1);
+    () @nogc {
+        assert(arr0.or!(() => arr1) == arr1);
+        assert(arr1.or!(() => arr0) == arr1);
+    }();
 }
 
 /**
@@ -233,7 +241,7 @@ public class OrElseThrowException : Exception {
         $(LI `Optional!T`: `value.front` or throw)
         $(LI `Range!T`: `value.front` or throw)
 */
-auto ref frontOrThrow(alias makeThrowable, T)(auto ref T value) {
+auto frontOrThrow(alias makeThrowable, T)(auto ref T value) {
     // The orer of these checks matter
 
     static if (isTypeconsNullable!T) {
@@ -269,20 +277,22 @@ auto ref frontOrThrow(alias makeThrowable, T)(auto ref T value) {
 }
 
 /// Ditto
-auto ref frontOrThrow(T, U : Throwable)(auto ref T value, lazy U throwable) {
+auto frontOrThrow(T, U : Throwable)(auto ref T value, lazy U throwable) {
     return value.frontOrThrow!(throwable);
 }
 
 ///
 @("frontOrThrow example")
-unittest {
+@safe unittest {
     import std.exception: assertThrown, assertNotThrown;
 
     ""
         .frontOrThrow(new Exception(""))
         .assertThrown!Exception;
 
-    "yo"
+    auto b = "yo"
         .frontOrThrow(new Exception(""))
         .assertNotThrown!Exception;
+
+    assert(b == 'y');
 }

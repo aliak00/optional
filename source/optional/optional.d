@@ -70,7 +70,7 @@ struct Optional(T) {
         If T is of class type, interface type, or some function pointer then passing in null
         sets the optional to `none` interally
     */
-    this(T value) {
+    this(T value) pure {
         import std.traits: isCopyable;
         static if (!isCopyable!T) {
             import std.functional: forward;
@@ -81,19 +81,19 @@ struct Optional(T) {
         mixin(setDefinedTrue);
     }
     /// Ditto
-    this(const None) {
+    this(const None) pure {
         // For Error: field _value must be initialized in constructor, because it is nested struct
         this._value = T.init;
     }
 
-    @property bool empty() const {
+    @property bool empty() const nothrow @safe {
         static if (isNullInvalid) {
             return !this.defined || this._value is null;
         } else {
             return !this.defined;
         }
     }
-    @property ref inout(T) front() inout return {
+    @property ref inout(T) front() inout return @safe nothrow {
         assert(!empty, "Attempting to fetch the front of an empty optional.");
         return this._value;
     }
@@ -111,7 +111,7 @@ struct Optional(T) {
         a == none; // false
         ---
     */
-    bool opEquals(const None) const { return this.empty; }
+    bool opEquals(const None) const @safe nothrow { return this.empty; }
     /// Ditto
     bool opEquals(U : T)(const auto ref Optional!U rhs) const {
         if (this.empty || rhs.empty) return this.empty == rhs.empty;
@@ -168,23 +168,7 @@ struct Optional(T) {
         ---
     */
     auto opUnary(string op, this This)() {
-        static if (op == "*" && isPointer!T) {
-            import std.traits: PointerTarget;
-            alias P = PointerTarget!T;
-            return empty || front is null ? no!P : some(*this.front);
-        } else {
-            alias R = typeof(mixin(op ~ "_value"));
-            static if (is(R == void)) {
-                if (!empty) mixin(op ~ "_value");
-            } else {
-                alias NoType = typeof(some(mixin(op ~ "_value")));
-                if (!empty) {
-                    return some(mixin(op ~ "_value"));
-                } else {
-                    return NoType();
-                }
-            }
-        }
+        mixin(autoReturn!(op ~ "front"));
     }
 
     /**

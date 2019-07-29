@@ -125,7 +125,7 @@ unittest {
 }
 
 @("Should throw exception if range empty")
-unittest {
+@safe unittest {
     import std.exception: assertThrown, assertNotThrown;
     import std.range: iota;
 
@@ -139,7 +139,7 @@ unittest {
 }
 
 @("Should throw if nullable isNull")
-unittest {
+@safe unittest {
     import std.exception: assertThrown, assertNotThrown;
     import std.typecons: nullable;
 
