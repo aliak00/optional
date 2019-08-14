@@ -153,7 +153,14 @@ struct Optional(T) {
     }
     /// Ditto
     void opAssign(U : T)(auto ref Optional!U lhs) if (isMutable!T && isAssignable!(T, U))  {
-        this._value = lhs._value;
+        import std.traits : isCopyable;
+
+        static if (isCopyable!T) {
+            this._value = lhs._value;
+        } else {
+            import std.algorithm: move;
+            this._value = lhs._value.move();
+        }
         this.defined = lhs.defined;
     }
 
