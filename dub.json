@@ -12,6 +12,10 @@
     },
     "configurations": [
         {
+            "name": "library",
+            "targetType": "library"
+        },
+        {
             "name": "unittest",
             "importPaths": [
                 "./tests"
