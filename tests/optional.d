@@ -449,3 +449,15 @@ unittest {
     const a = 3.nullable;
     static assert(__traits(compiles, { auto b = a.toOptional; } ));
 }
+
+@("should work with assigning of @disabled lvalue")
+unittest {
+    struct S {
+        @disable this(this);
+    }
+
+    Optional!S fun() { return some(S()); }
+
+    Optional!S b;
+    b = fun;
+}
