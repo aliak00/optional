@@ -152,8 +152,8 @@ struct Optional(T) {
         mixin(setDefinedTrue);
     }
     /// Ditto
-    void opAssign(U : T)(auto ref Optional!U lhs) if (isMutable!T && isAssignable!(T, U))  {
-        static if (__traits(isRef, lhs)) {
+    void opAssign(U : T)(auto ref Optional!U lhs) if (isMutable!T && isAssignable!(T, U)) {
+        static if (__traits(isRef, lhs) || !isMutable!U) {
             this._value = lhs._value;
         } else {
             import std.algorithm: move;

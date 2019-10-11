@@ -461,3 +461,10 @@ unittest {
     Optional!S b;
     b = fun;
 }
+
+@("Should assign a const")
+unittest {
+    const b = 3;
+    Optional!int a;
+    a = some(b);
+}
