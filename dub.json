@@ -59,7 +59,10 @@
             ],
             "sourcePaths": [
                 "./compattests"
-            ]
+            ],
+            "dependencies": {
+                "vibe-d:data": "*"
+            }
         }
     ],
     "buildTypes": {
