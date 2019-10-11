@@ -22,10 +22,7 @@
             ],
             "sourcePaths": [
                 "./tests"
-            ],
-            "dependencies": {
-                "silly": "*"
-            }
+            ]
         },
         {
             "name": "unittest-safe",
@@ -36,9 +33,6 @@
             "sourcePaths": [
                 "./tests"
             ],
-            "dependencies": {
-                "silly": "*"
-            },
             "dflags": ["-dip1000", "-dip25"]
         },
         {
@@ -50,9 +44,6 @@
             "sourcePaths": [
                 "./tests"
             ],
-            "dependencies": {
-                "silly": "*"
-            },
             "dflags": ["-dip1000", "-dip25"],
             "dflags-ldc": [
                 "-fsanitize=address",
@@ -68,11 +59,7 @@
             ],
             "sourcePaths": [
                 "./compattests"
-            ],
-            "dependencies": {
-                "silly": "*",
-                "vibe-d:data": "*"
-            }
+            ]
         }
     ],
     "buildTypes": {
