@@ -134,7 +134,7 @@ auto or(alias elsePred, T)(auto ref T value) {
         if (value.isNull) {
             return elsePred();
         } else {
-            return ret!ElseType(value);
+            return ret!ElseType(value.get);
         }
     } else static if (isOptional!T) {
         // Specifically seperate form isInputRange because const optionals are not ranges

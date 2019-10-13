@@ -67,8 +67,8 @@ unittest {
     import std.typecons: nullable, Nullable;
     auto a = "foo".nullable;
     auto b = Nullable!string();
-    assert(a.or(b) == a);
-    assert(b.or(a) == a);
+    assert(a.or(b) == a.get);
+    assert(b.or(a) == a.get);
 }
 
 @("should work with mapping")
