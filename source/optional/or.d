@@ -40,7 +40,11 @@ auto frontOr(alias elsePred, T)(auto ref T value) {
         // Do this before Range because it could be aliased to a range, in which canse if there's
         // nothing inside, simply calling .empty on it will get Nullables's .get implicitly. BOOM!
         if (value.isNull) {
-            return elsePred();
+            static if (isTypeconsNullable!ElseType) {
+                return elsePred().get;
+            } else {
+                return elsePred();
+            }
         } else {
             return ret!ElseType(value.get);
         }
@@ -132,7 +136,11 @@ auto or(alias elsePred, T)(auto ref T value) {
         // Do this before Range because it could be aliased to a range, in which case if there's
         // nothing inside, simply calling .empty on it will get Nullables's .get implicitly. BOOM!
         if (value.isNull) {
-            return elsePred();
+            static if (isTypeconsNullable!ElseType) {
+                return elsePred().get;
+            } else {
+                return elsePred();
+            }
         } else {
             return ret!ElseType(value.get);
         }
