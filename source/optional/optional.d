@@ -136,7 +136,7 @@ struct Optional(T) {
         If T is of class type, interface type, or some function pointer than passing in null
         sets the optional to `none` internally
     */
-    void opAssign()(const None) if (isMutable!T) {
+    auto ref opAssign()(const None) if (isMutable!T) {
         if (!this.empty) {
             static if (isNullInvalid) {
                 this._value = null;
@@ -145,14 +145,16 @@ struct Optional(T) {
             }
             this.defined = false;
         }
+        return this;
     }
     /// Ditto
-    void opAssign(U : T)(auto ref U lhs) if (isMutable!T && isAssignable!(T, U)) {
+    auto ref opAssign(U : T)(auto ref U lhs) if (isMutable!T && isAssignable!(T, U)) {
         this._value = lhs;
         mixin(setDefinedTrue);
+        return this;
     }
     /// Ditto
-    void opAssign(U : T)(auto ref Optional!U lhs) if (isMutable!T && isAssignable!(T, U)) {
+    auto ref opAssign(U : T)(auto ref Optional!U lhs) if (isMutable!T && isAssignable!(T, U)) {
         static if (__traits(isRef, lhs) || !isMutable!U) {
             this._value = lhs._value;
         } else {
@@ -161,6 +163,7 @@ struct Optional(T) {
         }
 
         this.defined = lhs.defined;
+        return this;
     }
 
     /**

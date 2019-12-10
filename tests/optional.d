@@ -468,3 +468,10 @@ unittest {
     Optional!int a;
     a = some(b);
 }
+
+@("Should work with memoize") {
+    import std.functional: memoize;
+    static assert(__traits(compiles, {
+        alias testMemo = memoize!(() => some(1));
+    }));
+}
