@@ -325,7 +325,7 @@ cast(void)no!int.map!(to!double); // empty
 auto r = some(1).match!((int a) => "yes", () => "no",);
 assert(r == "yes");
 ```
-[![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/AH9LkT)
+[![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/PWRvg2)
 
 ### Example optional chaining usage
 ```d
