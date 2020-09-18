@@ -15,7 +15,7 @@ import optional.optional;
         handlers = 2 predicates, one that takes the underlying optional type and another that names nothing
 */
 public template match(handlers...) if (handlers.length == 2) {
-	auto match(O)(O opt) {
+	auto match(O)(auto ref O opt) {
 		static if (is(O == Optional!T, T)) {
 	        static if (is(typeof(handlers[0](opt.front)))) {
 	            alias someHandler = handlers[0];
@@ -57,7 +57,7 @@ public template match(handlers...) if (handlers.length == 2) {
 }
 
 private template valueMatch(handlers...) if (handlers.length == 2) {
-	auto valueMatch(O)(ref O opt) {
+	auto valueMatch(O)(auto ref O opt) {
 		return opt.value.match!handlers;
 	}
 }
