@@ -352,4 +352,4 @@ A* e = null;
 assert(e.oc.f() == none);
 assert(e.oc.inner.g() == none);
 ```
-[![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/SmsGQu)
+[![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/fcTxfL)
