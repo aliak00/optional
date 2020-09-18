@@ -17,7 +17,6 @@ import optional.optional;
 public template match(handlers...) if (handlers.length == 2) {
 	auto match(O)(auto ref O opt) {
 		static if (is(O == Optional!T, T)) {
-			pragma(msg, typeof(handlers));
 	        static if (is(typeof(handlers[0](opt.front)))) {
 	            alias someHandler = handlers[0];
 	            alias noHandler = handlers[1];
