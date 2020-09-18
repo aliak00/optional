@@ -59,3 +59,23 @@ unittest {
 
 	assert(val == 1);
 }
+
+@("Some of some is present")
+@safe @nogc unittest {
+	auto a = some(some(5));
+	const result = a.match!(
+		b => b + 1,
+		() => 0
+	);
+	assert(result == 6);
+}
+
+@("Some of no is not present")
+@safe @nogc unittest {
+	auto a = some(no!int);
+	const result = a.match!(
+		a => "yes",
+		() => "no"
+	);
+	assert(result == "no");
+}

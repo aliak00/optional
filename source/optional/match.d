@@ -16,7 +16,13 @@ import optional.optional;
 */
 public template match(handlers...) if (handlers.length == 2) {
 	auto match(O)(auto ref O opt) {
-		static if (is(O == Optional!T, T)) {
+		static if (is(O == Optional!(Optional!T), T)) {
+			if (opt.empty) {
+				return no!T().match!handlers;
+			} else {
+				return opt.front.match!handlers;
+			}
+		} else static if (is(O == Optional!T, T)) {
 	        static if (is(typeof(handlers[0](opt.front)))) {
 	            alias someHandler = handlers[0];
 	            alias noHandler = handlers[1];
@@ -71,6 +77,12 @@ Performs a match on the `value` property of a variable.
 private template valueMatch(handlers...) if (handlers.length == 2) {
 	auto valueMatch(O)(auto ref O opt) {
 		return opt.value.match!handlers;
+	}
+}
+
+private template proxyMatch(handlers...) if (handlers.length == 2) {
+	auto proxyMatch(O)(auto ref O opt) {
+		return opt.match!handlers;
 	}
 }
 
