@@ -25,13 +25,6 @@ public template match(handlers...) if (handlers.length == 2) {
             alias noHandler = handlers[0];
         }
 
-        import bolts: isFunctionOver;
-
-        static assert(
-            isFunctionOver!(someHandler, T) && isFunctionOver!(noHandler),
-            "One handler must have one parameter of type '" ~ T.stringof ~ "' and the other no parameter"
-        );
-
         alias SomeHandlerReturn = typeof(someHandler(opt.front));
         alias NoHandlerReturn = typeof(noHandler());
         enum isVoidReturn = is(SomeHandlerReturn == void) || is(NoHandlerReturn == void);
