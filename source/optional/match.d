@@ -34,7 +34,6 @@ public template match(handlers...) if (handlers.length == 2) {
 		} else static if (is(typeof(opt.value) == Optional!T, T)) {
 			return opt.valueMatch!handlers;
 		} else {
-			pragma(msg, "Type of: " ~ typeof(opt.value).stringof);
 			static assert(0, "Cannot match!() on a " ~ O.stringof);
 		}
 	}
