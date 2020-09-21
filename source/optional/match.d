@@ -80,12 +80,6 @@ private template valueMatch(handlers...) if (handlers.length == 2) {
 	}
 }
 
-private template proxyMatch(handlers...) if (handlers.length == 2) {
-	auto proxyMatch(O)(auto ref O opt) {
-		return opt.match!handlers;
-	}
-}
-
 /**
 Prints out the correct compile error if the handler cannot be compiled.
 */
