@@ -15,7 +15,7 @@ import optional;
     }
 }
 
-@("shoudl work with void return")
+@("Should work with void return")
 unittest {
     int i = 0;
     int j = 0;
@@ -42,4 +42,20 @@ unittest {
     assert(j == 3);
 
 
+}
+
+@("Should work with mutable references")
+unittest {
+	static class MyClass {
+		int x = 0;
+	}
+
+	auto obj = some(new MyClass);
+	int val;
+	obj.match!(
+		(obj) => val = (obj.x = 1),
+		() => val = 0,
+	);
+
+	assert(val == 1);
 }

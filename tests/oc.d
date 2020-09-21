@@ -285,3 +285,21 @@ unittest {
     assert(oc(a).i == some(3));
     assert(oc(b).i == no!int);
 }
+
+@("Result of optional chain must be pattern matchable")
+@safe @nogc unittest {
+	static struct TypeA {
+		string x;
+	}
+	static struct TypeB {
+		auto getValue() {
+			return TypeA("yes");
+		}
+	}
+	auto b = some(TypeB());
+	const result = oc(b).getValue().match!(
+		(a) => a.x,
+		() => "no"
+	);
+	assert(result == "yes");
+}
