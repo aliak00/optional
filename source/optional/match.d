@@ -20,11 +20,11 @@ public template match(handlers...) if (handlers.length == 2) {
 	        static if (is(typeof(handlers[0](opt.front)))) {
 	            alias someHandler = handlers[0];
 	            alias noHandler = handlers[1];
-				return doMatch!(someHandler, noHandler, O, T)(opt);
+				return doMatch!(someHandler, noHandler, T)(opt);
 	        } else static if (is(typeof(handlers[0]()))) {
 	            alias someHandler = handlers[1];
 	            alias noHandler = handlers[0];
-				return doMatch!(someHandler, noHandler, O, T)(opt);
+				return doMatch!(someHandler, noHandler, T)(opt);
 	        } else {
 				// One of these two is causing a compile error.
 				// Let's call them so the compiler can show a proper error warning.
@@ -32,14 +32,14 @@ public template match(handlers...) if (handlers.length == 2) {
 				failOnCompileError!(handlers[1], T);
 			}
 		} else static if (is(typeof(opt.value) == Optional!T, T)) {
-			return opt.valueMatch!handlers;
+			return .match!handlers(opt.value);
 		} else {
 			static assert(0, "Cannot match!() on a " ~ O.stringof);
 		}
 	}
 }
 
-private auto doMatch(alias someHandler, alias noHandler, O, T)(ref auto O opt) {
+private auto doMatch(alias someHandler, alias noHandler, T, O)(ref auto O opt) {
 	alias SomeHandlerReturn = typeof(someHandler(T.init));
 	alias NoHandlerReturn = typeof(noHandler());
 	enum isVoidReturn = is(typeof(someHandler(T.init)) == void) || is(typeof(noHandler()) == void);
@@ -61,15 +61,6 @@ private auto doMatch(alias someHandler, alias noHandler, O, T)(ref auto O opt) {
 		} else {
 			return someHandler(opt.front);
 		}
-	}
-}
-
-/**
-Performs a match on the `value` property of a variable.
-*/
-private template valueMatch(handlers...) if (handlers.length == 2) {
-	auto valueMatch(O)(auto ref O opt) {
-		return opt.value.match!handlers;
 	}
 }
 
