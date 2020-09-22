@@ -16,7 +16,13 @@ import optional.optional;
 */
 public template match(handlers...) if (handlers.length == 2) {
 	auto match(O)(auto ref O opt) {
-		static if (is(O == Optional!T, T)) {
+        import optional.traits: isOptionalChain, isOptional;
+        import std.range: ElementType, isInputRange;
+        static if (isOptionalChain!O) {
+			return .match!handlers(opt.value);
+        // Check for isOptional as well because a const(Option!T) is not an input range, but it is an optional.
+        } else static if (isInputRange!O || isOptional!O) {
+            alias T = ElementType!O;
 	        static if (is(typeof(handlers[0](opt.front)))) {
 	            alias someHandler = handlers[0];
 	            alias noHandler = handlers[1];
@@ -31,8 +37,6 @@ public template match(handlers...) if (handlers.length == 2) {
 				failOnCompileError!(handlers[0], T);
 				failOnCompileError!(handlers[1], T);
 			}
-		} else static if (is(typeof(opt.value) == Optional!T, T)) {
-			return .match!handlers(opt.value);
 		} else {
 			static assert(0, "Cannot match!() on a " ~ O.stringof);
 		}

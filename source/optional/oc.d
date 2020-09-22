@@ -44,7 +44,7 @@ private string autoReturn(string expression)() {
     };
 }
 
-private struct OptionalChain(T) {
+package struct OptionalChain(T) {
     import std.traits: hasMember;
 
     public Optional!T value;
