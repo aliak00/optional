@@ -69,6 +69,5 @@ unittest {
 		() => 0
 	);
 
-    pragma(msg, typeof(result));
 	assert(result == 6);
 }
