@@ -1,3 +1,12 @@
+1.1.0
+==================
+
+* Changed: match will work on input ranges
+* Changed: compile-time error detection on match
+* Fixed: make match take auto ref instead of inout
+* Fixed: removed implicit calls to nullable.get
+
+
 1.0.0-beta.1 / 2019-07-29
 ==================
 
