@@ -59,3 +59,15 @@ unittest {
 
 	assert(val == 1);
 }
+
+@("Works on ranges")
+@safe @nogc unittest {
+    import std.algorithm: joiner;
+	auto a = some(some(5));
+	const result = a.joiner.match!(
+		b => b + 1,
+		() => 0
+	);
+
+	assert(result == 6);
+}

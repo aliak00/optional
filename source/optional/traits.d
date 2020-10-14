@@ -46,3 +46,17 @@ unittest {
         static assert(is(OptionalTarget!(Optional!ST) == ST));
     }
 }
+
+/// Checks if T is an optional chain
+template isOptionalChain(T) {
+    import optional: OptionalChain;
+    import std.traits: isInstanceOf;
+    enum isOptionalChain = isInstanceOf!(OptionalChain, T);
+}
+
+///
+@("Example of isOptionalChain")
+@safe @nogc unittest {
+    import optional: oc, some;
+    static assert(isOptionalChain!(typeof(oc(some(3)))));
+}
