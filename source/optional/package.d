@@ -1,5 +1,5 @@
 /**
-    Home of the `Optional` type, faaturing the `NotNull` type
+    Home of the `Optional` type
 */
 module optional;
 
