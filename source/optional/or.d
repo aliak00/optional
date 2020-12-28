@@ -178,7 +178,7 @@ auto or(alias elsePred, T)(auto ref T value) {
         return ret!ElseType(value);
     } else {
         static assert(0,
-            "Unable to call frontOr on type " ~ T.stringof ~ ". It has to either be an input range,"
+            "Unable to call or on type " ~ T.stringof ~ ". It has to either be an input range,"
             ~ " a null testable type, a Nullable!T, or an Optional!T"
         );
     }
