@@ -64,6 +64,48 @@ package struct OptionalChain(T) {
         }
     }
 
+    static if (hasMember!(T, "empty")) {
+        public auto empty() {
+            if (value.empty) {
+                return no!(typeof(T.empty));
+            } else {
+                return some(value.front.empty);
+            }
+        }
+    } else {
+        public auto empty() {
+            return value.empty;
+        }
+    }
+
+    static if (hasMember!(T, "front")) {
+        public auto front() {
+            if (value.empty) {
+                return no!(typeof(T.front));
+            } else {
+                return some(value.front.front);
+            }
+        }
+    } else {
+        public auto front() {
+            return value.front;
+        }
+    }
+
+    static if (hasMember!(T, "popFront")) {
+        public auto popFront() {
+            if (value.empty) {
+                return no!(typeof(T.popFront));
+            } else {
+                return some(value.front.popFront);
+            }
+        }
+    } else {
+        public auto popFront() {
+            return value.popFront;
+        }
+    }
+
     public template opDispatch(string name) if (hasMember!(T, name)) {
         import optional: no, some;
         static if (is(typeof(__traits(getMember, T, name)) == function)) {

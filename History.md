@@ -1,3 +1,9 @@
+1.2.0
+==================
+
+* Fixed: Make result of optional chanining act like range
+
+
 1.1.0
 ==================
 

@@ -166,3 +166,23 @@ unittest {
     assert(c == null);
     assert(d == "");
 }
+
+@("Should work with optional chains")
+@safe unittest {
+    import optional: oc;
+    static class Class {
+        int i;
+        this(int i) {
+            this.i = i;
+        }
+    }
+
+    auto a = no!Class;
+    auto b = some(new Class(3));
+
+    const x = oc(a).i.frontOr(7);
+    const y = oc(b).i.frontOr(7);
+
+    assert(x == 7);
+    assert(y == 3);
+}

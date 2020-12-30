@@ -6,7 +6,7 @@ module optional.or;
 import bolts.traits: isNullTestable;
 import std.typecons: Nullable;
 import std.range: isInputRange;
-import optional.traits: isOptional;
+import optional.traits: isOptional, isOptionalChain;
 
 private enum isTypeconsNullable(T) = is(T : Nullable!U, U);
 private auto ret(ElseType, T)(auto ref T v) {
