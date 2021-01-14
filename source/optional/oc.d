@@ -161,10 +161,10 @@ package struct OptionalChain(T) {
     }
     auto a = some(A());
     auto b = no!A;
-    auto b = no!(A*);
+    auto c = no!(A*);
     oc(a).inner.g; // calls inner and calls g
     oc(b).inner.g; // no op.
-    oc(b).inner.g; // no op.
+    oc(c).inner.g; // no op.
     ---
 */
 auto oc(T)(auto ref T value) if (from.bolts.traits.isNullTestable!T) {
