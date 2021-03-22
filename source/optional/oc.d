@@ -112,7 +112,15 @@ package struct OptionalChain(T) {
             auto opDispatch(Args...)(auto ref Args args) {
                 mixin(autoReturn!("value.front." ~ name ~ "(args)"));
             }
-        } else static if (is(typeof(mixin("value.front." ~ name)))) {
+        } else static if (__traits(isTemplate, mixin("T." ~ name))) {
+            // member template
+            template opDispatch(Ts...) {
+                enum targs = Ts.length ? "!Ts" : "";
+                auto opDispatch(Args...)(auto ref Args args) {
+                    mixin(autoReturn!("value.front." ~ name ~ targs ~ "(args)"));
+                }
+            }
+        } else {
             // non-function field
             auto opDispatch(Args...)(auto ref Args args) {
                 static if (Args.length == 0) {
@@ -124,14 +132,6 @@ package struct OptionalChain(T) {
                         0,
                         "Dispatched " ~ T.stringof ~ "." ~ name ~ " was resolved to non-function field that has more than one argument",
                     );
-                }
-            }
-        } else {
-            // member template
-            template opDispatch(Ts...) {
-                enum targs = Ts.length ? "!Ts" : "";
-                auto opDispatch(Args...)(auto ref Args args) {
-                    mixin(autoReturn!("value.front." ~ name ~ targs ~ "(args)"));
                 }
             }
         }
