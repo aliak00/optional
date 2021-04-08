@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Module optional.or</title>
+		<link rel="stylesheet" type="text/css" href="../styles/ddox.css"/>
+		<link rel="stylesheet" href="../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../scripts/jquery.js">/**/</script><script type="text/javascript" src="../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="../optional.html">optional</a>
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../optional/match.html">match</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../optional/oc.html">oc</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../optional/optional.html">optional</a>
+					</div>
+				</li>
+				<li>
+					<div class="module selected">
+						<a href="../optional/or.html">or</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../optional/traits.html">traits</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Module optional.or</h1><p>Gets the value or else something else
+</p>
+			<section></section>
+			<section>
+				<h2>Functions</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th><th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="frontOr" class="public" href="../optional/or/frontOr.html">frontOr</a><span class="tableEntryAnnotation">(value)</span>
+							</code>
+						</td>
+						<td>If value is valid, it returns the internal value. This means .front for a range, .get for a Nullable!T, etc.
+    If value is invalid, then elseValue is returned. If an elsePred is provided than that is called.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="frontOrThrow" class="public" href="../optional/or/frontOrThrow.html">frontOrThrow</a><span class="tableEntryAnnotation">(value)</span>
+							</code>
+						</td>
+						<td>Same as <code class="lang-d"><a href="../optional/or/frontOr.html"><span class="pln">frontOr</span></a></code> except it throws an error if it can't get the value
+</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="or" class="public" href="../optional/or/or.html">or</a><span class="tableEntryAnnotation">(value)</span>
+							</code>
+						</td>
+						<td>If value is valid, it returns the value. If value is invalid, then elseValue is returned.
+    If an elsePred is provided than that is called.
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Classes</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th><th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="FrontOrThrowException" class="public" href="../optional/or/FrontOrThrowException.html">FrontOrThrowException</a>
+							</code>
+						</td>
+						<td>An exception that's throw by <code class="lang-d"><a href="../optional/or/frontOrThrow.html"><span class="pln">frontOrThrow</span></a></code> should the exception maker throw
+</td>
+					</tr>
+				</table>
+			</section>
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

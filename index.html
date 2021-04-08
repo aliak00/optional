@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>API documentation</title>
+		<link rel="stylesheet" type="text/css" href="./styles/ddox.css"/>
+		<link rel="stylesheet" href="./prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="./scripts/jquery.js">/**/</script><script type="text/javascript" src="./scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="./symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "./";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="./optional.html">optional</a>
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="./optional/match.html">match</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./optional/oc.html">oc</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./optional/optional.html">optional</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./optional/or.html">or</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./optional/traits.html">traits</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>API documentation</h1>
+			<table>
+				<col class="caption"/>
+				<tr>
+					<th>Module</th><th>Description</th>
+				</tr>
+			<tr>
+				<td>
+					<a href="./optional/match.html">optional.match</a>
+				</td>
+				<td>
+					Provides a match function for optional types
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./optional/oc.html">optional.oc</a>
+				</td>
+				<td>
+					Provides safe dispatching utilities
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./optional/optional.html">optional.optional</a>
+				</td>
+				<td>
+					Optional type
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./optional/or.html">optional.or</a>
+				</td>
+				<td>
+					Gets the value or else something else
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./optional/traits.html">optional.traits</a>
+				</td>
+				<td>
+					Optional compile time traits
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./optional.html">optional</a>
+				</td>
+				<td>
+					Home of the <code class="lang-d"><span class="typ">Optional</span></code> type
+
+				</td>
+			</tr>
+			</table>
+			<footer>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Function some</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script><script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="../../optional.html">optional</a>
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../../optional/match.html">match</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/oc.html">oc</a>
+					</div>
+				</li>
+				<li>
+					<div class="module selected">
+						<a href="../../optional/optional.html">optional</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/or.html">or</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/traits.html">traits</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Function some</h1><p>Type constructor for an optional having some value of <code class="lang-d"><span class="pln">T</span></code>
+</p>
+			<div class="prototype">
+				<code class="lang-d">
+					<div class="single-prototype">
+			<span class="kwd">auto</span> <span class="pln">some</span>(T)
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="kwd">auto ref </span><span class="pln">T</span> <span class="pln">value</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+					</div>
+				</code>
+			</div>
+			
+			<section><h2>Example</h2>
+
+<pre class="code"><code class="lang-d"><span class="kwd">import </span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">range</span><span class="pun">: </span><span class="pln">only</span><span class="pun">;
+</span><span class="kwd">import </span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">algorithm</span><span class="pun">: </span><span class="pln">equal</span><span class="pun">;
+
+</span><span class="kwd">auto </span><span class="pln">a </span><span class="pun">= <a href="../../optional/optional/no.html"></span><span class="pln">no</span></a><span class="pun">!</span><span class="typ">int</span><span class="pun">;
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">a </span><span class="pun">== <a href="../../optional/optional/none.html"></span><span class="pln">none</span></a><span class="pun">);
+</span><span class="pln">a </span><span class="pun">= </span><span class="lit">9</span><span class="pun">;
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">a </span><span class="pun">== </span><span class="pln">some</span><span class="pun">(</span><span class="lit">9</span><span class="pun">));
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">a </span><span class="pun">!= <a href="../../optional/optional/none.html"></span><span class="pln">none</span></a><span class="pun">);
+
+</span><span class="kwd">import </span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">algorithm</span><span class="pun">: </span><span class="pln">map</span><span class="pun">;
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">only</span><span class="pun">(</span><span class="lit">1</span><span class="pun">, </span><span class="lit">2</span><span class="pun">, </span><span class="lit">3</span><span class="pun">)<wbr/>.</span><span class="pln">map</span><span class="pun">!</span><span class="pln">some<wbr/></span><span class="pun">.</span><span class="pln">equal</span><span class="pun">(</span><span class="pln">only</span><span class="pun">(</span><span class="pln">some</span><span class="pun">(</span><span class="lit">1</span><span class="pun">), </span><span class="pln">some</span><span class="pun">(</span><span class="lit">2</span><span class="pun">), </span><span class="pln">some</span><span class="pun">(</span><span class="lit">3</span><span class="pun">))));
+</span></code></pre>
+</section>
+
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

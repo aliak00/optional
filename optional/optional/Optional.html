@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Struct Optional</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script><script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="../../optional.html">optional</a>
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../../optional/match.html">match</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/oc.html">oc</a>
+					</div>
+				</li>
+				<li>
+					<div class="module selected">
+						<a href="../../optional/optional.html">optional</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/or.html">or</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/traits.html">traits</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Struct Optional</h1><p>Optional type. Also known as a Maybe or Option type in some languages.
+</p>
+			<div class="prototype">
+				<code class="lang-d">
+					<div class="single-prototype">
+			<span class="kwd">struct</span> <span class="typ">Optional</span>(T)
+			<span class="pun">;</span>
+					</div>
+				</code>
+			</div>
+			<section><p>This can either contain a value or be <code class="lang-d"><a href="../../optional/optional/none.html"><span class="pln">none</span></a></code>. If the value is a refernce type then
+    <code class="lang-d"><span class="kwd">null</span></code> is considered <code class="lang-d"><a href="../../optional/optional/none.html"><span class="pln">none</span></a></code>.
+</p>
+
+<p>    It also has range like behavior. So this acts as a range that contains 1 element or
+    is empty.
+</p>
+
+<p>    And all operations that can be performed on a T can also be performed on an Optional!T.
+    The behavior of applying an operation on a no-value or null pointer is well defined
+    and safe.
+</p>
+</section>
+
+			<section><h2>Constructors</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th><th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../optional/optional/Optional.this.html" class="public">
+								<code>this</code>
+							</a>
+							<span class="tableEntryAnnotation">(value)</span>
+						</td>
+						<td>Constructs an Optional!T value by assigning T
+</td>
+					</tr>
+				</table>
+			</section>
+			<section><h2>Methods</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th><th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../optional/optional/Optional.opAssign.html" class="public">
+								<code>opAssign</code>
+							</a>
+							<span class="tableEntryAnnotation">()</span>
+						</td>
+						<td>Assigns a value to the optional or sets it to <code class="lang-d"><a href="../../optional/optional/none.html"><span class="pln">none</span></a></code>.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../optional/optional/Optional.opBinary.html" class="public">
+								<code>opBinary</code>
+							</a>
+							<span class="tableEntryAnnotation">(rhs)</span>
+						</td>
+						<td>If the optional is some value it returns an optional of some <code class="lang-d"><span class="pln">value op <a href="../../optional/optional/Optional.opBinary.html#rhs"></span><span class="pln">rhs</span></a></code>
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../optional/optional/Optional.opBinaryRight.html" class="public">
+								<code>opBinaryRight</code>
+							</a>
+							<span class="tableEntryAnnotation">(lhs)</span>
+						</td>
+						<td>If the optional is some value it returns an optional of some <code class="lang-d"><a href="../../optional/optional/Optional.opBinaryRight.html#lhs"><span class="pln">lhs</span></a><span class="pln"> op value</span></code>
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../optional/optional/Optional.opCall.html" class="public">
+								<code>opCall</code>
+							</a>
+							<span class="tableEntryAnnotation">(args)</span>
+						</td>
+						<td>If there's a value that's callable it will be called else it's a noop
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../optional/optional/Optional.opDollar.html" class="public">
+								<code>opDollar</code>
+							</a>
+							<span class="tableEntryAnnotation">()</span>
+						</td>
+						<td>Provides indexing into arrays
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../optional/optional/Optional.opEquals.html" class="public">
+								<code>opEquals</code>
+							</a>
+							<span class="tableEntryAnnotation">()</span>
+						</td>
+						<td>Compare two optionals or an optional with some value
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../optional/optional/Optional.opIndex.html" class="public">
+								<code>opIndex</code>
+							</a>
+							<span class="tableEntryAnnotation">(index)</span>
+						</td>
+						<td>Provides indexing into arrays
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../optional/optional/Optional.opOpAssign.html" class="public">
+								<code>opOpAssign</code>
+							</a>
+							<span class="tableEntryAnnotation">(rhs)</span>
+						</td>
+						<td>If the optional is some value, op assigns rhs to it
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../optional/optional/Optional.opSlice.html" class="public">
+								<code>opSlice</code>
+							</a>
+							<span class="tableEntryAnnotation">(begin, end)</span>
+						</td>
+						<td>Provides indexing into arrays
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../optional/optional/Optional.opUnary.html" class="public">
+								<code>opUnary</code>
+							</a>
+							<span class="tableEntryAnnotation">()</span>
+						</td>
+						<td>Applies unary operator to internal value of optional.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../optional/optional/Optional.toString.html" class="public">
+								<code>toString</code>
+							</a>
+							<span class="tableEntryAnnotation">()</span>
+						</td>
+						<td>Converts value to string
+</td>
+					</tr>
+				</table>
+			</section>
+			
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

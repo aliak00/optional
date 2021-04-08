@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Function Optional.opEquals</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script><script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="../../optional.html">optional</a>
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../../optional/match.html">match</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/oc.html">oc</a>
+					</div>
+				</li>
+				<li>
+					<div class="module selected">
+						<a href="../../optional/optional.html">optional</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/or.html">or</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/traits.html">traits</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Function Optional.opEquals</h1><p>Compare two optionals or an optional with some value
+</p>
+			<div class="prototype">
+				<code class="lang-d">
+					<div class="single-prototype">
+			<span class="typ">bool</span> <span class="pln">opEquals</span>
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="kwd">const </span><span class="typ">None</span> <span class="pln"></span>
+			<br/>
+			<span class="pun">)</span><span class="pln"> </span><span class="kwd">const nothrow @safe</span><span class="pun">;</span>
+			<br/>
+			<br/>
+			<span class="typ">bool</span> <span class="pln">opEquals</span>(U)
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="kwd">auto const ref </span><a href="../../optional/optional/Optional.html"><span class="typ">Optional</span></a>!U <span class="pln">rhs</span>
+			<br/>
+			<span class="pun">)</span><span class="pln"> </span><span class="kwd">const</span><span class="pun">;</span>
+			<br/>
+			<br/>
+			<span class="typ">bool</span> <span class="pln">opEquals</span>(U)
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="kwd">auto const ref </span><span class="pln">U</span> <span class="pln">rhs</span>
+			<br/>
+			<span class="pun">)</span><span class="pln"> </span><span class="kwd">const</span><span class="pun">;</span>
+			<br/>
+			<br/>
+			<span class="typ">bool</span> <span class="pln">opEquals</span>(R)
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="kwd">auto ref </span><span class="pln">R</span> <span class="pln">other</span>
+			<br/>
+			<span class="pun">)</span><span class="pln"> </span><span class="kwd">const</span>
+			<br/>
+			<span class="kwd">if</span> <span class="pun">(</span><span class="pln">from<wbr/></span><span class="pun">.</span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">range<wbr/></span><span class="pun">.</span><span class="pln">isInputRange</span><span class="pun">!</span><span class="pln">R</span><span class="pun">);</span>
+					</div>
+				</code>
+			</div>
+			
+			<section><h2>Returns</h2>
+<p>- If the two are optionals then they are both unwrapped and compared. If either are empty
+            this returns false. And if compared with <code class="lang-d"><a href="../../optional/optional/none.html"><span class="pln">none</span></a></code> and there's a value, also returns false
+</p>
+<pre class="code"><code class="lang-d"><span class="kwd">auto </span><span class="pln">a </span><span class="pun">= <a href="../../optional/optional/some.html"></span><span class="pln">some</span></a><span class="pun">(</span><span class="lit">3</span><span class="pun">);
+</span><span class="pln">a </span><span class="pun">== <a href="../../optional/optional/some.html"></span><span class="pln">some</span></a><span class="pun">(</span><span class="lit">2</span><span class="pun">); </span><span class="com">// false
+</span><span class="pln">a </span><span class="pun">== <a href="../../optional/optional/some.html"></span><span class="pln">some</span></a><span class="pun">(</span><span class="lit">3</span><span class="pun">); </span><span class="com">// true
+</span><span class="pln">a </span><span class="pun">== <a href="../../optional/optional/none.html"></span><span class="pln">none</span></a><span class="pun">; </span><span class="com">// false</span></code></pre>
+</section>
+
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

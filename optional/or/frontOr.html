@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Function frontOr</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script><script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="../../optional.html">optional</a>
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../../optional/match.html">match</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/oc.html">oc</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/optional.html">optional</a>
+					</div>
+				</li>
+				<li>
+					<div class="module selected">
+						<a href="../../optional/or.html">or</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/traits.html">traits</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Function frontOr</h1><p>If value is valid, it returns the internal value. This means .front for a range, .get for a Nullable!T, etc.
+    If value is invalid, then elseValue is returned. If an elsePred is provided than that is called.
+</p>
+			<div class="prototype">
+				<code class="lang-d">
+					<div class="single-prototype">
+			<span class="kwd">auto</span> <span class="pln">frontOr</span>(alias elsePred, T)
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="kwd">auto ref </span><span class="pln">T</span> <span class="pln">value</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+			<br/>
+			<br/>
+			<span class="kwd">auto</span> <span class="pln">frontOr</span>(T, U)
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="kwd">auto ref </span><span class="pln">T</span> <span class="pln">value</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="kwd">lazy </span><span class="pln">U</span> <span class="pln">elseValue</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+					</div>
+				</code>
+			</div>
+			<section><p><code class="lang-d"><span class="pln">elsePred</span></code> can return void as well, in which case frontOr also returns void.
+</p>
+</section>
+
+			<section><h2>Parameters</h2>
+<table><col class="caption"><tr><th>Name</th><th>Description</th></tr>
+<tr><td id="value">value</td><td> the value to check</td></tr>
+<tr><td id="elseValue">elseValue</td><td> the value to get if <code class="lang-d"><a href="../../optional/or/frontOr.html#value"><span class="pln">value</span></a></code> is invalid</td></tr>
+<tr><td id="elsePred">elsePred</td><td> the perdicate to call if <code class="lang-d"><a href="../../optional/or/frontOr.html#value"><span class="pln">value</span></a></code> is invalid</td></tr>
+</table>
+</section>
+<section><h2>Returns</h2>
+<p><li><code class="lang-d"><span class="typ">Nullable</span><span class="pun">!</span><span class="pln">T</span></code>: <code class="lang-d"><span class="pln">value<wbr/></span><span class="pun">.</span><span class="pln">get</span></code> or <code class="lang-d"><a href="../../optional/or/frontOr.html#elseValue"><span class="pln">elseValue</span></a></code></li>
+        <li><code class="lang-d"><span class="typ">Optional</span><span class="pun">!</span><span class="pln">T</span></code>: <code class="lang-d"><span class="pln">value<wbr/></span><span class="pun">.</span><span class="pln">front</span></code> or <code class="lang-d"><a href="../../optional/or/frontOr.html#elseValue"><span class="pln">elseValue</span></a></code></li>
+        <li><code class="lang-d"><span class="typ">Range</span><span class="pun">!</span><span class="pln">T</span></code>: <code class="lang-d"><span class="pln">value<wbr/></span><span class="pun">.</span><span class="pln">front</span></code> or <code class="lang-d"><a href="../../optional/or/frontOr.html#elseValue"><span class="pln">elseValue</span></a></code></li>
+</p>
+</section>
+<section><h2>Example</h2>
+
+<pre class="code"><code class="lang-d"><span class="kwd">import <a href="../../optional/optional.html"></span><span class="pln">optional<wbr/></span><span class="pun">.</span><span class="pln">optional</span></a><span class="pun">: </span><span class="pln">some</span><span class="pun">, </span><span class="pln">no</span><span class="pun">;
+
+</span><span class="kwd">auto </span><span class="pln">opt0 </span><span class="pun">= </span><span class="pln">no</span><span class="pun">!</span><span class="typ">int</span><span class="pun">;
+</span><span class="kwd">auto </span><span class="pln">opt1 </span><span class="pun">= </span><span class="pln">some</span><span class="pun">(</span><span class="lit">1</span><span class="pun">);
+
+</span><span class="com">// Get or optional
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">opt0<wbr/></span><span class="pun">.</span><span class="pln">frontOr</span><span class="pun">(</span><span class="lit">789</span><span class="pun">) == </span><span class="lit">789</span><span class="pun">);
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">opt1<wbr/></span><span class="pun">.</span><span class="pln">frontOr</span><span class="pun">(</span><span class="lit">789</span><span class="pun">) == </span><span class="lit">1</span><span class="pun">);
+
+</span><span class="com">// Lambdas
+</span><span class="pun">() </span><span class="kwd">@nogc </span><span class="pun">{
+    </span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">opt0<wbr/></span><span class="pun">.</span><span class="pln">frontOr</span><span class="pun">!(() =&gt; </span><span class="lit">789</span><span class="pun">) == </span><span class="lit">789</span><span class="pun">);
+    </span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">opt1<wbr/></span><span class="pun">.</span><span class="pln">frontOr</span><span class="pun">!(() =&gt; </span><span class="lit">789</span><span class="pun">) == </span><span class="lit">1</span><span class="pun">);
+}();
+
+</span><span class="com">// Same with arrays/ranges
+
+</span><span class="typ">int</span><span class="pun">[] </span><span class="pln">arr0</span><span class="pun">;
+</span><span class="typ">int</span><span class="pun">[] </span><span class="pln">arr1  </span><span class="pun">= [</span><span class="lit">1</span><span class="pun">, </span><span class="lit">2</span><span class="pun">];
+
+</span><span class="com">// Get frontOr optional
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">arr0<wbr/></span><span class="pun">.</span><span class="pln">frontOr</span><span class="pun">(</span><span class="lit">789</span><span class="pun">) == </span><span class="lit">789</span><span class="pun">);
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">arr1<wbr/></span><span class="pun">.</span><span class="pln">frontOr</span><span class="pun">(</span><span class="lit">789</span><span class="pun">) == </span><span class="lit">1</span><span class="pun">);
+
+</span><span class="com">// Lambdas
+</span><span class="pun">() </span><span class="kwd">@nogc </span><span class="pun">{
+    </span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">arr0<wbr/></span><span class="pun">.</span><span class="pln">frontOr</span><span class="pun">!(() =&gt; </span><span class="lit">789</span><span class="pun">) == </span><span class="lit">789</span><span class="pun">);
+    </span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">arr1<wbr/></span><span class="pun">.</span><span class="pln">frontOr</span><span class="pun">!(() =&gt; </span><span class="lit">789</span><span class="pun">) == </span><span class="lit">1</span><span class="pun">);
+}();
+</span></code></pre>
+</section>
+
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

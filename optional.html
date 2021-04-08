@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Module optional</title>
+		<link rel="stylesheet" type="text/css" href="./styles/ddox.css"/>
+		<link rel="stylesheet" href="./prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="./scripts/jquery.js">/**/</script><script type="text/javascript" src="./scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="./symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "./";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package selected">
+						<a href="./optional.html">optional</a>
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="./optional/match.html">match</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./optional/oc.html">oc</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./optional/optional.html">optional</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./optional/or.html">or</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./optional/traits.html">traits</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Module optional</h1><p>Home of the <code class="lang-d"><span class="typ">Optional</span></code> type
+</p>
+			<section><section><h2>Example</h2>
+
+<pre class="code"><code class="lang-d"><span class="kwd">import </span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">algorithm</span><span class="pun">: </span><span class="pln">equal</span><span class="pun">;
+
+</span><span class="com">// Create empty optional
+</span><span class="kwd">auto </span><span class="pln">a </span><span class="pun">= </span><span class="pln">no</span><span class="pun">!</span><span class="typ">int</span><span class="pun">;
+
+</span><span class="com">// Operating on an empty optional is safe and results in none
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">a </span><span class="pun">== </span><span class="pln">none</span><span class="pun">);
+</span><span class="kwd">assert</span><span class="pun">(++</span><span class="pln">a </span><span class="pun">== </span><span class="pln">none</span><span class="pun">);
+
+</span><span class="com">// Assigning a value and then operating yields results
+</span><span class="pln">a </span><span class="pun">= </span><span class="lit">9</span><span class="pun">;
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">a </span><span class="pun">== </span><span class="pln">some</span><span class="pun">(</span><span class="lit">9</span><span class="pun">));
+</span><span class="kwd">assert</span><span class="pun">(++</span><span class="pln">a </span><span class="pun">== </span><span class="pln">some</span><span class="pun">(</span><span class="lit">10</span><span class="pun">));
+
+</span><span class="com">// It is a range
+</span><span class="kwd">import </span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">algorithm</span><span class="pun">: </span><span class="pln">map</span><span class="pun">;
+</span><span class="kwd">auto </span><span class="pln">b </span><span class="pun">= </span><span class="pln">some</span><span class="pun">(</span><span class="lit">10</span><span class="pun">);
+</span><span class="kwd">auto </span><span class="pln">c </span><span class="pun">= </span><span class="pln">no</span><span class="pun">!</span><span class="typ">int</span><span class="pun">;
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">b<wbr/></span><span class="pun">.</span><span class="pln">map</span><span class="pun">!(</span><span class="pln">a </span><span class="pun">=&gt; </span><span class="pln">a </span><span class="pun">* </span><span class="lit">2</span><span class="pun">)<wbr/>.</span><span class="pln">equal</span><span class="pun">([</span><span class="lit">20</span><span class="pun">]));
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">c<wbr/></span><span class="pun">.</span><span class="pln">map</span><span class="pun">!(</span><span class="pln">a </span><span class="pun">=&gt; </span><span class="pln">a </span><span class="pun">* </span><span class="lit">2</span><span class="pun">)<wbr/>.</span><span class="pln">empty</span><span class="pun">);
+
+</span><span class="com">// Safely get the inner value
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">b<wbr/></span><span class="pun">.</span><span class="pln">frontOr</span><span class="pun">(</span><span class="lit">3</span><span class="pun">) == </span><span class="lit">10</span><span class="pun">);
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">c<wbr/></span><span class="pun">.</span><span class="pln">frontOr</span><span class="pun">(</span><span class="lit">3</span><span class="pun">) == </span><span class="lit">3</span><span class="pun">);
+
+</span><span class="com">// Unwrap to get to the raw data (returns a non-null pointer or reference if there's data)
+</span><span class="kwd">class </span><span class="pln">C </span><span class="pun">{
+    </span><span class="typ">int </span><span class="pln">i </span><span class="pun">= </span><span class="lit">3</span><span class="pun">;
+}
+
+</span><span class="kwd">auto </span><span class="pln">n </span><span class="pun">= </span><span class="pln">no</span><span class="pun">!</span><span class="pln">C</span><span class="pun">;
+</span><span class="pln">n<wbr/></span><span class="pun">.</span><span class="pln">or</span><span class="pun">!(() =&gt; </span><span class="pln">n </span><span class="pun">= </span><span class="pln">some</span><span class="pun">!</span><span class="pln">C</span><span class="pun">(</span><span class="kwd">null</span><span class="pun">));
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">n </span><span class="pun">== </span><span class="pln">none</span><span class="pun">);
+</span><span class="pln">n<wbr/></span><span class="pun">.</span><span class="pln">or</span><span class="pun">!(() =&gt; </span><span class="pln">n </span><span class="pun">= </span><span class="kwd">new </span><span class="pln">C</span><span class="pun">());
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">n<wbr/></span><span class="pun">.</span><span class="pln">front </span><span class="pun">!</span><span class="kwd">is null</span><span class="pun">);
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">n<wbr/></span><span class="pun">.</span><span class="pln">front<wbr/></span><span class="pun">.</span><span class="pln">i </span><span class="pun">== </span><span class="lit">3</span><span class="pun">);
+</span></code></pre>
+</section>
+<section><h2>Example</h2>
+<p>Phobos equvalent range.only test
+</p>
+<pre class="code"><code class="lang-d"><span class="kwd">import </span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">algorithm</span><span class="pun">: </span><span class="pln">filter</span><span class="pun">, </span><span class="pln">joiner</span><span class="pun">, </span><span class="pln">map</span><span class="pun">, </span><span class="pln">equal</span><span class="pun">;
+</span><span class="kwd">import </span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">uni</span><span class="pun">: </span><span class="pln">isUpper</span><span class="pun">;
+
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">equal</span><span class="pun">(</span><span class="pln">some</span><span class="pun">(</span><span class="str">'♡'</span><span class="pun">), </span><span class="str">"♡"</span><span class="pun">));
+
+</span><span class="typ">string </span><span class="pln">title </span><span class="pun">= </span><span class="str">"The D Programming Language"</span><span class="pun">;
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">title
+    <wbr/></span><span class="pun">.</span><span class="pln">filter</span><span class="pun">!</span><span class="pln">isUpper </span><span class="com">// take the upper case letters
+    <wbr/></span><span class="pun">.</span><span class="pln">map</span><span class="pun">!</span><span class="pln">some       </span><span class="com">// make each letter its own range
+    <wbr/></span><span class="pun">.</span><span class="pln">joiner</span><span class="pun">(</span><span class="str">"."</span><span class="pun">)    </span><span class="com">// join the ranges together lazily
+    <wbr/></span><span class="pun">.</span><span class="pln">equal</span><span class="pun">(</span><span class="str">"T.D.P.L"</span><span class="pun">));
+</span></code></pre>
+</section>
+</section>
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

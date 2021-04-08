@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Alias OptionalTarget</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script><script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="../../optional.html">optional</a>
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../../optional/match.html">match</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/oc.html">oc</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/optional.html">optional</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/or.html">or</a>
+					</div>
+				</li>
+				<li>
+					<div class="module selected">
+						<a href="../../optional/traits.html">traits</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Alias OptionalTarget</h1><p>Returns the target type of a optional.
+</p>
+			<div class="prototype">
+				<code class="lang-d">
+					<div class="single-prototype">
+			<span class="kwd">alias</span> <span class="pln">OptionalTarget</span>(T)
+			 <span class="pun">=</span> <span class="typ">TemplateArgsOf</span>!T<span class="pun">[</span><span class="lit">0</span><span class="pun">]</span><span class="pun">;</span>
+					</div>
+				</code>
+			</div>
+			
+			<section><h2>Example</h2>
+
+<pre class="code"><code class="lang-d"><span class="kwd">import </span><span class="pln">optional</span><span class="pun">: </span><span class="typ">Optional</span><span class="pun">;
+
+</span><span class="kwd">class </span><span class="pln">C </span><span class="pun">{}
+</span><span class="kwd">struct </span><span class="pln">S </span><span class="pun">{}
+
+</span><span class="kwd">import </span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">meta</span><span class="pun">: </span><span class="typ">AliasSeq</span><span class="pun">;
+</span><span class="kwd">foreach </span><span class="pun">(</span><span class="pln">T</span><span class="pun">; </span><span class="typ">AliasSeq</span><span class="pun">!(</span><span class="typ">int</span><span class="pun">, </span><span class="typ">int</span><span class="pun">*, </span><span class="pln">S</span><span class="pun">, </span><span class="pln">C</span><span class="pun">, </span><span class="typ">int</span><span class="pun">[], </span><span class="pln">S</span><span class="pun">[], </span><span class="pln">C</span><span class="pun">[])) {
+    </span><span class="kwd">alias </span><span class="pln">CT </span><span class="pun">= </span><span class="kwd">const </span><span class="pln">T</span><span class="pun">;
+    </span><span class="kwd">alias </span><span class="pln">IT </span><span class="pun">= </span><span class="kwd">immutable </span><span class="pln">T</span><span class="pun">;
+    </span><span class="kwd">alias </span><span class="pln">ST </span><span class="pun">= </span><span class="kwd">shared </span><span class="pln">T</span><span class="pun">;
+
+    </span><span class="kwd">static assert</span><span class="pun">(</span><span class="kwd">is</span><span class="pun">(</span><span class="typ">OptionalTarget</span><span class="pun">!(</span><span class="typ">Optional</span><span class="pun">!</span><span class="pln">T</span><span class="pun">) == </span><span class="pln">T</span><span class="pun">));
+    </span><span class="kwd">static assert</span><span class="pun">(</span><span class="kwd">is</span><span class="pun">(</span><span class="typ">OptionalTarget</span><span class="pun">!(</span><span class="typ">Optional</span><span class="pun">!</span><span class="pln">CT</span><span class="pun">) == </span><span class="pln">CT</span><span class="pun">));
+    </span><span class="kwd">static assert</span><span class="pun">(</span><span class="kwd">is</span><span class="pun">(</span><span class="typ">OptionalTarget</span><span class="pun">!(</span><span class="typ">Optional</span><span class="pun">!</span><span class="pln">IT</span><span class="pun">) == </span><span class="pln">IT</span><span class="pun">));
+    </span><span class="kwd">static assert</span><span class="pun">(</span><span class="kwd">is</span><span class="pun">(</span><span class="typ">OptionalTarget</span><span class="pun">!(</span><span class="typ">Optional</span><span class="pun">!</span><span class="pln">ST</span><span class="pun">) == </span><span class="pln">ST</span><span class="pun">));
+}
+</span></code></pre>
+</section>
+
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

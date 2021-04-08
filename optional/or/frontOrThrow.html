@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Function frontOrThrow</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script><script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="../../optional.html">optional</a>
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../../optional/match.html">match</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/oc.html">oc</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/optional.html">optional</a>
+					</div>
+				</li>
+				<li>
+					<div class="module selected">
+						<a href="../../optional/or.html">or</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../optional/traits.html">traits</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Function frontOrThrow</h1><p>Same as <code class="lang-d"><a href="../../optional/or/frontOr.html"><span class="pln">frontOr</span></a></code> except it throws an error if it can't get the value
+</p>
+			<div class="prototype">
+				<code class="lang-d">
+					<div class="single-prototype">
+			<span class="kwd">auto</span> <span class="pln">frontOrThrow</span>(alias makeThrowable, T)
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="kwd">auto ref </span><span class="pln">T</span> <span class="pln">value</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+			<br/>
+			<br/>
+			<span class="kwd">auto</span> <span class="pln">frontOrThrow</span>(T, U)
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="kwd">auto ref </span><span class="pln">T</span> <span class="pln">value</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="kwd">lazy </span><span class="pln">U</span> <span class="pln">throwable</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+					</div>
+				</code>
+			</div>
+			<section></section>
+
+			<section><h2>Parameters</h2>
+<table><col class="caption"><tr><th>Name</th><th>Description</th></tr>
+<tr><td id="value">value</td><td> the value to resolve</td></tr>
+<tr><td id="makeThrowable">makeThrowable</td><td> the predicate that creates exception <code class="lang-d"><a href="../../optional/or/frontOrThrow.html#value"><span class="pln">value</span></a></code> cannot be resolved</td></tr>
+<tr><td id="throwable">throwable</td><td> the value to throw if value cannot be resolved</td></tr>
+</table>
+</section>
+<section><h2>Returns</h2>
+<p><li><code class="lang-d"><span class="typ">Nullable</span><span class="pun">!</span><span class="pln">T</span></code>: <code class="lang-d"><span class="pln">value<wbr/></span><span class="pun">.</span><span class="pln">get</span></code> or throw</li>
+        <li><code class="lang-d"><span class="typ">Optional</span><span class="pun">!</span><span class="pln">T</span></code>: <code class="lang-d"><span class="pln">value<wbr/></span><span class="pun">.</span><span class="pln">front</span></code> or throw</li>
+        <li><code class="lang-d"><span class="typ">Range</span><span class="pun">!</span><span class="pln">T</span></code>: <code class="lang-d"><span class="pln">value<wbr/></span><span class="pun">.</span><span class="pln">front</span></code> or throw</li>
+</p>
+</section>
+<section><h2>Example</h2>
+
+<pre class="code"><code class="lang-d"><span class="kwd">import </span><span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">exception</span><span class="pun">: </span><span class="pln">assertThrown</span><span class="pun">, </span><span class="pln">assertNotThrown</span><span class="pun">;
+
+</span><span class="str">""
+    <wbr/></span><span class="pun">.</span><span class="pln">frontOrThrow</span><span class="pun">(</span><span class="kwd">new </span><span class="typ">Exception</span><span class="pun">(</span><span class="str">""</span><span class="pun">))
+    <wbr/>.</span><span class="pln">assertThrown</span><span class="pun">!</span><span class="typ">Exception</span><span class="pun">;
+
+</span><span class="kwd">auto </span><span class="pln">b </span><span class="pun">= </span><span class="str">"yo"
+    <wbr/></span><span class="pun">.</span><span class="pln">frontOrThrow</span><span class="pun">(</span><span class="kwd">new </span><span class="typ">Exception</span><span class="pun">(</span><span class="str">""</span><span class="pun">))
+    <wbr/>.</span><span class="pln">assertNotThrown</span><span class="pun">!</span><span class="typ">Exception</span><span class="pun">;
+
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">b </span><span class="pun">== </span><span class="str">'y'</span><span class="pun">);
+</span></code></pre>
+</section>
+
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>
