@@ -47,7 +47,6 @@
             "dflags": ["-dip1000", "-dip25"],
             "dflags-ldc": [
                 "-fsanitize=address",
-                "-disable-fp-elim",
                 "-frame-pointer=all"
             ]
         },
