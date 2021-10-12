@@ -6,7 +6,7 @@
         {
             "label": "test-all",
             "type": "shell",
-            "command": "dub test -c unittest-safe && dub test -c unittest-compat",
+            "command": "dub test -c unittest-safe && dub --root=compattests test",
             "group": {
                 "kind": "test",
                 "isDefault": true
@@ -22,8 +22,7 @@
             "label": "test-ldc-asan",
             "type": "shell",
             "command": "ASAN_OPTIONS=debug=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:detect_leaks=1 dub test -c unittest-safe-asan --compiler=ldc2 -- -t 1",
-            "group": "test",
+            "group": "test"
         }
     ]
 }
-

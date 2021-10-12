@@ -1,0 +1,14 @@
+{
+    "name": "optional-compattests",
+    "authors": ["Ali Akhtarzada"],
+    "description": "compat tests for optional",
+    "copyright": "Copyright © 2021, Ali Akhtarzada",
+    "targetPath": "bin",
+    "license": "MIT",
+    "dependencies": {
+        "optional": {
+            "path": "../"
+        },
+        "vibe-d:data": "*"
+    }
+}

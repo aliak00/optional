@@ -1,13 +1,11 @@
 {
-	"name": "optional",
-	"authors": [
-		"Ali Akhtarzada"
-	],
-	"description": "An optional/maybe type with safe dispatchingrange semantics",
-	"copyright": "Copyright © 2018, Ali Akhtarzada",
+    "name": "optional",
+    "authors": ["Ali Akhtarzada"],
+    "description": "An optional/maybe type with safe dispatchingrange semantics",
+    "copyright": "Copyright © 2018, Ali Akhtarzada",
     "license": "MIT",
-	"targetPath": "bin",
-	"dependencies": {
+    "targetPath": "bin",
+    "dependencies": {
         "bolts": "~>1.3.0"
     },
     "configurations": [
@@ -17,51 +15,23 @@
         },
         {
             "name": "unittest",
-            "importPaths": [
-                "./tests"
-            ],
-            "sourcePaths": [
-                "./tests"
-            ]
+            "importPaths": ["./tests"],
+            "sourcePaths": ["./tests"]
         },
         {
             "name": "unittest-safe",
             "buildType": "unittest",
-            "importPaths": [
-                "./tests"
-            ],
-            "sourcePaths": [
-                "./tests"
-            ],
+            "importPaths": ["./tests"],
+            "sourcePaths": ["./tests"],
             "dflags": ["-dip1000", "-dip25"]
         },
         {
             "name": "unittest-safe-asan",
             "buildType": "unittest",
-            "importPaths": [
-                "./tests"
-            ],
-            "sourcePaths": [
-                "./tests"
-            ],
+            "importPaths": ["./tests"],
+            "sourcePaths": ["./tests"],
             "dflags": ["-dip1000", "-dip25"],
-            "dflags-ldc": [
-                "-fsanitize=address",
-                "-frame-pointer=all"
-            ]
-        },
-        {
-            "name": "unittest-compat",
-            "buildType": "unittest",
-            "importPaths": [
-                "./compattests"
-            ],
-            "sourcePaths": [
-                "./compattests"
-            ],
-            "dependencies": {
-                "vibe-d:data": "*"
-            }
+            "dflags-ldc": ["-fsanitize=address", "-frame-pointer=all"]
         }
     ],
     "buildTypes": {
