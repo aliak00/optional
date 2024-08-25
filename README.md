@@ -1,3 +1,5 @@
+[This is not being maintained anymore - no time - and not using D anymore].
+
 # Optional type for D with safe dispatching
 
 [![Latest version](https://img.shields.io/dub/v/optional.svg)](https://code.dlang.org/packages/optional) [![Build Status](https://travis-ci.org/aliak00/optional.svg?branch=master)](https://travis-ci.org/aliak00/optional) [![codecov](https://codecov.io/gh/aliak00/optional/branch/master/graph/badge.svg)](https://codecov.io/gh/aliak00/optional) [![license](https://img.shields.io/github/license/aliak00/optional.svg)](https://github.com/aliak00/optional/blob/master/LICENSE) [![Open on run.dlang.io](https://img.shields.io/badge/run.dlang.io-open-blue.svg)](https://run.dlang.io/is/CxJwiO)
