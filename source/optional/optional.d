@@ -348,7 +348,7 @@ auto toOptional(R)(auto ref R range) if (from.std.range.isInputRange!R) {
 }
 
 /// Ditto
-auto toOptional(T)(auto inout ref Nullable!T nullable) {
+auto toOptional(T)(auto ref inout Nullable!T nullable) {
     if (nullable.isNull) {
         return inout Optional!T();
     } else {

@@ -43,7 +43,7 @@ public template match(handlers...) if (handlers.length == 2) {
 	}
 }
 
-private auto doMatch(alias someHandler, alias noHandler, T, O)(ref auto O opt) {
+private auto doMatch(alias someHandler, alias noHandler, T, O)(auto ref O opt) {
 	alias SomeHandlerReturn = typeof(someHandler(T.init));
 	alias NoHandlerReturn = typeof(noHandler());
 	enum isVoidReturn = is(typeof(someHandler(T.init)) == void) || is(typeof(noHandler()) == void);
